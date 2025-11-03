@@ -51,61 +51,65 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
-      <div className="mx-auto max-w-md px-8 py-16">
+      <div className="mx-auto max-w-md px-8 py-12">
         {/* Branding */}
-        <div className="mb-12 text-center">
+        <div className="mb-8 text-center">
           {tenant.logo_url ? (
-            <img
-              src={tenant.logo_url}
-              alt={tenant.name}
-              className="mx-auto mb-4 h-24 w-24 object-contain"
-            />
+            <div className="mx-auto mb-4 aspect-square w-32 overflow-hidden rounded-xl border-2 border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+              <img
+                src={tenant.logo_url}
+                alt={tenant.name}
+                className="h-full w-full object-contain"
+              />
+            </div>
           ) : (
-            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-800">
-              <span className="text-2xl font-bold text-zinc-600 dark:text-zinc-400">
+            <div className="mx-auto mb-4 flex aspect-square w-32 items-center justify-center rounded-xl border-2 border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
+              <span className="text-3xl font-bold text-zinc-600 dark:text-zinc-400">
                 {tenant.name.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
-          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
+          <h1 className="text-2xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-3xl">
             {tenant.name.toUpperCase()}
           </h1>
         </div>
 
         {/* Main Content */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Title */}
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-black dark:text-zinc-50">
+            <h2 className="text-xl font-bold text-black dark:text-zinc-50 sm:text-2xl">
               Access VIP Events & Exclusive Offers
             </h2>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 sm:text-sm">
               Exclusive Offers - Access Below
             </p>
           </div>
 
           {/* Social Login Buttons */}
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-lg bg-black px-4 py-3 text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-black"
+              className="flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-black"
+              title="Continue with Apple"
             >
               <svg
-                className="h-5 w-5"
+                className="h-4 w-4"
                 fill="currentColor"
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
               </svg>
-              <span className="font-medium">Continue with Apple</span>
+              <span className="hidden sm:inline">Apple</span>
             </button>
 
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="flex items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              title="Continue with Google"
             >
-              <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                   fill="#4285F4"
@@ -123,7 +127,7 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
                   fill="#EA4335"
                 />
               </svg>
-              <span className="font-medium">Continue with Google</span>
+              <span className="hidden sm:inline">Google</span>
             </button>
           </div>
 
@@ -140,7 +144,7 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
           </div>
 
           {/* Email Form */}
-          <form onSubmit={handleEmailSubmit} className="space-y-3">
+          <form onSubmit={handleEmailSubmit} className="space-y-2">
             <input
               type="email"
               value={email}
@@ -148,15 +152,15 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
               placeholder="Enter your email"
               required
               disabled={loading || emailSubmitted}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
             <button
               type="submit"
               disabled={loading || emailSubmitted}
-              className="flex w-full items-center justify-center gap-3 rounded-lg bg-blue-600 px-4 py-3 text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              <Mail className="h-5 w-5" />
-              <span className="font-medium">Email for exclusive offers</span>
+              <Mail className="h-4 w-4" />
+              <span>Email for exclusive offers</span>
             </button>
           </form>
 
@@ -186,15 +190,15 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
           </div>
 
           {/* Feedback Section */}
-          <div className="space-y-4 border-t border-zinc-200 pt-8 dark:border-zinc-800">
-            <p className="text-center text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <div className="space-y-2 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+            <p className="text-center text-xs font-medium text-zinc-700 dark:text-zinc-300 sm:text-sm">
               Just want to share feedback?
             </p>
             <button
               type="button"
               onClick={handleFeedbackClick}
               disabled={loading || feedbackSubmitted}
-              className="w-full rounded-lg bg-orange-500 px-4 py-3 font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="w-full rounded-lg bg-orange-500 px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {feedbackSubmitted ? "Feedback Submitted!" : "Take Poll"}
             </button>
@@ -212,7 +216,7 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
         </div>
 
         {/* Legal Footer */}
-        <div className="mt-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="mt-8 text-center text-xs text-zinc-500 dark:text-zinc-400">
           <p>
             By continuing, you agree to our{" "}
             <a
