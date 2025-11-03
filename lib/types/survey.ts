@@ -1,8 +1,22 @@
 /**
  * Survey question types
- * Matches the schema: 'sentiment' | 'ranked_choice' | 'text'
+ * Matches the PostgreSQL enum: question_type
  */
-export type QuestionType = "sentiment" | "ranked_choice" | "text";
+export type QuestionType =
+  | "ranked_choice"
+  | "sentiment"
+  | "single_choice"
+  | "multiple_choice"
+  | "likert_5"
+  | "likert_7"
+  | "nps"
+  | "rating_5"
+  | "yes_no"
+  | "open_text"
+  | "numeric"
+  | "slider"
+  | "date"
+  | "time";
 
 /**
  * Individual survey question
@@ -31,12 +45,13 @@ export interface Survey {
 
 /**
  * Answer for a single question
+ * For multiple_choice, answer_text should be a JSON string array
  */
 export interface QuestionAnswer {
   question_id: string;
-  answer_text?: string | null;
-  answer_number?: number | null;
-  answer_boolean?: boolean | null;
+  answer_text?: string | null; // For text, date, time, single_choice, ranked_choice, or JSON array for multiple_choice
+  answer_number?: number | null; // For numeric, slider, nps, likert, rating, sentiment
+  answer_boolean?: boolean | null; // For yes_no
 }
 
 /**

@@ -3,7 +3,7 @@
 import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { submitEmail, submitEmailOptIn, submitFeedback } from "@/app/actions";
+import { submitEmail, submitEmailOptIn } from "@/app/actions";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
 import SocialLoginButton from "./ui/SocialLoginButton";
@@ -18,7 +18,6 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -106,20 +105,11 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
     }
   };
 
-  const handleFeedbackClick = async () => {
-    setLoading(true);
-    setError(null);
-
-    const result = await submitFeedback(tenant.slug);
-
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setFeedbackSubmitted(true);
-      // Redirect to feedback page or show feedback form
-      // For now, just show success message
+  const handleFeedbackClick = () => {
+    // Navigate to anonymous survey page
+    if (typeof window !== "undefined") {
+      window.location.href = `/${tenant.slug}/survey`;
     }
-    setLoading(false);
   };
 
   return (
@@ -211,10 +201,10 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
             <button
               type="button"
               onClick={handleFeedbackClick}
-              disabled={loading || feedbackSubmitted}
+              disabled={loading}
               className="w-full rounded-lg bg-orange-500 px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              {feedbackSubmitted ? "Feedback Submitted!" : "Take Poll"}
+              Take Poll
             </button>
             <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
               Your data stays anonymous.

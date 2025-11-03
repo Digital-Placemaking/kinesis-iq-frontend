@@ -1,7 +1,10 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
+import { RATE_LIMITS } from "@/lib/constants/rate-limits";
+import { checkRateLimit, getClientIdentifier } from "@/lib/utils/rate-limit";
 import type { Tenant, TenantResponse } from "@/lib/types/tenant";
 import type {
   SurveyResponse,
@@ -169,6 +172,20 @@ export async function getTenantBySlug(
  */
 export async function submitEmail(tenantSlug: string, email: string) {
   try {
+    // Rate limiting: use email as identifier
+    const headersList = await headers();
+    const identifier = getClientIdentifier(email, headersList);
+    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.EMAIL_SUBMIT);
+
+    if (!rateLimit.allowed) {
+      return {
+        error: `Too many requests. Please try again in ${Math.ceil(
+          (rateLimit.resetAt - Date.now()) / 1000
+        )} seconds.`,
+        success: false,
+      };
+    }
+
     const supabase = await createClient();
 
     // Resolve tenant slug to UUID
@@ -236,8 +253,29 @@ export async function submitEmail(tenantSlug: string, email: string) {
  * This is called after successful authentication
  */
 export async function submitEmailOptIn(tenantSlug: string, email: string) {
-  // Same logic as submitEmail - ensures consistency
-  return submitEmail(tenantSlug, email);
+  try {
+    // Rate limiting: use email as identifier
+    const headersList = await headers();
+    const identifier = getClientIdentifier(email, headersList);
+    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.EMAIL_OPT_IN);
+
+    if (!rateLimit.allowed) {
+      return {
+        error: `Too many requests. Please try again in ${Math.ceil(
+          (rateLimit.resetAt - Date.now()) / 1000
+        )} seconds.`,
+        success: false,
+      };
+    }
+
+    // Same logic as submitEmail - ensures consistency
+    return submitEmail(tenantSlug, email);
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "An error occurred",
+      success: false,
+    };
+  }
 }
 
 /**
@@ -367,6 +405,87 @@ export async function submitFeedback(tenantSlug: string) {
  * Fetches survey questions for a specific tenant
  * Since there's no surveys table, we fetch all survey_questions for the tenant
  */
+export async function getSurveyForTenant(
+  tenantSlug: string
+): Promise<SurveyResponse> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        survey: null,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Fetch all survey questions for this tenant
+    // Schema: id, tenant_id, question, type, options, order_index
+    const { data: questions, error: questionsError } = await tenantSupabase
+      .from("survey_questions")
+      .select("*")
+      .order("order_index", { ascending: true });
+
+    if (questionsError) {
+      return {
+        survey: null,
+        error: questionsError.message || "Failed to fetch survey questions",
+      };
+    }
+
+    // Return survey even if no questions - let the page component decide what to do
+    // This allows for graceful handling (e.g., redirect to completion)
+    if (!questions || questions.length === 0) {
+      return {
+        survey: {
+          tenant_id: tenantId,
+          coupon_id: null,
+          questions: [],
+        },
+        error: null,
+      };
+    }
+
+    // Transform the data to match our Survey interface
+    const survey: Survey = {
+      tenant_id: tenantId,
+      coupon_id: null,
+      questions: questions.map((q: any) => ({
+        id: q.id,
+        tenant_id: q.tenant_id,
+        question: q.question,
+        type: q.type,
+        options: Array.isArray(q.options) ? q.options : [],
+        order_index: q.order_index,
+      })),
+    };
+
+    return {
+      survey,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      survey: null,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Fetches survey questions for a specific coupon
+ * Since there's no surveys table, we fetch all survey_questions for the tenant
+ */
 export async function getSurveyForCoupon(
   tenantSlug: string,
   couponId: string
@@ -454,6 +573,20 @@ export async function submitSurveyAnswers(
   submission: SurveySubmission
 ): Promise<SurveySubmissionResponse> {
   try {
+    // Rate limiting: use email if available, otherwise use IP
+    const headersList = await headers();
+    const identifier = getClientIdentifier(submission.email, headersList);
+    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.SURVEY_SUBMIT);
+
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+        error: `Too many survey submissions. Please try again in ${Math.ceil(
+          (rateLimit.resetAt - Date.now()) / 1000
+        )} seconds.`,
+      };
+    }
+
     const supabase = await createClient();
 
     // Resolve tenant slug to UUID
@@ -479,7 +612,7 @@ export async function submitSurveyAnswers(
     const sessionId =
       submission.coupon_id && submission.email
         ? `${submission.coupon_id}-${submission.email}`
-        : `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        : `session-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
     // Insert one row per question answer
     // Schema: id, tenant_id, question_id, answer (jsonb), session_id, created_at
@@ -487,8 +620,20 @@ export async function submitSurveyAnswers(
       // Convert answer to JSONB format
       let answerJsonb: any = null;
 
+      // Handle answer_text (for text, date, time, single_choice, ranked_choice, or JSON array for multiple_choice)
       if (answer.answer_text !== null && answer.answer_text !== undefined) {
-        answerJsonb = { text: answer.answer_text };
+        // Check if it's a JSON array (for multiple_choice)
+        try {
+          const parsed = JSON.parse(answer.answer_text);
+          if (Array.isArray(parsed)) {
+            answerJsonb = { array: parsed };
+          } else {
+            answerJsonb = { text: answer.answer_text };
+          }
+        } catch {
+          // Not JSON, treat as plain text
+          answerJsonb = { text: answer.answer_text };
+        }
       } else if (
         answer.answer_number !== null &&
         answer.answer_number !== undefined

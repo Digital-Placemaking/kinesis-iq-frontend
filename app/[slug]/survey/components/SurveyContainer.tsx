@@ -11,8 +11,8 @@ import SurveyNavigation from "./SurveyNavigation";
 interface SurveyContainerProps {
   survey: Survey;
   tenantSlug: string;
-  couponId: string;
-  email?: string;
+  couponId: string | null;
+  email: string | null;
 }
 
 export default function SurveyContainer({
@@ -27,7 +27,32 @@ export default function SurveyContainer({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Guard against empty survey
+  if (!survey.questions || survey.questions.length === 0) {
+    if (typeof window !== "undefined") {
+      if (couponId) {
+        window.location.href = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
+          email || ""
+        )}`;
+      } else {
+        window.location.href = `/${tenantSlug}/survey/completed`;
+      }
+    }
+    return null;
+  }
+
   const currentQuestion = survey.questions[currentQuestionIndex];
+
+  if (!currentQuestion) {
+    return (
+      <div className="rounded-xl border border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
+        <p className="text-zinc-600 dark:text-zinc-400">
+          No questions available for this survey.
+        </p>
+      </div>
+    );
+  }
+
   const currentAnswer = answers[currentQuestion.id] || null;
 
   const handleAnswerChange = (answer: QuestionAnswer) => {
@@ -139,11 +164,19 @@ export default function SurveyContainer({
       } else {
         // Redirect to completion page using window.location to preserve theme
         // This ensures a full navigation that applies theme from localStorage
-        const redirectUrl = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
-          email || ""
-        )}`;
-        if (typeof window !== "undefined") {
-          window.location.href = redirectUrl;
+        if (couponId) {
+          // Coupon survey - redirect to coupon completion
+          const redirectUrl = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
+            email || ""
+          )}`;
+          if (typeof window !== "undefined") {
+            window.location.href = redirectUrl;
+          }
+        } else {
+          // Anonymous survey - redirect to survey completion
+          if (typeof window !== "undefined") {
+            window.location.href = `/${tenantSlug}/survey/completed`;
+          }
         }
       }
     } catch (err) {
@@ -152,23 +185,11 @@ export default function SurveyContainer({
     }
   };
 
-  // This should never happen since we redirect in the page component if there are no questions
-  // But keeping as a safety check
-  if (survey.questions.length === 0) {
-    // Redirect to completion page
-    if (typeof window !== "undefined") {
-      window.location.href = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
-        email || ""
-      )}`;
-    }
-    return null;
-  }
-
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-2xl">
       <SurveyProgress
-        currentQuestion={currentQuestionIndex + 1}
-        totalQuestions={survey.questions.length}
+        current={currentQuestionIndex + 1}
+        total={survey.questions.length}
       />
 
       {error && (
