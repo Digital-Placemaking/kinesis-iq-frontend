@@ -31,6 +31,7 @@ export default function HomePage() {
           </div>
 
           {/* Testimonials */}
+          {/* TODO: when we add more testimonials, we should add a carousel component */}
           <div className="space-y-8 border-t border-zinc-200 pt-16 dark:border-zinc-800">
             <div className="group rounded-2xl border border-zinc-200 bg-gradient-to-br from-white to-zinc-50 p-8 shadow-sm transition-shadow hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950">
               <div className="mb-4 text-2xl text-zinc-400 dark:text-zinc-600">
