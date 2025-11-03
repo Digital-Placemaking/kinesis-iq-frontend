@@ -13,7 +13,7 @@ export default function ScrollArrow() {
   return (
     <button
       onClick={scrollToDetails}
-      className="mt-8 flex flex-col items-center gap-2 transition-opacity hover:opacity-80"
+      className="mt-8 flex flex-col items-center gap-2 transition-opacity hover:opacity-80 hover:cursor-pointer"
       aria-label="Scroll to details"
     >
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
