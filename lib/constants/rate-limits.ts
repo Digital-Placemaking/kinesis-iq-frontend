@@ -22,10 +22,10 @@ export const RATE_LIMITS = {
     windowMs: 60 * 1000, // Per 60 seconds (1 minute)
   },
 
-  // Coupon issuance rate limits
+  // Coupon issuance rate limits (only for generating NEW coupon codes)
   COUPON_ISSUE: {
     maxRequests: 3, // Maximum 3 coupon issuances
-    windowMs: 60 * 1000, // Per 60 seconds (1 minute)
+    windowMs: 10 * 1000, // Per 10 seconds
   },
 
   // General API rate limits
