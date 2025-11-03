@@ -5,6 +5,10 @@ import Link from "next/link";
 import { Copy, Share2, Download, Bell, Home } from "lucide-react";
 import type { TenantDisplay } from "@/lib/types/tenant";
 import Footer from "@/app/components/Footer";
+import TenantLogo from "@/app/components/ui/TenantLogo";
+import Card from "@/app/components/ui/Card";
+import InfoBox from "@/app/components/ui/InfoBox";
+import ActionButton from "@/app/components/ui/ActionButton";
 import CouponCodeDisplay from "./CouponCodeDisplay";
 
 interface Coupon {
@@ -58,7 +62,7 @@ export default function CouponCompletion({
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-8 py-12">
         {/* Main Content Card */}
-        <div className="mb-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <Card className="mb-6 p-6" variant="elevated">
           {/* Congratulations Header */}
           <div className="mb-6 text-center">
             <h1 className="mb-2 text-2xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-3xl">
@@ -70,21 +74,7 @@ export default function CouponCompletion({
           </div>
           {/* Logo */}
           <div className="mb-4 flex justify-center">
-            {tenant.logo_url ? (
-              <div className="aspect-square w-24 overflow-hidden rounded-xl border-2 border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-900">
-                <img
-                  src={tenant.logo_url}
-                  alt={tenant.name}
-                  className="h-full w-full object-contain"
-                />
-              </div>
-            ) : (
-              <div className="flex aspect-square w-24 items-center justify-center rounded-xl border-2 border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
-                <span className="text-2xl font-bold text-zinc-600 dark:text-zinc-400">
-                  {tenant.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
+            <TenantLogo tenant={tenant} size="md" />
           </div>
 
           {/* Coupon Title */}
@@ -105,17 +95,14 @@ export default function CouponCompletion({
           </div>
 
           {/* Share Section */}
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
-            <p className="mb-1 text-center text-xs font-medium uppercase tracking-wide text-red-600 dark:text-red-400">
-              Share
-            </p>
+          <InfoBox title="Share" variant="warning" className="mb-4">
             <p className="text-center text-xs font-semibold text-red-700 dark:text-red-300 sm:text-sm">
               Send to family, friends and colleagues.
             </p>
-          </div>
+          </InfoBox>
 
           {/* Important Information */}
-          <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+          <InfoBox variant="info" className="mb-4">
             <p className="mb-2 text-xs font-semibold text-zinc-900 dark:text-zinc-50 sm:text-sm">
               IMPORTANT:
             </p>
@@ -124,36 +111,18 @@ export default function CouponCompletion({
               <li>• Use before expiry date.</li>
               <li>• One-time use only.</li>
             </ul>
-          </div>
-        </div>
+          </InfoBox>
+        </Card>
 
         {/* Action Buttons */}
         <div className="mb-6 space-y-2">
-          <button
-            type="button"
-            onClick={handleCopyCode}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
-            <Copy className="h-4 w-4" />
+          <ActionButton icon={Copy} onClick={handleCopyCode}>
             {copied ? "Copied!" : "Copy Code"}
-          </button>
-
-          <button
-            type="button"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
-            <Download className="h-4 w-4" />
-            Add to Google Wallet
-          </button>
-
-          <button
-            type="button"
-            onClick={handleShare}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
-            <Share2 className="h-4 w-4" />
+          </ActionButton>
+          <ActionButton icon={Download}>Add to Google Wallet</ActionButton>
+          <ActionButton icon={Share2} onClick={handleShare}>
             Share with Friends
-          </button>
+          </ActionButton>
         </div>
 
         {/* Footer Options */}

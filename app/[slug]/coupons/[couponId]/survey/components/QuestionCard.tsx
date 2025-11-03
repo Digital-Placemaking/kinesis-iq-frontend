@@ -1,6 +1,7 @@
 "use client";
 
 import type { SurveyQuestion, QuestionAnswer } from "@/lib/types/survey";
+import Card from "@/app/components/ui/Card";
 import QuestionInput from "./QuestionInput";
 import QuestionRadio from "./QuestionRadio";
 import QuestionRating from "./QuestionRating";
@@ -118,13 +119,13 @@ export default function QuestionCard({
   };
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <Card className="p-6" variant="elevated">
       <div className="mb-4">
         <label className="block text-base font-semibold text-black dark:text-zinc-50">
           {question.question}
         </label>
       </div>
       <div className="mt-4">{renderQuestionInput()}</div>
-    </div>
+    </Card>
   );
 }

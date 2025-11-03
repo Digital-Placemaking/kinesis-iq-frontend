@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Footer from "@/app/components/Footer";
+import TenantLogo from "@/app/components/ui/TenantLogo";
+import Card from "@/app/components/ui/Card";
 import type { TenantDisplay } from "@/lib/types/tenant";
 import CouponCard from "./CouponCard";
 
@@ -50,21 +52,7 @@ export default function CouponsList({
           </Link>
 
           <div className="mb-6 flex justify-center">
-            {tenant.logo_url ? (
-              <div className="aspect-square w-24 overflow-hidden rounded-xl border-2 border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-900">
-                <img
-                  src={tenant.logo_url}
-                  alt={tenant.name}
-                  className="h-full w-full object-contain"
-                />
-              </div>
-            ) : (
-              <div className="flex aspect-square w-24 items-center justify-center rounded-xl border-2 border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
-                <span className="text-2xl font-bold text-zinc-600 dark:text-zinc-400">
-                  {tenant.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
+            <TenantLogo tenant={tenant} size="md" />
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-4xl">
@@ -78,11 +66,11 @@ export default function CouponsList({
         {/* Coupons List */}
         {coupons.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
-            <div className="w-full rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
+            <Card className="w-full p-8 text-center">
               <p className="text-zinc-600 dark:text-zinc-400">
                 No coupons available at this time. Check back soon!
               </p>
-            </div>
+            </Card>
           </div>
         ) : (
           <div className="flex w-full flex-col items-center gap-3">
