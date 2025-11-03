@@ -3,6 +3,7 @@
 import { Mail } from "lucide-react";
 import { useState } from "react";
 import { submitEmail, submitFeedback } from "../../actions";
+import Footer from "../../components/Footer";
 import type { TenantDisplay } from "@/lib/types/tenant";
 
 interface TenantLandingProps {
@@ -49,7 +50,7 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-black dark:to-zinc-950">
+    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
       <div className="mx-auto max-w-md px-8 py-16">
         {/* Branding */}
         <div className="mb-12 text-center">
@@ -231,6 +232,9 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
           </p>
         </div>
       </div>
+
+      {/* Theme Toggle Footer */}
+      <Footer />
     </div>
   );
 }

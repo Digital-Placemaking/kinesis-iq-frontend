@@ -6,8 +6,8 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* Hero Section - Full Viewport */}
       <section className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-zinc-50 to-white dark:from-black dark:to-zinc-950">
-        <div className="text-center">
-          <h1 className="text-7xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-8xl md:text-9xl">
+        <div className="text-center px-4">
+          <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl">
             Digital Placemaking
           </h1>
           <div className="mt-6 flex justify-center">
