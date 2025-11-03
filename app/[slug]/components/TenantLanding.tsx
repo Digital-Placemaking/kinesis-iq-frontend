@@ -3,7 +3,7 @@
 import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { submitEmail, submitFeedback } from "@/app/actions";
+import { submitEmail, submitEmailOptIn, submitFeedback } from "@/app/actions";
 import Footer from "@/app/components/Footer";
 import type { TenantDisplay } from "@/lib/types/tenant";
 
@@ -20,24 +20,87 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate email before submission
+    if (!email || !email.trim()) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    const result = await submitEmail(tenant.slug, email);
+    try {
+      console.log("Submitting email:", email, "for tenant:", tenant.slug);
+      const result = await submitEmail(tenant.slug, email.trim());
+      console.log("Email submission result:", JSON.stringify(result, null, 2));
 
-    if (result.error) {
-      setError(result.error);
+      // Check if result has success property
+      if (result && typeof result.success === "boolean") {
+        if (result.success === true) {
+          // Redirect to coupons page with email as query parameter
+          const redirectUrl = `/${
+            tenant.slug
+          }/coupons?email=${encodeURIComponent(email.trim())}`;
+          console.log("Redirecting to:", redirectUrl);
+
+          // Force immediate redirect - use multiple methods to ensure it works
+          // This ensures React doesn't interfere with navigation
+          if (typeof window !== "undefined") {
+            window.location.replace(redirectUrl);
+          }
+          return; // Don't set loading to false since we're redirecting
+        } else if (result.error) {
+          console.error("Email submission error:", result.error);
+          setError(result.error);
+          setLoading(false);
+        } else {
+          console.error(
+            "Unexpected result - success is false but no error:",
+            result
+          );
+          setError("Failed to submit email. Please try again.");
+          setLoading(false);
+        }
+      } else {
+        // Result doesn't have expected structure
+        console.error("Unexpected result structure:", result);
+        setError("An unexpected error occurred");
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("Exception in handleEmailSubmit:", err);
+      setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
-    } else {
-      // Redirect to coupons page after successful submission
-      router.push(`/${tenant.slug}/coupons`);
     }
   };
 
-  const handleSocialLogin = (provider: "apple" | "google") => {
-    // TODO: Implement actual social login
-    // For now, redirect to coupons page
-    router.push(`/${tenant.slug}/coupons`);
+  const handleSocialLogin = async (provider: "apple" | "google") => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // TODO: Implement actual social login with Supabase Auth
+      // For now, we'll need the email from the auth response
+      // Once authenticated, call submitEmailOptIn with the email
+
+      // Example flow (to be implemented):
+      // 1. Authenticate with provider via Supabase Auth
+      // 2. Get user email from auth response
+      // 3. Call submitEmailOptIn(tenant.slug, email)
+      // 4. Then redirect to coupons
+
+      // For now, redirect to coupons page
+      // In production, this will be:
+      // const { data: { user } } = await supabase.auth.signInWithOAuth({ provider })
+      // if (user?.email) {
+      //   await submitEmailOptIn(tenant.slug, user.email);
+      // }
+      router.push(`/${tenant.slug}/coupons`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      setLoading(false);
+    }
   };
 
   const handleFeedbackClick = async () => {
