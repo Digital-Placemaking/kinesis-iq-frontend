@@ -10,6 +10,60 @@ import type {
   Survey,
 } from "@/lib/types/survey";
 
+/**
+ * Fetches a single coupon by ID
+ */
+export async function getCouponById(
+  tenantSlug: string,
+  couponId: string
+): Promise<{ coupon: any | null; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        coupon: null,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Fetch the specific coupon
+    const { data: coupon, error: couponError } = await tenantSupabase
+      .from("coupons")
+      .select("*")
+      .eq("id", couponId)
+      .single();
+
+    if (couponError || !coupon) {
+      return {
+        coupon: null,
+        error: couponError?.message || "Coupon not found",
+      };
+    }
+
+    return {
+      coupon,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      coupon: null,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
 export async function getCouponsForTenant(tenantSlug: string) {
   try {
     const supabase = await createClient();

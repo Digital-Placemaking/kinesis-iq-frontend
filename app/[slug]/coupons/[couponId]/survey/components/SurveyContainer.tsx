@@ -103,12 +103,14 @@ export default function SurveyContainer({
         setError(result.error);
         setIsSubmitting(false);
       } else {
-        // Redirect to thank you page or back to coupons
-        router.push(
-          `/${tenantSlug}/coupons?email=${encodeURIComponent(
-            email || ""
-          )}&submitted=true`
-        );
+        // Redirect to completion page using window.location to preserve theme
+        // This ensures a full navigation that applies theme from localStorage
+        const redirectUrl = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
+          email || ""
+        )}`;
+        if (typeof window !== "undefined") {
+          window.location.href = redirectUrl;
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
