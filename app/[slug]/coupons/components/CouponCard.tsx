@@ -1,0 +1,93 @@
+import { Gift } from "lucide-react";
+
+interface Coupon {
+  id: string;
+  title: string;
+  discount?: string | null;
+  description?: string | null;
+  expires_at?: string | null;
+  active?: boolean;
+  created_at?: string;
+}
+
+interface CouponCardProps {
+  coupon: Coupon;
+}
+
+export default function CouponCard({ coupon }: CouponCardProps) {
+  const getExpirationText = () => {
+    if (!coupon.expires_at) return null;
+
+    const expiresDate = new Date(coupon.expires_at);
+    const now = new Date();
+    const diffTime = expiresDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return "Expired";
+    } else if (diffDays === 0) {
+      return "Expires today";
+    } else if (diffDays === 1) {
+      return "Expires tomorrow";
+    } else if (diffDays < 7) {
+      return `Expires in ${diffDays} days`;
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `Expires in ${weeks} ${weeks === 1 ? "week" : "weeks"}`;
+    } else {
+      const months = Math.floor(diffDays / 30);
+      return `Expires in ${months} ${months === 1 ? "month" : "months"}`;
+    }
+  };
+
+  return (
+    <div className="group flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+      {/* Icon */}
+      <div className="flex-shrink-0">
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500">
+          <Gift className="h-6 w-6 text-white" />
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-1 flex-col gap-1.5">
+        {/* Title */}
+        <h3 className="text-base font-semibold text-black dark:text-zinc-50">
+          {coupon.title}
+        </h3>
+
+        {/* Description */}
+        {coupon.description && (
+          <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            {coupon.description}
+          </p>
+        )}
+
+        {/* Expiration */}
+        {coupon.expires_at && (
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            {getExpirationText()}
+          </p>
+        )}
+
+        {/* Discount Amount */}
+        {coupon.discount && (
+          <p className="mt-1 text-sm font-semibold text-blue-600 dark:text-blue-400">
+            {coupon.discount}
+          </p>
+        )}
+      </div>
+
+      {/* Claim Button */}
+      <div className="flex-shrink-0">
+        <button
+          type="button"
+          disabled={coupon.active === false}
+          className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-black"
+        >
+          Claim Now
+        </button>
+      </div>
+    </div>
+  );
+}

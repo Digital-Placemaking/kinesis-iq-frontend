@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTenantBySlug } from "../actions";
+import { getTenantBySlug } from "@/app/actions";
 import TenantLanding from "./components/TenantLanding";
 import { toTenantDisplay } from "@/lib/utils/tenant";
 

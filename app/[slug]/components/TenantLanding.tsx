@@ -1,9 +1,10 @@
 "use client";
 
 import { Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { submitEmail, submitFeedback } from "../../actions";
-import Footer from "../../components/Footer";
+import { submitEmail, submitFeedback } from "@/app/actions";
+import Footer from "@/app/components/Footer";
 import type { TenantDisplay } from "@/lib/types/tenant";
 
 interface TenantLandingProps {
@@ -11,9 +12,9 @@ interface TenantLandingProps {
 }
 
 export default function TenantLanding({ tenant }: TenantLandingProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,11 +27,17 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
 
     if (result.error) {
       setError(result.error);
+      setLoading(false);
     } else {
-      setEmailSubmitted(true);
-      setEmail("");
+      // Redirect to coupons page after successful submission
+      router.push(`/${tenant.slug}/coupons`);
     }
-    setLoading(false);
+  };
+
+  const handleSocialLogin = (provider: "apple" | "google") => {
+    // TODO: Implement actual social login
+    // For now, redirect to coupons page
+    router.push(`/${tenant.slug}/coupons`);
   };
 
   const handleFeedbackClick = async () => {
@@ -50,8 +57,8 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
-      <div className="mx-auto max-w-md px-8 py-12">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-8 py-12">
         {/* Branding */}
         <div className="mb-8 text-center">
           {tenant.logo_url ? (
@@ -90,6 +97,7 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
+              onClick={() => handleSocialLogin("apple")}
               className="flex items-center justify-center gap-2 rounded-lg bg-black px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-black"
               title="Continue with Apple"
             >
@@ -106,6 +114,7 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
 
             <button
               type="button"
+              onClick={() => handleSocialLogin("google")}
               className="flex items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
               title="Continue with Google"
             >
@@ -151,25 +160,18 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
-              disabled={loading || emailSubmitted}
+              disabled={loading}
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
             <button
               type="submit"
-              disabled={loading || emailSubmitted}
+              disabled={loading}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               <Mail className="h-4 w-4" />
               <span>Email for exclusive offers</span>
             </button>
           </form>
-
-          {/* Success Message */}
-          {emailSubmitted && (
-            <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-200">
-              Email submitted successfully!
-            </div>
-          )}
 
           {/* Privacy Statement */}
           <div className="flex items-center gap-2 text-center text-xs text-zinc-500 dark:text-zinc-400">

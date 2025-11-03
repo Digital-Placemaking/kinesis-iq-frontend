@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getCouponsForTenant } from "../actions";
+import { getCouponsForTenant } from "@/app/actions";
 
 export default function CouponForm() {
   const [tenantSlug, setTenantSlug] = useState("");
