@@ -1,8 +1,8 @@
 /**
  * Survey question types
- * Matches the schema: 'sentiment' | 'ranked_choice'
+ * Matches the schema: 'sentiment' | 'ranked_choice' | 'text'
  */
-export type QuestionType = "sentiment" | "ranked_choice";
+export type QuestionType = "sentiment" | "ranked_choice" | "text";
 
 /**
  * Individual survey question

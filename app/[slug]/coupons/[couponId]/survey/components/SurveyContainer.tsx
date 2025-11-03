@@ -118,14 +118,16 @@ export default function SurveyContainer({
     }
   };
 
+  // This should never happen since we redirect in the page component if there are no questions
+  // But keeping as a safety check
   if (survey.questions.length === 0) {
-    return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-zinc-600 dark:text-zinc-400">
-          This survey has no questions.
-        </p>
-      </div>
-    );
+    // Redirect to completion page
+    if (typeof window !== "undefined") {
+      window.location.href = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
+        email || ""
+      )}`;
+    }
+    return null;
   }
 
   return (

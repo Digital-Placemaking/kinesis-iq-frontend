@@ -2,9 +2,7 @@
 
 import type { SurveyQuestion, QuestionAnswer } from "@/lib/types/survey";
 import QuestionInput from "./QuestionInput";
-import QuestionSelect from "./QuestionSelect";
 import QuestionRadio from "./QuestionRadio";
-import QuestionCheckbox from "./QuestionCheckbox";
 import QuestionRating from "./QuestionRating";
 
 interface QuestionCardProps {
@@ -45,22 +43,22 @@ export default function QuestionCard({
     });
   };
 
-  const handleSelectChange = (value: string) => {
-    handleTextChange(value);
-  };
-
   const handleRadioChange = (value: string) => {
     handleTextChange(value);
-  };
-
-  const handleCheckboxChange = (values: string[]) => {
-    // Store checkbox values as comma-separated string
-    handleTextChange(values.join(","));
   };
 
   const renderQuestionInput = () => {
     // Map the schema types to our component types
     switch (question.type) {
+      case "text":
+        // Free-text input question
+        return (
+          <QuestionInput
+            value={answer?.answer_text || ""}
+            onChange={handleTextChange}
+          />
+        );
+
       case "sentiment":
         // Sentiment can be treated as a rating (1-5 scale)
         return (

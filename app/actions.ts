@@ -406,10 +406,16 @@ export async function getSurveyForCoupon(
       };
     }
 
+    // Return survey even if no questions - let the page component decide what to do
+    // This allows for graceful handling (e.g., redirect to completion)
     if (!questions || questions.length === 0) {
       return {
-        survey: null,
-        error: "No survey questions found for this tenant",
+        survey: {
+          tenant_id: tenantId,
+          coupon_id: couponId,
+          questions: [],
+        },
+        error: null,
       };
     }
 

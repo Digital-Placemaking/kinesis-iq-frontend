@@ -31,18 +31,13 @@ export default async function SurveyPage({
   // Fetch survey for this coupon
   const { survey, error } = await getSurveyForCoupon(slug, couponId);
 
-  if (error || !survey) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
-        <div className="mx-auto flex max-w-2xl flex-1 flex-col items-center justify-center px-8 py-16">
-          <div className="w-full rounded-lg border border-red-200 bg-red-50 p-6 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
-            <p className="font-semibold">Survey not found</p>
-            <p className="mt-2 text-sm">
-              {error || "This coupon does not have an associated survey."}
-            </p>
-          </div>
-        </div>
-      </div>
+  // If no survey questions exist, skip the survey and redirect directly to completion
+  if (error || !survey || survey.questions.length === 0) {
+    // Redirect to completion page if no questions
+    redirect(
+      `/${slug}/coupons/${couponId}/completed?email=${encodeURIComponent(
+        email
+      )}`
     );
   }
 
