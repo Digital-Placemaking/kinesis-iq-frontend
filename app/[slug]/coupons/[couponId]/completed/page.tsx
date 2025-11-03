@@ -3,6 +3,7 @@ import {
   getTenantBySlug,
   verifyEmailOptIn,
   getCouponById,
+  issueCoupon,
 } from "@/app/actions";
 import { toTenantDisplay } from "@/lib/utils/tenant";
 import CouponCompletion from "./components/CouponCompletion";
@@ -10,16 +11,6 @@ import CouponCompletion from "./components/CouponCompletion";
 interface CompletedPageProps {
   params: Promise<{ slug: string; couponId: string }>;
   searchParams: Promise<{ email?: string }>;
-}
-
-// Helper function to generate a coupon code
-function generateCouponCode(couponId: string): string {
-  // Simple code generation - use last 8 chars of coupon ID + random suffix
-  const idPart = couponId.replace(/-/g, "").slice(-6).toUpperCase();
-  const randomPart = Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, "0");
-  return `${idPart}-${randomPart}`;
 }
 
 export default async function CompletedPage({
@@ -57,13 +48,43 @@ export default async function CompletedPage({
     notFound();
   }
 
-  // Generate coupon code
-  // TODO: This should come from the database or be generated server-side
-  const couponCode = generateCouponCode(couponId);
+  // Issue coupon code (create issued_coupon record)
+  const { issuedCoupon, error: issueError } = await issueCoupon(
+    slug,
+    couponId,
+    email,
+    coupon.expires_at || null
+  );
 
   const tenant = toTenantDisplay(tenantData);
 
+  // If issue fails, show error on page instead of redirecting (for debugging)
+  if (issueError || !issuedCoupon) {
+    // Log the error for debugging
+    console.error("Failed to issue coupon:", {
+      error: issueError,
+      slug,
+      couponId,
+      email,
+      issuedCoupon,
+    });
+
+    // Still render the page but with error message
+    return (
+      <CouponCompletion
+        tenant={tenant}
+        coupon={coupon}
+        couponCode={null}
+        error={issueError || "Failed to issue coupon"}
+      />
+    );
+  }
+
   return (
-    <CouponCompletion tenant={tenant} coupon={coupon} couponCode={couponCode} />
+    <CouponCompletion
+      tenant={tenant}
+      coupon={coupon}
+      couponCode={issuedCoupon.code}
+    />
   );
 }

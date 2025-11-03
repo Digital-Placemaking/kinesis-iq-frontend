@@ -22,17 +22,20 @@ interface Coupon {
 interface CouponCompletionProps {
   tenant: TenantDisplay;
   coupon: Coupon;
-  couponCode: string;
+  couponCode: string | null;
+  error?: string | null;
 }
 
 export default function CouponCompletion({
   tenant,
   coupon,
   couponCode,
+  error,
 }: CouponCompletionProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyCode = async () => {
+    if (!couponCode) return;
     try {
       await navigator.clipboard.writeText(couponCode);
       setCopied(true);
@@ -43,6 +46,7 @@ export default function CouponCompletion({
   };
 
   const handleShare = async () => {
+    if (!couponCode) return;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -89,14 +93,27 @@ export default function CouponCompletion({
             </p>
           )}
 
+          {/* Error Display */}
+          {error && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+              <p className="font-semibold">Error issuing coupon:</p>
+              <p className="mt-1">{error}</p>
+              <p className="mt-2 text-xs">
+                Please check the server console for more details.
+              </p>
+            </div>
+          )}
+
           {/* Coupon Code Display */}
-          <div className="mb-4">
-            <CouponCodeDisplay code={couponCode} />
-          </div>
+          {couponCode && (
+            <div className="mb-4">
+              <CouponCodeDisplay code={couponCode} />
+            </div>
+          )}
 
           {/* Share Section */}
-          <InfoBox title="Share" variant="warning" className="mb-4">
-            <p className="text-center text-xs font-semibold text-red-700 dark:text-red-300 sm:text-sm">
+          <InfoBox title="Share" variant="success" className="mb-4">
+            <p className="text-center text-xs font-semibold text-green-700 dark:text-green-300 sm:text-sm">
               Send to family, friends and colleagues.
             </p>
           </InfoBox>

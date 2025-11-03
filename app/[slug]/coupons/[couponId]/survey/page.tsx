@@ -1,5 +1,9 @@
 import { redirect, notFound } from "next/navigation";
-import { getSurveyForCoupon, verifyEmailOptIn } from "@/app/actions";
+import {
+  getSurveyForCoupon,
+  verifyEmailOptIn,
+  hasCompletedSurveyForTenant,
+} from "@/app/actions";
 import SurveyContainer from "./components/SurveyContainer";
 
 interface SurveyPageProps {
@@ -26,6 +30,20 @@ export default async function SurveyPage({
   if (!optInCheck.valid) {
     // Log warning but don't block - email in URL means submission succeeded
     console.warn("Email opt-in verification warning:", optInCheck.error);
+  }
+
+  // Check if user has completed any survey for this tenant - if so, skip survey
+  // They can claim all coupons without retaking the survey
+  const { completed } = await hasCompletedSurveyForTenant(slug, email);
+
+  if (completed) {
+    // User already completed a survey for this tenant - skip survey and go to completion
+    // They'll get a new coupon code for this specific coupon
+    redirect(
+      `/${slug}/coupons/${couponId}/completed?email=${encodeURIComponent(
+        email
+      )}`
+    );
   }
 
   // Fetch survey for this coupon

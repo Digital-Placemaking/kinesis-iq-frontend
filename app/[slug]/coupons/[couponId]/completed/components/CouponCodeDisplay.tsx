@@ -24,9 +24,9 @@ export default function CouponCodeDisplay({ code }: CouponCodeDisplayProps) {
       <p className="mb-2 text-center text-xs font-medium uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
         Your Coupon Code
       </p>
-      <div className="mb-3 flex items-center justify-center gap-2">
-        <div className="rounded-lg border border-zinc-200 bg-white px-4 py-2.5 dark:border-zinc-800 dark:bg-zinc-900">
-          <span className="text-xl font-bold text-blue-600 dark:text-blue-400 sm:text-2xl">
+      <div className="mb-3 flex items-center justify-center">
+        <div className="w-full max-w-full overflow-hidden rounded-lg border border-zinc-200 bg-white px-4 py-2.5 dark:border-zinc-800 dark:bg-zinc-900">
+          <span className="block break-all text-center text-lg font-bold text-blue-600 dark:text-blue-400 sm:text-xl md:text-2xl">
             {code}
           </span>
         </div>

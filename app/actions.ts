@@ -12,6 +12,11 @@ import type {
   SurveySubmission,
   Survey,
 } from "@/lib/types/survey";
+import type {
+  IssueCouponResponse,
+  ValidateCouponResponse,
+  IssuedCoupon,
+} from "@/lib/types/issued-coupon";
 
 /**
  * Fetches a single coupon by ID
@@ -673,6 +678,476 @@ export async function submitSurveyAnswers(
   } catch (err) {
     return {
       success: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Generates a unique coupon code
+ * Format: {prefix}-{random}
+ */
+function generateCouponCode(prefix: string = "CPN"): string {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `${prefix}-${timestamp}-${random}`;
+}
+
+/**
+ * Issues a coupon code to a user
+ * Creates an issued_coupon record with status 'issued'
+ */
+export async function issueCoupon(
+  tenantSlug: string,
+  couponId: string,
+  email: string | null,
+  expiresAt?: string | null
+): Promise<IssueCouponResponse> {
+  try {
+    // Rate limiting: use email as identifier if available, otherwise use IP
+    const headersList = await headers();
+    const identifier = getClientIdentifier(email, headersList);
+    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.COUPON_ISSUE);
+
+    if (!rateLimit.allowed) {
+      return {
+        issuedCoupon: null,
+        error: `Too many coupon requests. Please try again in ${Math.ceil(
+          (rateLimit.resetAt - Date.now()) / 1000
+        )} seconds.`,
+      };
+    }
+
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        issuedCoupon: null,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Check if a coupon has already been issued to this email for this coupon
+    // Only check if email is provided
+    if (email) {
+      const { data: existingCoupons, error: checkError } = await tenantSupabase
+        .from("issued_coupons")
+        .select("*")
+        .eq("coupon_id", couponId)
+        .eq("email", email)
+        .eq("tenant_id", tenantId)
+        .order("issued_at", { ascending: false })
+        .limit(1);
+
+      // If we found an existing coupon, check if it's still valid
+      if (!checkError && existingCoupons && existingCoupons.length > 0) {
+        const existing = existingCoupons[0];
+
+        // Check if coupon is still valid (not expired, not fully redeemed)
+        const isExpired = existing.expires_at
+          ? new Date(existing.expires_at) < new Date()
+          : false;
+
+        const isFullyRedeemed =
+          existing.redemptions_count >= existing.max_redemptions;
+
+        const isValidStatus =
+          existing.status === "issued" || existing.status === "redeemed";
+
+        // If coupon is still valid, return the existing one
+        if (!isExpired && !isFullyRedeemed && isValidStatus) {
+          return {
+            issuedCoupon: existing as any,
+            error: null,
+          };
+        }
+
+        // If coupon is expired or fully redeemed, we'll create a new one below
+        // (This allows re-issuing if the previous one was used up)
+      }
+    }
+
+    // Generate unique code (retry if unique constraint fails)
+    let code: string | undefined;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (attempts < maxAttempts) {
+      code = generateCouponCode();
+
+      // Try to insert the coupon - let the unique constraint handle conflicts
+      const { data: issuedCoupon, error: insertError } = await tenantSupabase
+        .from("issued_coupons")
+        .insert({
+          tenant_id: tenantId,
+          coupon_id: couponId,
+          code: code,
+          status: "issued",
+          email: email,
+          expires_at: expiresAt || null,
+          metadata: {},
+        })
+        .select()
+        .single();
+
+      // If insert succeeded, we're done
+      if (!insertError && issuedCoupon) {
+        return {
+          issuedCoupon: issuedCoupon as any,
+          error: null,
+        };
+      }
+
+      // If it's a unique constraint violation, try again
+      if (
+        insertError?.code === "23505" ||
+        insertError?.message?.includes("unique")
+      ) {
+        attempts++;
+        continue;
+      }
+
+      // If it's a different error, log it and return it
+      console.error("Failed to issue coupon:", {
+        error: insertError,
+        errorCode: insertError?.code,
+        message: insertError?.message,
+        details: insertError?.details,
+        hint: insertError?.hint,
+        tenantId,
+        couponId,
+        couponCode: code,
+      });
+      return {
+        issuedCoupon: null,
+        error: insertError?.message || "Failed to issue coupon",
+      };
+    }
+
+    // If we exhausted all attempts
+    return {
+      issuedCoupon: null,
+      error: "Failed to generate unique coupon code after multiple attempts",
+    };
+  } catch (err) {
+    return {
+      issuedCoupon: null,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Checks if a user has completed any survey for a tenant
+ * If they have, they can skip surveys for all coupons in that tenant
+ */
+export async function hasCompletedSurveyForTenant(
+  tenantSlug: string,
+  email: string
+): Promise<{ completed: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        completed: false,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Check if user has submitted any survey responses for this tenant
+    // We check by email in the session_id (since session_id is formatted as coupon_id-email)
+    // or we can check if there are any survey_responses with this tenant_id
+    // Since email isn't directly stored in survey_responses, we'll check session_id patterns
+    // Actually, let's check if there are any survey_responses at all for this tenant
+    // and if we can match by email somehow
+
+    // For now, let's check if there are any issued_coupons for this email + tenant
+    // This indicates they've completed a survey and gotten a coupon before
+    const { data: existingCoupons, error: checkError } = await tenantSupabase
+      .from("issued_coupons")
+      .select("id")
+      .eq("email", email)
+      .eq("tenant_id", tenantId)
+      .limit(1);
+
+    if (checkError) {
+      return {
+        completed: false,
+        error: checkError.message || "Failed to check survey completion",
+      };
+    }
+
+    // If they have any issued coupon for this tenant, they've completed a survey
+    return {
+      completed: existingCoupons && existingCoupons.length > 0,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      completed: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Checks if a user already has an issued coupon for a specific coupon
+ * Returns the existing coupon if found and valid
+ */
+export async function checkExistingCoupon(
+  tenantSlug: string,
+  couponId: string,
+  email: string
+): Promise<{
+  exists: boolean;
+  issuedCoupon: IssuedCoupon | null;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        exists: false,
+        issuedCoupon: null,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Check if a coupon has already been issued to this email for this coupon
+    const { data: existingCoupons, error: checkError } = await tenantSupabase
+      .from("issued_coupons")
+      .select("*")
+      .eq("coupon_id", couponId)
+      .eq("email", email)
+      .eq("tenant_id", tenantId)
+      .order("issued_at", { ascending: false })
+      .limit(1);
+
+    if (checkError || !existingCoupons || existingCoupons.length === 0) {
+      return {
+        exists: false,
+        issuedCoupon: null,
+        error: null,
+      };
+    }
+
+    const existing = existingCoupons[0];
+
+    // Check if coupon is still valid (not expired, not fully redeemed)
+    const isExpired = existing.expires_at
+      ? new Date(existing.expires_at) < new Date()
+      : false;
+
+    const isFullyRedeemed =
+      existing.redemptions_count >= existing.max_redemptions;
+
+    const isValidStatus =
+      existing.status === "issued" || existing.status === "redeemed";
+
+    // If coupon is still valid, return it
+    if (!isExpired && !isFullyRedeemed && isValidStatus) {
+      return {
+        exists: true,
+        issuedCoupon: existing as any,
+        error: null,
+      };
+    }
+
+    // If coupon exists but is invalid, return that it doesn't exist
+    // (so they can get a new one)
+    return {
+      exists: false,
+      issuedCoupon: null,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      exists: false,
+      issuedCoupon: null,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Validates a coupon code
+ * Returns validation result and optionally redeems the coupon
+ */
+export async function validateCouponCode(
+  tenantSlug: string,
+  code: string,
+  redeem: boolean = false
+): Promise<ValidateCouponResponse> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        valid: false,
+        issuedCoupon: null,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Find issued coupon by code
+    const { data: issuedCoupon, error: fetchError } = await tenantSupabase
+      .from("issued_coupons")
+      .select("*")
+      .eq("code", code)
+      .eq("tenant_id", tenantId)
+      .single();
+
+    if (fetchError || !issuedCoupon) {
+      return {
+        valid: false,
+        issuedCoupon: null,
+        error: "Coupon code not found",
+        message: "Invalid coupon code",
+      };
+    }
+
+    // Check if coupon is expired
+    if (issuedCoupon.expires_at) {
+      const expiresAt = new Date(issuedCoupon.expires_at);
+      if (expiresAt < new Date()) {
+        // Update status to expired if not already
+        if (issuedCoupon.status !== "expired") {
+          await tenantSupabase
+            .from("issued_coupons")
+            .update({ status: "expired" })
+            .eq("id", issuedCoupon.id);
+        }
+        return {
+          valid: false,
+          issuedCoupon: issuedCoupon as any,
+          error: "Coupon has expired",
+          message: "This coupon has expired",
+        };
+      }
+    }
+
+    // Check status
+    if (issuedCoupon.status === "revoked") {
+      return {
+        valid: false,
+        issuedCoupon: issuedCoupon as any,
+        error: "Coupon has been revoked",
+        message: "This coupon has been revoked",
+      };
+    }
+
+    if (issuedCoupon.status === "expired") {
+      return {
+        valid: false,
+        issuedCoupon: issuedCoupon as any,
+        error: "Coupon has expired",
+        message: "This coupon has expired",
+      };
+    }
+
+    // Check redemption count
+    if (issuedCoupon.redemptions_count >= issuedCoupon.max_redemptions) {
+      return {
+        valid: false,
+        issuedCoupon: issuedCoupon as any,
+        error: "Coupon has reached maximum redemptions",
+        message: "This coupon has already been used",
+      };
+    }
+
+    // If redeem is true, redeem the coupon
+    if (redeem) {
+      const newRedemptionsCount = issuedCoupon.redemptions_count + 1;
+      const newStatus =
+        newRedemptionsCount >= issuedCoupon.max_redemptions
+          ? "redeemed"
+          : issuedCoupon.status;
+
+      const { data: updatedCoupon, error: updateError } = await tenantSupabase
+        .from("issued_coupons")
+        .update({
+          status: newStatus,
+          redemptions_count: newRedemptionsCount,
+          redeemed_at:
+            newStatus === "redeemed" ? new Date().toISOString() : null,
+        })
+        .eq("id", issuedCoupon.id)
+        .select()
+        .single();
+
+      if (updateError || !updatedCoupon) {
+        return {
+          valid: false,
+          issuedCoupon: issuedCoupon as any,
+          error: updateError?.message || "Failed to redeem coupon",
+        };
+      }
+
+      return {
+        valid: true,
+        issuedCoupon: updatedCoupon as any,
+        error: null,
+        message: "Coupon redeemed successfully",
+      };
+    }
+
+    // Just validation, don't redeem
+    return {
+      valid: true,
+      issuedCoupon: issuedCoupon as any,
+      error: null,
+      message: "Coupon code is valid",
+    };
+  } catch (err) {
+    return {
+      valid: false,
+      issuedCoupon: null,
       error: err instanceof Error ? err.message : "An error occurred",
     };
   }
