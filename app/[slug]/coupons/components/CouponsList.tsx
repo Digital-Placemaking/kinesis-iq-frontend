@@ -16,9 +16,14 @@ interface Coupon {
 interface CouponsListProps {
   tenant: TenantDisplay;
   coupons: Coupon[];
+  email: string;
 }
 
-export default function CouponsList({ tenant, coupons }: CouponsListProps) {
+export default function CouponsList({
+  tenant,
+  coupons,
+  email,
+}: CouponsListProps) {
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-8 py-12">
@@ -83,7 +88,11 @@ export default function CouponsList({ tenant, coupons }: CouponsListProps) {
           <div className="flex w-full flex-col items-center gap-3">
             {coupons.map((coupon) => (
               <div key={coupon.id} className="w-full max-w-lg">
-                <CouponCard coupon={coupon} />
+                <CouponCard
+                  coupon={coupon}
+                  tenantSlug={tenant.slug}
+                  email={email}
+                />
               </div>
             ))}
           </div>

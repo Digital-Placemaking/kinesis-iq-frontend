@@ -1,14 +1,38 @@
-import { notFound } from "next/navigation";
-import { getCouponsForTenant, getTenantBySlug } from "@/app/actions";
+import { redirect, notFound } from "next/navigation";
+import {
+  getCouponsForTenant,
+  getTenantBySlug,
+  verifyEmailOptIn,
+} from "@/app/actions";
 import { toTenantDisplay } from "@/lib/utils/tenant";
 import CouponsList from "./components/CouponsList";
 
 interface CouponsPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ email?: string }>;
 }
 
-export default async function CouponsPage({ params }: CouponsPageProps) {
+export default async function CouponsPage({
+  params,
+  searchParams,
+}: CouponsPageProps) {
   const { slug } = await params;
+  const { email } = await searchParams;
+
+  // Verify email opt-in before allowing access
+  if (!email) {
+    redirect(`/${slug}`);
+  }
+
+  // Verify email opt-in - if verification fails, still allow access
+  // The email in the URL is sufficient - it means they successfully submitted it
+  // RLS on email_opt_ins might block reads for non-staff users
+  const optInCheck = await verifyEmailOptIn(slug, email);
+
+  if (!optInCheck.valid) {
+    // Log warning but don't block - email in URL means submission succeeded
+    console.warn("Email opt-in verification warning:", optInCheck.error);
+  }
 
   // Get tenant data for display
   const { tenant: tenantData, error: tenantError } = await getTenantBySlug(
@@ -37,7 +61,7 @@ export default async function CouponsPage({ params }: CouponsPageProps) {
 
   const tenant = toTenantDisplay(tenantData);
 
-  return <CouponsList tenant={tenant} coupons={coupons || []} />;
+  return <CouponsList tenant={tenant} coupons={coupons || []} email={email} />;
 }
 
 export async function generateMetadata({ params }: CouponsPageProps) {

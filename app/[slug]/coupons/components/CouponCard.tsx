@@ -1,3 +1,5 @@
+"use client";
+
 import { Gift } from "lucide-react";
 
 interface Coupon {
@@ -12,9 +14,30 @@ interface Coupon {
 
 interface CouponCardProps {
   coupon: Coupon;
+  tenantSlug: string;
+  email: string;
 }
 
-export default function CouponCard({ coupon }: CouponCardProps) {
+export default function CouponCard({
+  coupon,
+  tenantSlug,
+  email,
+}: CouponCardProps) {
+  const handleClaimClick = () => {
+    if (!email) {
+      console.error("No email provided");
+      return;
+    }
+
+    // Navigate to survey page for this coupon
+    const surveyUrl = `/${tenantSlug}/coupons/${
+      coupon.id
+    }/survey?email=${encodeURIComponent(email)}`;
+    console.log("Navigating to survey:", surveyUrl);
+
+    // Use window.location for a hard redirect to ensure it works
+    window.location.href = surveyUrl;
+  };
   const getExpirationText = () => {
     if (!coupon.expires_at) return null;
 
@@ -79,10 +102,11 @@ export default function CouponCard({ coupon }: CouponCardProps) {
       </div>
 
       {/* Claim Button */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <button
           type="button"
-          disabled={coupon.active === false}
+          onClick={handleClaimClick}
+          disabled={coupon.active === false || !email}
           className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-black"
         >
           Claim Now
