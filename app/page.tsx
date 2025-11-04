@@ -11,12 +11,27 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section - Full Viewport */}
-      <section className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
-        <div className="text-center px-4">
-          <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl">
+      <section className="relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+        {/* Decorative gradient blur */}
+        <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center">
+          <div className="h-[50vh] w-[50vh] rounded-full bg-blue-600/10 blur-3xl dark:bg-blue-500/10" />
+        </div>
+
+        <div className="px-6 text-center">
+          <div className="mx-auto mb-8 flex h-28 w-28 items-center justify-center rounded-2xl bg-white/70 shadow-sm ring-1 ring-zinc-200 backdrop-blur dark:bg-zinc-900/60 dark:ring-zinc-800 sm:h-32 sm:w-32">
+            <img
+              src="/dp-logo.png"
+              alt="Digital Placemaking"
+              className="h-20 w-20 object-contain sm:h-24 sm:w-24"
+            />
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-6xl md:text-7xl">
             Digital Placemaking
           </h1>
-          <div className="mt-6 flex justify-center">
+          <p className="mx-auto mt-4 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
+            Reading the pulse of humanity—turning insight into foresight.
+          </p>
+          <div className="mt-8 flex justify-center">
             <ScrollArrow />
           </div>
         </div>
