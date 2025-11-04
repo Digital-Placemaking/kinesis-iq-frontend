@@ -7,8 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import AdminLayout from "../components/AdminLayout";
-import { Plus } from "lucide-react";
-import CouponsClient from "./components/CouponsClient";
+import CouponTabs from "./components/CouponTabs";
 
 export default async function CouponsPage() {
   const user = await requireAuth();
@@ -35,29 +34,30 @@ export default async function CouponsPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "No expiration";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   return (
     <AdminLayout>
-      <CouponsClient
-        coupons={coupons || []}
-        tenantSlug={
-          (
-            await tenantSupabase
-              .from("tenants")
-              .select("slug")
-              .eq("id", tenantId)
-              .maybeSingle()
-          ).data?.slug || ""
-        }
-      />
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
+            Coupon Management
+          </h1>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Create and manage promotional coupons for your customers
+          </p>
+        </div>
+        <CouponTabs
+          coupons={coupons || []}
+          tenantSlug={
+            (
+              await tenantSupabase
+                .from("tenants")
+                .select("slug")
+                .eq("id", tenantId)
+                .maybeSingle()
+            ).data?.slug || ""
+          }
+        />
+      </div>
     </AdminLayout>
   );
 }

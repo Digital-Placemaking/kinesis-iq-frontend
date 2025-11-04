@@ -59,6 +59,8 @@ export {
   hasCompletedSurveyForTenant,
   checkExistingCoupon,
   validateCouponCode,
+  getIssuedCouponsPaginated,
+  updateIssuedCoupon,
 } from "./actions/issued-coupons";
 
 // Wallet actions

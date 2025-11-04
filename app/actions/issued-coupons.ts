@@ -513,3 +513,174 @@ export async function validateCouponCode(
     };
   }
 }
+
+/**
+ * Fetches issued coupons with pagination
+ */
+export async function getIssuedCouponsPaginated(
+  tenantSlug: string,
+  page: number = 1,
+  itemsPerPage: number = 10
+): Promise<{
+  issuedCoupons: IssuedCoupon[] | null;
+  totalCount: number;
+  totalPages: number;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        issuedCoupons: null,
+        totalCount: 0,
+        totalPages: 0,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Fetch total count
+    const { count, error: countError } = await tenantSupabase
+      .from("issued_coupons")
+      .select("*", { count: "exact", head: true });
+
+    if (countError) {
+      return {
+        issuedCoupons: null,
+        totalCount: 0,
+        totalPages: 0,
+        error: `Failed to count issued coupons: ${countError.message}`,
+      };
+    }
+
+    const totalCount = count || 0;
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+    // Calculate offset
+    const offset = (page - 1) * itemsPerPage;
+
+    // Fetch paginated issued coupons
+    const { data: issuedCoupons, error: fetchError } = await tenantSupabase
+      .from("issued_coupons")
+      .select("*")
+      .order("issued_at", { ascending: false })
+      .range(offset, offset + itemsPerPage - 1);
+
+    if (fetchError) {
+      return {
+        issuedCoupons: null,
+        totalCount: 0,
+        totalPages: 0,
+        error: `Failed to fetch issued coupons: ${fetchError.message}`,
+      };
+    }
+
+    return {
+      issuedCoupons: (issuedCoupons as IssuedCoupon[]) || [],
+      totalCount,
+      totalPages,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      issuedCoupons: null,
+      totalCount: 0,
+      totalPages: 0,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Updates an issued coupon
+ */
+export async function updateIssuedCoupon(
+  tenantSlug: string,
+  issuedCouponId: string,
+  updates: {
+    status?: "issued" | "redeemed" | "expired" | "cancelled";
+    redemptions_count?: number;
+    metadata?: Record<string, any>;
+  }
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        success: false,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Prepare update data
+    const updateData: any = {};
+    if (updates.status !== undefined) updateData.status = updates.status;
+    if (updates.redemptions_count !== undefined)
+      updateData.redemptions_count = updates.redemptions_count;
+    if (updates.metadata !== undefined) updateData.metadata = updates.metadata;
+
+    // Update issued coupon
+    const { data, error: updateError } = await tenantSupabase
+      .from("issued_coupons")
+      .update(updateData)
+      .eq("id", issuedCouponId)
+      .eq("tenant_id", tenantId)
+      .select();
+
+    if (updateError) {
+      console.error("Failed to update issued coupon:", {
+        error: updateError,
+        message: updateError.message,
+        code: updateError.code,
+        issuedCouponId,
+        tenantId,
+      });
+      return {
+        success: false,
+        error: `Failed to update issued coupon: ${updateError.message}`,
+      };
+    }
+
+    // Check if any rows were updated
+    if (!data || data.length === 0) {
+      return {
+        success: false,
+        error: "Update blocked - no rows were updated. Check RLS policies.",
+      };
+    }
+
+    return {
+      success: true,
+      error: null,
+    };
+  } catch (err) {
+    console.error("Unexpected error updating issued coupon:", err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
