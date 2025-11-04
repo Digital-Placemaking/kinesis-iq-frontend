@@ -11,9 +11,11 @@ export default function Footer() {
             href="/"
             className="flex items-center transition-opacity hover:opacity-80"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
-              <span className="text-lg font-bold">DP</span>
-            </div>
+            <img
+              src="/dp-logo.png"
+              alt="Digital Placemaking"
+              className="h-10 w-10 rounded-lg object-contain"
+            />
           </Link>
 
           {/* Navigation Links */}

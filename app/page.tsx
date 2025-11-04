@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import ScrollArrow from "./components/ScrollArrow";
 import Footer from "./components/Footer";
+
+export const metadata: Metadata = {
+  title: "Digital Placemaking",
+  description: "Digital Placemaking",
+};
 
 export default function HomePage() {
   return (

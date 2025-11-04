@@ -140,16 +140,9 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
 
           {/* Social Login Buttons */}
           <div className="grid grid-cols-2 gap-3">
-            <SocialLoginButton
-              provider="apple"
-              onClick={() => handleSocialLogin("apple")}
-              disabled={loading}
-            />
-            <SocialLoginButton
-              provider="google"
-              onClick={() => handleSocialLogin("google")}
-              disabled={loading}
-            />
+            {/* TODO: Implement Apple/Google OAuth with Supabase Auth and re-enable these buttons */}
+            <SocialLoginButton provider="apple" onClick={() => {}} disabled />
+            <SocialLoginButton provider="google" onClick={() => {}} disabled />
           </div>
 
           {/* Separator */}
