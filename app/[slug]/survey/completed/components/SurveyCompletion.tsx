@@ -8,6 +8,7 @@ import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
 import Card from "@/app/components/ui/Card";
 import ActionButton from "@/app/components/ui/ActionButton";
+import Spinner from "@/app/components/ui/Spinner";
 import { submitEmail } from "@/app/actions";
 
 interface SurveyCompletionProps {
@@ -101,7 +102,14 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
                   disabled={loading}
                   className="w-full"
                 >
-                  {loading ? "Submitting..." : "Get Updates"}
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <Spinner size="sm" />
+                      Submitting...
+                    </span>
+                  ) : (
+                    "Get Updates"
+                  )}
                 </ActionButton>
               </form>
               {error && (

@@ -1,35 +1,50 @@
+/**
+ * Admin login form component
+ * Handles authentication for tenant administrators
+ * Redirects to /admin dashboard after successful login
+ */
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Card from "@/app/components/ui/Card";
 import ActionButton from "@/app/components/ui/ActionButton";
-import { Mail, Lock, AlertCircle } from "lucide-react";
+import Spinner from "@/app/components/ui/Spinner";
+import { Mail, Lock } from "lucide-react";
+import FormField from "../../components/FormField";
+import ErrorMessage from "../../components/ErrorMessage";
 
 interface AdminLoginFormProps {
   redirectPath?: string;
   error?: string;
 }
 
+/**
+ * Maps error codes to user-friendly messages
+ */
+function getErrorMessage(errorCode?: string): string | null {
+  if (!errorCode) return null;
+
+  const errorMap: Record<string, string> = {
+    no_tenant:
+      "No tenant found for this user. Please ensure your account is linked to a tenant.",
+    staff_query_failed:
+      "Failed to verify tenant access. Please check RLS policies on the staff table.",
+    unauthorized: "You don't have access to this tenant.",
+  };
+
+  return errorMap[errorCode] || errorCode;
+}
+
 export default function AdminLoginForm({
   redirectPath,
   error: initialError,
 }: AdminLoginFormProps) {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(
-    initialError
-      ? initialError === "no_tenant"
-        ? "No tenant found for this user. Please ensure your account is linked to a tenant."
-        : initialError === "staff_query_failed"
-        ? "Failed to verify tenant access. Please check RLS policies on the staff table."
-        : initialError === "unauthorized"
-        ? "You don't have access to this tenant."
-        : initialError
-      : null
+    getErrorMessage(initialError)
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,47 +68,27 @@ export default function AdminLoginForm({
       }
 
       if (data.user) {
-        console.log("Login successful, user:", data.user.email);
-
         // Redirect to the redirect path or default admin
         if (redirectPath) {
-          console.log("Redirecting to:", redirectPath);
           window.location.href = redirectPath;
           return;
         }
 
-        // Find user's tenant and redirect there
-        console.log("Looking up staff for user:", data.user.id);
+        // Verify staff record exists, then redirect to /admin
+        // The /admin page will handle tenant lookup properly
         const { data: staff, error: staffError } = await supabase
           .from("staff")
           .select("tenant_id")
           .eq("user_id", data.user.id)
           .limit(1);
 
-        console.log("Staff query result:", { staff, staffError });
-
         if (staffError) {
-          console.error("Error fetching staff:", staffError);
           setError(`Failed to find tenant: ${staffError.message}`);
           setLoading(false);
           return;
         }
 
-        if (staff && staff.length > 0) {
-          console.log(
-            "Found staff record, looking up tenant:",
-            staff[0].tenant_id
-          );
-          // Note: We can't use tenant-scoped client on client side easily
-          // The tenant query might fail due to RLS, but we can still redirect to /admin
-          // The /admin page will handle the tenant lookup properly
-          console.log("Redirecting to admin dashboard: /admin");
-          window.location.href = "/admin";
-          return;
-        }
-
-        // If no staff found, redirect to /admin which will handle it
-        console.log("No staff found, redirecting to /admin");
+        // Redirect to admin dashboard (will handle tenant lookup server-side)
         window.location.href = "/admin";
       }
     } catch (err) {
@@ -114,68 +109,50 @@ export default function AdminLoginForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Email Input */}
-        <div>
-          <label
-            htmlFor="email"
-            className="mb-2 block text-sm font-medium text-black dark:text-zinc-50"
-          >
-            Email
-          </label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="business@example.com"
-              required
-              disabled={loading}
-              className="w-full rounded-lg border border-zinc-300 bg-white pl-10 pr-4 py-3 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            />
-          </div>
-        </div>
+        <FormField
+          id="email"
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setEmail(e.target.value)
+          }
+          placeholder="business@example.com"
+          required
+          disabled={loading}
+          icon={Mail}
+        />
 
-        {/* Password Input */}
-        <div>
-          <label
-            htmlFor="password"
-            className="mb-2 block text-sm font-medium text-black dark:text-zinc-50"
-          >
-            Password
-          </label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
-              disabled={loading}
-              className="w-full rounded-lg border border-zinc-300 bg-white pl-10 pr-4 py-3 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            />
-          </div>
-        </div>
+        <FormField
+          id="password"
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setPassword(e.target.value)
+          }
+          placeholder="Enter your password"
+          required
+          disabled={loading}
+          icon={Lock}
+        />
 
-        {/* Error Message */}
-        {error && (
-          <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
-            <AlertCircle className="h-4 w-4" />
-            <span>{error}</span>
-          </div>
-        )}
+        {error && <ErrorMessage message={error} />}
 
-        {/* Submit Button */}
         <ActionButton
           type="submit"
           icon={Lock}
           disabled={loading}
           className="w-full"
         >
-          {loading ? "Signing in..." : "Sign In"}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <Spinner size="sm" />
+              Signing in...
+            </span>
+          ) : (
+            "Sign In"
+          )}
         </ActionButton>
       </form>
     </Card>

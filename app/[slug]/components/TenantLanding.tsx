@@ -6,6 +6,7 @@ import { useState } from "react";
 import { submitEmail, submitEmailOptIn } from "@/app/actions";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
+import Spinner from "@/app/components/ui/Spinner";
 import SocialLoginButton from "./ui/SocialLoginButton";
 import SectionSeparator from "@/app/components/ui/SectionSeparator";
 import type { TenantDisplay } from "@/lib/types/tenant";
@@ -170,8 +171,17 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
               disabled={loading}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              <Mail className="h-4 w-4" />
-              <span>Email for exclusive offers</span>
+              {loading ? (
+                <>
+                  <Spinner size="sm" className="text-white" />
+                  <span>Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <Mail className="h-4 w-4" />
+                  <span>Email for exclusive offers</span>
+                </>
+              )}
             </button>
           </form>
 

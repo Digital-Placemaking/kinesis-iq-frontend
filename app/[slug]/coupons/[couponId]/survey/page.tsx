@@ -6,6 +6,10 @@ import {
 } from "@/app/actions";
 import SurveyContainer from "./components/SurveyContainer";
 
+// Force dynamic rendering to ensure fresh data on each request
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface SurveyPageProps {
   params: Promise<{ slug: string; couponId: string }>;
   searchParams: Promise<{ email?: string }>;
