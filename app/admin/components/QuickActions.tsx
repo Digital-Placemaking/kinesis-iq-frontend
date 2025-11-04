@@ -5,8 +5,9 @@
 import QuickActionCard from "./QuickActionCard";
 
 interface QuickAction {
-  href: string;
   label: string;
+  href?: string;
+  onClick?: () => void;
 }
 
 interface QuickActionsProps {
@@ -20,11 +21,12 @@ export default function QuickActions({ actions }: QuickActionsProps) {
         Quick Actions
       </h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {actions.map((action) => (
+        {actions.map((action, idx) => (
           <QuickActionCard
-            key={action.href}
+            key={action.href || `${action.label}-${idx}`}
             href={action.href}
             label={action.label}
+            onClick={action.onClick}
           />
         ))}
       </div>

@@ -143,13 +143,22 @@ export default async function EmailsPage() {
                 className="w-full rounded-lg border border-zinc-300 bg-white pl-10 pr-4 py-2 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
               />
             </div>
-            <div className="flex gap-2">
-              <a href="/admin/emails/send">
-                <ActionButton icon={Send}>Send Mass Email</ActionButton>
-              </a>
-              <ActionButton icon={Download} variant="outline">
-                Export CSV
-              </ActionButton>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+              {/* TODO: Enable mass email when provider is configured */}
+              <div className="w-full sm:w-auto">
+                <ActionButton icon={Send} className="w-full sm:w-auto" disabled>
+                  Send Mass Email (disabled)
+                </ActionButton>
+              </div>
+              <div className="w-full sm:w-auto">
+                <ActionButton
+                  icon={Download}
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
+                  Export CSV
+                </ActionButton>
+              </div>
             </div>
           </div>
 

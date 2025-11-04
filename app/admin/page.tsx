@@ -10,6 +10,8 @@ import { createTenantClient } from "@/lib/supabase/tenant-client";
 import DashboardHeader from "./components/DashboardHeader";
 import StatCards from "./components/StatCards";
 import QuickActions from "./components/QuickActions";
+import ClientQuickActions from "./components/ClientQuickActions";
+import { Suspense } from "react";
 import AdminLayout from "./components/AdminLayout";
 
 export default async function AdminPage() {
@@ -90,10 +92,10 @@ export default async function AdminPage() {
   const surveyCount = surveysResult.count || 0;
   const issuedCouponCount = issuedCouponsResult.count || 0;
 
-  // Quick actions configuration
+  // Quick actions (interactive handled by client wrapper below)
   const quickActions = [
-    { href: "/admin/coupons/new", label: "Create Coupon" },
-    { href: "/admin/surveys/new", label: "Add Survey Question" },
+    { label: "Create Coupon" },
+    { label: "Add Survey Question" },
     { href: "/admin/coupons", label: "View All Coupons" },
     { href: "/admin/settings", label: "Tenant Settings" },
   ];
@@ -115,7 +117,8 @@ export default async function AdminPage() {
           surveyCount={surveyCount}
           issuedCouponCount={issuedCouponCount}
         />
-        <QuickActions actions={quickActions} />
+        {/* Interactive Quick Actions (client) */}
+        <ClientQuickActions tenantSlug={tenant.slug} actions={quickActions} />
       </div>
     </AdminLayout>
   );

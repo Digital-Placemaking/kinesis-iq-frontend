@@ -1440,6 +1440,62 @@ export async function deleteCoupon(
 }
 
 /**
+ * Sends a mass email to all opt-in addresses for the tenant.
+ * NOTE: This is a placeholder that returns the recipient list size.
+ * Wire up your email provider (e.g., Resend, SendGrid, SES) here.
+ */
+export async function sendMassEmail(
+  tenantSlug: string,
+  subject: string,
+  body: string
+): Promise<{ success: boolean; sent: number; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, sent: 0, error: "Not authenticated" };
+    }
+
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      { slug_input: tenantSlug }
+    );
+    if (resolveError || !tenantId) {
+      return {
+        success: false,
+        sent: 0,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    const tenantSupabase = await createTenantClient(tenantId);
+    const { data: emails, error } = await tenantSupabase
+      .from("email_opt_ins")
+      .select("email");
+    if (error) {
+      return { success: false, sent: 0, error: error.message };
+    }
+
+    const recipients = (emails || [])
+      .map((e: any) => (e.email || "").trim())
+      .filter((e: string) => e.length > 0);
+
+    // TODO: Integrate with your email provider here.
+    // For now, we just return the count.
+    return { success: true, sent: recipients.length, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      sent: 0,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
  * Generates a unique coupon code
  * Format: {prefix}-{random}
  */

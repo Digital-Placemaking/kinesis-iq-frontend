@@ -24,7 +24,7 @@ export default function ActionButton({
   type = "button",
 }: ActionButtonProps) {
   const baseClasses =
-    "flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50";
+    "flex w-full max-w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 whitespace-normal break-words text-center";
 
   const variantClasses = {
     primary: "bg-blue-600 text-white",
