@@ -18,7 +18,7 @@
  */
 
 // Tenant actions
-export { getTenantBySlug } from "./actions/tenant";
+export { getTenantBySlug, updateTenantWebsiteUrl } from "./actions/tenant";
 
 // Coupon actions
 export {

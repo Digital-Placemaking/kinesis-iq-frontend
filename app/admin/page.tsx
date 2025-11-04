@@ -11,6 +11,7 @@ import DashboardHeader from "./components/DashboardHeader";
 import StatCards from "./components/StatCards";
 import QuickActions from "./components/QuickActions";
 import ClientQuickActions from "./components/ClientQuickActions";
+import WebsiteUrlSettings from "./components/WebsiteUrlSettings";
 import { Suspense } from "react";
 import AdminLayout from "./components/AdminLayout";
 
@@ -54,7 +55,7 @@ export default async function AdminPage() {
   // Get tenant info for display using tenant-scoped client
   const { data: tenant, error: tenantError } = await tenantSupabase
     .from("tenants")
-    .select("id, slug, name, logo_url")
+    .select("id, slug, name, logo_url, website_url")
     .eq("id", tenantId)
     .maybeSingle();
 
@@ -119,6 +120,14 @@ export default async function AdminPage() {
         />
         {/* Interactive Quick Actions (client) */}
         <ClientQuickActions tenantSlug={tenant.slug} actions={quickActions} />
+
+        {/* Website URL Settings */}
+        <div className="mt-8">
+          <WebsiteUrlSettings
+            tenantSlug={tenant.slug}
+            currentUrl={tenant.website_url}
+          />
+        </div>
       </div>
     </AdminLayout>
   );

@@ -14,6 +14,7 @@ export interface Tenant {
   slug: string;
   name: string;
   logo_url: string | null;
+  website_url: string | null;
   theme: TenantTheme | null;
   active: boolean;
   created_at: string;
@@ -28,6 +29,7 @@ export interface TenantDisplay {
   name: string;
   slug: string;
   logo_url: string | null;
+  website_url?: string | null;
   theme?: TenantTheme | null;
 }
 

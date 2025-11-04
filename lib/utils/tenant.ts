@@ -9,6 +9,7 @@ export function toTenantDisplay(tenant: Tenant): TenantDisplay {
     name: tenant.name,
     slug: tenant.slug,
     logo_url: tenant.logo_url,
+    website_url: tenant.website_url || null,
     theme: tenant.theme,
   };
 }

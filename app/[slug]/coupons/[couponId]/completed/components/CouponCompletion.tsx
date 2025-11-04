@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Copy, Share2, Download, Bell, Home } from "lucide-react";
+import { Copy, Share2, Download, Bell } from "lucide-react";
 import type { TenantDisplay } from "@/lib/types/tenant";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
 import Card from "@/app/components/ui/Card";
 import InfoBox from "@/app/components/ui/InfoBox";
 import ActionButton from "@/app/components/ui/ActionButton";
+import VisitWebsiteButton from "@/app/components/ui/VisitWebsiteButton";
 import CouponCodeDisplay from "./CouponCodeDisplay";
 import { generateGoogleWalletPass } from "@/app/actions";
 
@@ -199,13 +199,7 @@ export default function CouponCompletion({
             <span>Want to hear about more offers?</span>
           </div>
 
-          <Link
-            href={`/${tenant.slug}`}
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-          >
-            <Home className="h-4 w-4" />
-            Visit Our Website
-          </Link>
+          <VisitWebsiteButton tenant={tenant} />
         </div>
       </div>
 
