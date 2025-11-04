@@ -49,6 +49,8 @@ export default async function CompletedPage({
   }
 
   // Issue coupon code (create issued_coupon record)
+  // The issueCoupon function handles duplicate prevention internally
+  // It will return the existing coupon if one already exists for this email/coupon
   const { issuedCoupon, error: issueError } = await issueCoupon(
     slug,
     couponId,
