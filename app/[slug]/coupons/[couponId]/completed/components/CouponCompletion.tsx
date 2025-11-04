@@ -10,6 +10,7 @@ import Card from "@/app/components/ui/Card";
 import InfoBox from "@/app/components/ui/InfoBox";
 import ActionButton from "@/app/components/ui/ActionButton";
 import CouponCodeDisplay from "./CouponCodeDisplay";
+import { generateGoogleWalletPass } from "@/app/actions";
 
 interface Coupon {
   id: string;
@@ -23,6 +24,8 @@ interface CouponCompletionProps {
   tenant: TenantDisplay;
   coupon: Coupon;
   couponCode: string | null;
+  issuedCouponId: string | null;
+  tenantSlug: string;
   error?: string | null;
 }
 
@@ -30,9 +33,13 @@ export default function CouponCompletion({
   tenant,
   coupon,
   couponCode,
+  issuedCouponId,
+  tenantSlug,
   error,
 }: CouponCompletionProps) {
   const [copied, setCopied] = useState(false);
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   const handleCopyCode = async () => {
     if (!couponCode) return;
@@ -59,6 +66,36 @@ export default function CouponCompletion({
     } else {
       // Fallback: copy to clipboard
       handleCopyCode();
+    }
+  };
+
+  const handleAddToWallet = async () => {
+    if (!issuedCouponId) {
+      setWalletError("Coupon not available for wallet");
+      return;
+    }
+
+    setWalletLoading(true);
+    setWalletError(null);
+
+    try {
+      const result = await generateGoogleWalletPass(tenantSlug, issuedCouponId);
+
+      if (result.error || !result.saveUrl) {
+        setWalletError(result.error || "Failed to generate wallet pass");
+        setWalletLoading(false);
+        return;
+      }
+
+      // Open the Google Wallet save URL in a new window
+      window.open(result.saveUrl, "_blank");
+      setWalletLoading(false);
+    } catch (err) {
+      console.error("Failed to add to wallet:", err);
+      setWalletError(
+        err instanceof Error ? err.message : "Failed to add to wallet"
+      );
+      setWalletLoading(false);
     }
   };
 
@@ -131,12 +168,25 @@ export default function CouponCompletion({
           </InfoBox>
         </Card>
 
+        {/* Wallet Error Display */}
+        {walletError && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+            {walletError}
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="mb-6 space-y-2">
           <ActionButton icon={Copy} onClick={handleCopyCode}>
             {copied ? "Copied!" : "Copy Code"}
           </ActionButton>
-          <ActionButton icon={Download}>Add to Google Wallet</ActionButton>
+          <ActionButton
+            icon={Download}
+            onClick={handleAddToWallet}
+            disabled={!issuedCouponId || walletLoading}
+          >
+            {walletLoading ? "Generating..." : "Add to Google Wallet"}
+          </ActionButton>
           <ActionButton icon={Share2} onClick={handleShare}>
             Share with Friends
           </ActionButton>

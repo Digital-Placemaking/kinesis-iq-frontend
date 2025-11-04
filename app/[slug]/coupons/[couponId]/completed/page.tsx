@@ -75,6 +75,8 @@ export default async function CompletedPage({
         tenant={tenant}
         coupon={coupon}
         couponCode={null}
+        issuedCouponId={null}
+        tenantSlug={slug}
         error={issueError || "Failed to issue coupon"}
       />
     );
@@ -85,6 +87,8 @@ export default async function CompletedPage({
       tenant={tenant}
       coupon={coupon}
       couponCode={issuedCoupon.code}
+      issuedCouponId={issuedCoupon.id}
+      tenantSlug={slug}
     />
   );
 }
