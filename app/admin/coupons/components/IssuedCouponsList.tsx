@@ -6,7 +6,7 @@ import { getIssuedCouponsPaginated, updateIssuedCoupon } from "@/app/actions";
 import Pagination, { PAGINATION } from "@/app/components/ui/Pagination";
 import Card from "@/app/components/ui/Card";
 import Spinner from "@/app/components/ui/Spinner";
-import { Edit, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Edit, CheckCircle, XCircle, Clock, ChevronDown } from "lucide-react";
 
 interface IssuedCoupon {
   id: string;
@@ -138,11 +138,11 @@ export default function IssuedCouponsList({
 
   return (
     <div>
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold tracking-tight text-black dark:text-zinc-50">
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-black dark:text-zinc-50">
           Issued Coupons
         </h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
           Track and manage all issued coupon codes
         </p>
       </div>
@@ -167,17 +167,17 @@ export default function IssuedCouponsList({
                 {issuedCoupons.map((issuedCoupon) => (
                   <Card
                     key={issuedCoupon.id}
-                    className="p-6"
+                    className="p-4 sm:p-6"
                     variant="elevated"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="mb-2 flex items-center gap-3">
-                          <span className="font-mono text-lg font-semibold text-black dark:text-zinc-50">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="mb-2 flex flex-wrap items-center gap-2 sm:gap-3">
+                          <span className="font-mono text-base sm:text-lg font-semibold text-black dark:text-zinc-50 break-all">
                             {issuedCoupon.code}
                           </span>
                           <span
-                            className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(
+                            className={`flex items-center gap-1 rounded-full px-2 sm:px-3 py-1 text-xs font-medium shrink-0 ${getStatusColor(
                               issuedCoupon.status
                             )}`}
                           >
@@ -186,12 +186,12 @@ export default function IssuedCouponsList({
                               issuedCoupon.status.slice(1)}
                           </span>
                         </div>
-                        <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-2 text-xs sm:text-sm sm:grid-cols-2 lg:grid-cols-4">
                           <div>
                             <span className="text-zinc-600 dark:text-zinc-400">
                               Email:{" "}
                             </span>
-                            <span className="font-medium text-black dark:text-zinc-50">
+                            <span className="font-medium text-black dark:text-zinc-50 break-words">
                               {issuedCoupon.email || "Anonymous"}
                             </span>
                           </div>
@@ -222,23 +222,26 @@ export default function IssuedCouponsList({
                           </div>
                         </div>
                       </div>
-                      <div className="ml-4 flex items-center gap-2">
-                        <select
-                          value={issuedCoupon.status}
-                          onChange={(e) =>
-                            handleStatusChange(
-                              issuedCoupon.id,
-                              e.target.value as any
-                            )
-                          }
-                          disabled={updatingId === issuedCoupon.id}
-                          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-black transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800"
-                        >
-                          <option value="issued">Issued</option>
-                          <option value="redeemed">Redeemed</option>
-                          <option value="expired">Expired</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
+                      <div className="flex items-center gap-2 sm:ml-4 sm:shrink-0">
+                        <div className="relative flex-1 sm:flex-initial">
+                          <select
+                            value={issuedCoupon.status}
+                            onChange={(e) =>
+                              handleStatusChange(
+                                issuedCoupon.id,
+                                e.target.value as any
+                              )
+                            }
+                            disabled={updatingId === issuedCoupon.id}
+                            className="w-full sm:w-auto appearance-none rounded-lg border border-zinc-300 bg-white px-3 pr-10 py-2 text-sm text-black transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800"
+                          >
+                            <option value="issued">Issued</option>
+                            <option value="redeemed">Redeemed</option>
+                            <option value="expired">Expired</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600 dark:text-zinc-400" />
+                        </div>
                         {updatingId === issuedCoupon.id && (
                           <Spinner size="sm" />
                         )}

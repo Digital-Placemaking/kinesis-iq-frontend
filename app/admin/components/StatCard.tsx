@@ -18,17 +18,19 @@ export default function StatCard({
   iconBgColor = "bg-blue-100 dark:bg-blue-900/20",
 }: StatCardProps) {
   return (
-    <Card className="p-6" variant="elevated">
+    <Card className="p-4 sm:p-6" variant="elevated">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">
             {title}
           </p>
-          <p className="mt-2 text-3xl font-bold text-black dark:text-zinc-50">
+          <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-black dark:text-zinc-50">
             {value}
           </p>
         </div>
-        <div className={`rounded-lg p-3 ${iconBgColor}`}>{icon}</div>
+        <div className={`rounded-lg p-2 sm:p-3 shrink-0 ml-2 ${iconBgColor}`}>
+          {icon}
+        </div>
       </div>
     </Card>
   );

@@ -76,28 +76,30 @@ export default function CouponsList({ coupons, tenantSlug }: CouponsListProps) {
             const discount = coupon.discount || "";
 
             return (
-              <Card key={coupon.id} className="p-6" variant="elevated">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="mb-2 flex items-center gap-3">
-                      <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
+              <Card key={coupon.id} className="p-4 sm:p-6" variant="elevated">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="mb-2 flex flex-wrap items-center gap-2 sm:gap-3">
+                      <h3 className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50 break-words">
                         {coupon.title}
                       </h3>
                       {isActive && (
-                        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                        <span className="rounded-full bg-green-100 px-2 sm:px-3 py-1 text-xs font-medium text-green-800 shrink-0 dark:bg-green-900/20 dark:text-green-400">
                           Active
                         </span>
                       )}
                     </div>
-                    <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400">
-                      {coupon.description}
-                    </p>
-                    <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                    {coupon.description && (
+                      <p className="mb-4 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 break-words">
+                        {coupon.description}
+                      </p>
+                    )}
+                    <div className="grid gap-2 text-xs sm:text-sm sm:grid-cols-2 lg:grid-cols-4">
                       <div>
                         <span className="text-zinc-600 dark:text-zinc-400">
                           Code:{" "}
                         </span>
-                        <span className="font-medium text-black dark:text-zinc-50">
+                        <span className="font-medium text-black dark:text-zinc-50 break-all">
                           {formatDisplayCode(coupon.id)}
                         </span>
                       </div>
@@ -127,7 +129,7 @@ export default function CouponsList({ coupons, tenantSlug }: CouponsListProps) {
                       </div>
                     </div>
                   </div>
-                  <div className="ml-4 flex items-center gap-2">
+                  <div className="flex items-center gap-2 sm:ml-4 sm:shrink-0">
                     <a
                       href={`/admin/coupons/${coupon.id}/edit`}
                       className="rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"

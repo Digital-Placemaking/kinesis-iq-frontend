@@ -11,6 +11,11 @@ import ActionButton from "@/app/components/ui/ActionButton";
 import VisitWebsiteButton from "@/app/components/ui/VisitWebsiteButton";
 import CouponCodeDisplay from "./CouponCodeDisplay";
 import { generateGoogleWalletPass } from "@/app/actions";
+import {
+  trackCodeCopy,
+  trackCouponDownload,
+  trackWalletAdd,
+} from "@/lib/analytics/events";
 
 interface Coupon {
   id: string;
@@ -26,6 +31,8 @@ interface CouponCompletionProps {
   couponCode: string | null;
   issuedCouponId: string | null;
   tenantSlug: string;
+  email?: string | null;
+  sessionId?: string | null;
   error?: string | null;
 }
 
@@ -35,6 +42,8 @@ export default function CouponCompletion({
   couponCode,
   issuedCouponId,
   tenantSlug,
+  email,
+  sessionId,
   error,
 }: CouponCompletionProps) {
   const [copied, setCopied] = useState(false);
@@ -47,6 +56,14 @@ export default function CouponCompletion({
       await navigator.clipboard.writeText(couponCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+
+      // Track code copy event
+      trackCodeCopy(tenantSlug, {
+        sessionId,
+        email: email || null,
+        couponId: coupon.id,
+        issuedCouponId: issuedCouponId || undefined,
+      });
     } catch (err) {
       console.error("Failed to copy:", err);
     }
@@ -69,6 +86,18 @@ export default function CouponCompletion({
     }
   };
 
+  const handleDownload = () => {
+    // Track coupon download event
+    trackCouponDownload(tenantSlug, {
+      sessionId,
+      email: email || null,
+      couponId: coupon.id,
+      issuedCouponId: issuedCouponId || undefined,
+    });
+
+    // TODO: Implement actual download functionality if needed
+  };
+
   const handleAddToWallet = async () => {
     if (!issuedCouponId) {
       setWalletError("Coupon not available for wallet");
@@ -89,6 +118,15 @@ export default function CouponCompletion({
 
       // Open the Google Wallet save URL in a new window
       window.open(result.saveUrl, "_blank");
+
+      // Track wallet add event
+      trackWalletAdd(tenantSlug, {
+        sessionId,
+        email: email || null,
+        couponId: coupon.id,
+        issuedCouponId: issuedCouponId || undefined,
+      });
+
       setWalletLoading(false);
     } catch (err) {
       console.error("Failed to add to wallet:", err);

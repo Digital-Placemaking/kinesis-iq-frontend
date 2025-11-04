@@ -84,6 +84,12 @@ export default async function CompletedPage({
     );
   }
 
+  // Generate session ID from email if not available
+  // Session ID is used for tracking anonymous users
+  const sessionId = email
+    ? `session_${email.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`
+    : null;
+
   return (
     <CouponCompletion
       tenant={tenant}
@@ -91,6 +97,8 @@ export default async function CompletedPage({
       couponCode={issuedCoupon.code}
       issuedCouponId={issuedCoupon.id}
       tenantSlug={slug}
+      email={email}
+      sessionId={sessionId}
     />
   );
 }

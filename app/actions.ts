@@ -68,3 +68,6 @@ export { generateGoogleWalletPass } from "./actions/wallet";
 
 // Feedback actions
 export { submitFeedback } from "./actions/feedback";
+
+// Analytics actions
+export { getAnalyticsSummary } from "./actions/analytics";

@@ -37,11 +37,11 @@ export default async function CouponsPage() {
   return (
     <AdminLayout>
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
             Coupon Management
           </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
             Create and manage promotional coupons for your customers
           </p>
         </div>

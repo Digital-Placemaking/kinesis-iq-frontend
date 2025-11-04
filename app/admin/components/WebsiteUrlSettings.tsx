@@ -53,10 +53,10 @@ export default function WebsiteUrlSettings({
   };
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4 flex items-center gap-2">
-        <Globe className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+        <Globe className="h-5 w-5 shrink-0 text-zinc-600 dark:text-zinc-400" />
+        <h2 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50 break-words">
           Website URL Settings
         </h2>
       </div>

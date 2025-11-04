@@ -23,27 +23,30 @@ export default function CouponTabs({ coupons, tenantSlug }: CouponTabsProps) {
     <div className="mx-auto max-w-7xl">
       {/* Tab Navigation */}
       <div className="mb-6 border-b border-zinc-200 dark:border-zinc-800">
-        <nav className="-mb-px flex gap-8" aria-label="Tabs">
+        <nav
+          className="-mb-px flex gap-4 sm:gap-8 overflow-x-auto"
+          aria-label="Tabs"
+        >
           <button
             onClick={() => setActiveTab("coupons")}
-            className={`flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 border-b-2 px-2 sm:px-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === "coupons"
                 ? "border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400"
                 : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
             }`}
           >
-            <Ticket className="h-4 w-4" />
+            <Ticket className="h-4 w-4 shrink-0" />
             Coupons
           </button>
           <button
             onClick={() => setActiveTab("issued")}
-            className={`flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 border-b-2 px-2 sm:px-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === "issued"
                 ? "border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400"
                 : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
             }`}
           >
-            <Gift className="h-4 w-4" />
+            <Gift className="h-4 w-4 shrink-0" />
             Issued Coupons
           </button>
         </nav>

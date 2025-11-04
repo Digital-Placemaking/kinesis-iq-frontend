@@ -2,8 +2,9 @@
 
 import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { submitEmail, submitEmailOptIn } from "@/app/actions";
+import { trackPageVisit } from "@/lib/analytics/events";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
 import Spinner from "@/app/components/ui/Spinner";
@@ -20,6 +21,20 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Track page visit on mount
+  useEffect(() => {
+    // Generate a session ID for anonymous tracking
+    const sessionId = `session_${Date.now()}_${Math.random()
+      .toString(36)
+      .slice(2, 9)}`;
+
+    // Track page visit
+    trackPageVisit(tenant.slug, {
+      sessionId,
+      email: null, // Will be set when user submits email
+    });
+  }, [tenant.slug]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -36,17 +36,21 @@ export default function QuestionsClient({
     <>
       <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
+        <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
               Survey Questions
             </h1>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
               Design and manage the questions shown to community members
             </p>
           </div>
-          <div className="shrink-0">
-            <ActionButton icon={Plus} onClick={() => setIsAddModalOpen(true)}>
+          <div className="shrink-0 w-full sm:w-auto">
+            <ActionButton
+              icon={Plus}
+              onClick={() => setIsAddModalOpen(true)}
+              className="w-full sm:w-auto"
+            >
               Add Question
             </ActionButton>
           </div>

@@ -15,18 +15,18 @@ export default function DashboardHeader({
   tenant,
 }: DashboardHeaderProps) {
   return (
-    <div className="mb-8">
-      <div className="flex items-center gap-3">
+    <div className="mb-6 sm:mb-8">
+      <div className="flex items-center gap-2 sm:gap-3">
         {tenant && <TenantLogo tenant={tenant} size="sm" />}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-zinc-50 break-words">
             Dashboard
           </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 break-words">
             Welcome back, {userEmail}
           </p>
           {tenant?.name && (
-            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-500">
+            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-500 break-words">
               {tenant.name}
             </p>
           )}

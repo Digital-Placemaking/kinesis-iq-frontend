@@ -16,11 +16,11 @@ export default function QuickActionCard({
   onClick,
 }: QuickActionCardProps) {
   return (
-    <Card className="p-4" variant="elevated">
+    <Card className="p-3 sm:p-4" variant="elevated">
       {href ? (
         <a
           href={href}
-          className="block cursor-pointer text-center text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="block cursor-pointer text-center text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 break-words"
         >
           {label}
         </a>
@@ -28,7 +28,7 @@ export default function QuickActionCard({
         <button
           type="button"
           onClick={onClick}
-          className="block w-full cursor-pointer text-center text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="block w-full cursor-pointer text-center text-xs sm:text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 break-words"
         >
           {label}
         </button>

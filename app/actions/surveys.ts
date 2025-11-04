@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import { RATE_LIMITS } from "@/lib/constants/rate-limits";
 import { checkRateLimit, getClientIdentifier } from "@/lib/utils/rate-limit";
+import { trackSurveyCompletion } from "@/lib/analytics/events";
 import type {
   SurveyResponse,
   SurveySubmissionResponse,
@@ -279,6 +280,14 @@ export async function submitSurveyAnswers(
         error: `Failed to save survey responses: ${insertError.message}`,
       };
     }
+
+    // Track survey completion event
+    trackSurveyCompletion(tenantSlug, {
+      sessionId,
+      email: submission.email || null,
+      surveyId: submission.survey_id || undefined,
+      couponId: submission.coupon_id || undefined,
+    });
 
     return {
       success: true,
