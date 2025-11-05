@@ -350,6 +350,103 @@ export async function isCouponAlreadyRedeemed(
 }
 
 /**
+ * Gets the status of a user's issued coupon for a specific coupon_id
+ * Returns the status: 'redeemed', 'revoked', 'expired', or null if no coupon exists
+ */
+export async function getCouponStatus(
+  tenantSlug: string,
+  couponId: string,
+  email: string
+): Promise<{
+  status: "redeemed" | "revoked" | "expired" | null;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        status: null,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Check if there's an issued_coupon for this email + coupon_id
+    const { data: existingCoupon, error: checkError } = await tenantSupabase
+      .from("issued_coupons")
+      .select("id, redemptions_count, max_redemptions, status")
+      .eq("coupon_id", couponId)
+      .eq("email", email)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
+    if (checkError) {
+      return {
+        status: null,
+        error: checkError.message || "Failed to check coupon status",
+      };
+    }
+
+    // If no coupon exists, return null status
+    if (!existingCoupon) {
+      return {
+        status: null,
+        error: null,
+      };
+    }
+
+    // Check status in priority order: revoked > expired > redeemed
+    if (existingCoupon.status === "revoked") {
+      return {
+        status: "revoked",
+        error: null,
+      };
+    }
+
+    if (existingCoupon.status === "expired") {
+      return {
+        status: "expired",
+        error: null,
+      };
+    }
+
+    // Check if fully redeemed
+    const isFullyRedeemed =
+      existingCoupon.redemptions_count >= existingCoupon.max_redemptions ||
+      existingCoupon.status === "redeemed";
+
+    if (isFullyRedeemed) {
+      return {
+        status: "redeemed",
+        error: null,
+      };
+    }
+
+    // Coupon exists but is still valid
+    return {
+      status: null,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      status: null,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
  * Checks if a user already has an issued coupon for a specific coupon
  * Returns the existing coupon if found and valid
  */

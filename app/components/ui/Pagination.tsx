@@ -36,8 +36,8 @@ export default function Pagination({
   onPageChange,
   className = "",
 }: PaginationProps) {
-  // Don't show pagination if there's only one page or no items
-  if (totalPages <= 1 || totalItems === 0) {
+  // Don't show pagination if there's only one page, no items, or 10 or fewer items
+  if (totalPages <= 1 || totalItems === 0 || totalItems <= itemsPerPage) {
     return null;
   }
 

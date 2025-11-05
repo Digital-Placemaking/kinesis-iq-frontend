@@ -3,7 +3,7 @@ import {
   getCouponsForTenant,
   getTenantBySlug,
   verifyEmailOptIn,
-  isCouponAlreadyRedeemed,
+  getCouponStatus,
 } from "@/app/actions";
 import { toTenantDisplay } from "@/lib/utils/tenant";
 import CouponsList from "./components/CouponsList";
@@ -70,17 +70,13 @@ export default async function CouponsPage({
 
   const tenant = toTenantDisplay(tenantData);
 
-  // Check redemption status for each coupon
+  // Check status for each coupon (redeemed, revoked, expired)
   const couponsWithStatus = await Promise.all(
     (coupons || []).map(async (coupon) => {
-      const { redeemed } = await isCouponAlreadyRedeemed(
-        slug,
-        coupon.id,
-        email
-      );
+      const { status } = await getCouponStatus(slug, coupon.id, email);
       return {
         ...coupon,
-        alreadyRedeemed: redeemed,
+        couponStatus: status, // 'redeemed' | 'revoked' | 'expired' | null
       };
     })
   );

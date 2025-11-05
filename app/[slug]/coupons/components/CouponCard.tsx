@@ -1,6 +1,6 @@
 "use client";
 
-import { Gift, CheckCircle } from "lucide-react";
+import { Gift, CheckCircle, XCircle, Clock } from "lucide-react";
 
 interface Coupon {
   id: string;
@@ -10,7 +10,7 @@ interface Coupon {
   expires_at?: string | null;
   active?: boolean;
   created_at?: string;
-  alreadyRedeemed?: boolean;
+  couponStatus?: "redeemed" | "revoked" | "expired" | null;
 }
 
 interface CouponCardProps {
@@ -65,7 +65,7 @@ export default function CouponCard({
   };
 
   return (
-    <div className="group flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="group flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 sm:items-center">
       {/* Icon */}
       <div className="flex-shrink-0">
         <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500">
@@ -74,9 +74,9 @@ export default function CouponCard({
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col gap-1.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         {/* Title */}
-        <h3 className="text-base font-semibold text-black dark:text-zinc-50">
+        <h3 className="break-words text-base font-semibold text-black dark:text-zinc-50">
           {coupon.title}
         </h3>
 
@@ -102,12 +102,22 @@ export default function CouponCard({
         )}
       </div>
 
-      {/* Claim Button / Redeemed Status */}
+      {/* Claim Button / Status Badge */}
       <div className="shrink-0">
-        {coupon.alreadyRedeemed ? (
+        {coupon.couponStatus === "redeemed" ? (
           <div className="flex items-center gap-2 rounded-lg bg-green-100 px-4 py-2 text-sm font-medium text-green-800 dark:bg-green-900/20 dark:text-green-400">
             <CheckCircle className="h-4 w-4" />
             Redeemed
+          </div>
+        ) : coupon.couponStatus === "revoked" ? (
+          <div className="flex items-center gap-2 rounded-lg bg-red-100 px-4 py-2 text-sm font-medium text-red-800 dark:bg-red-900/20 dark:text-red-400">
+            <XCircle className="h-4 w-4" />
+            Revoked
+          </div>
+        ) : coupon.couponStatus === "expired" ? (
+          <div className="flex items-center gap-2 rounded-lg bg-orange-100 px-4 py-2 text-sm font-medium text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+            <Clock className="h-4 w-4" />
+            Expired
           </div>
         ) : (
           <button

@@ -15,8 +15,10 @@ export default function AdminLayout({ children, userRole }: AdminLayoutProps) {
     <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
       <AdminNav userRole={userRole} />
       <main className="flex-1 overflow-y-auto">
-        <div className="px-4 py-8 sm:px-6 lg:px-8">{children}</div>
-        <Footer />
+        <div className="flex min-h-full flex-col">
+          <div className="flex-1 px-4 py-8 sm:px-6 lg:px-8">{children}</div>
+          <Footer />
+        </div>
       </main>
     </div>
   );

@@ -66,6 +66,7 @@ export {
   hasCompletedSurveyForTenant,
   checkExistingCoupon,
   isCouponAlreadyRedeemed,
+  getCouponStatus,
   validateCouponCode,
   getIssuedCouponsPaginated,
   updateIssuedCoupon,

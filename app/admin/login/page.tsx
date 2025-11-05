@@ -6,6 +6,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AdminLoginForm from "./components/AdminLoginForm";
+import Footer from "@/app/components/Footer";
 
 interface AdminLoginPageProps {
   searchParams: Promise<{ redirect?: string; error?: string }>;
@@ -58,10 +59,13 @@ export default async function AdminLoginPage({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black px-4">
-      <div className="w-full max-w-md">
-        <AdminLoginForm redirectPath={redirectPath} error={error} />
+    <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+      <div className="flex flex-1 items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <AdminLoginForm redirectPath={redirectPath} error={error} />
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

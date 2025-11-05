@@ -11,10 +11,12 @@ import { createTenantClient } from "@/lib/supabase/tenant-client";
 /**
  * Uploads an image file to Supabase Storage
  * Returns the public URL of the uploaded file
+ * Note: Can work with inactive tenants (for admin access)
  */
 export async function uploadLogoImage(
   tenantSlug: string,
-  file: File
+  file: File,
+  tenantId?: string
 ): Promise<{ url: string | null; error: string | null }> {
   try {
     // Validate file type (only JPEG, PNG, WEBP)
@@ -35,17 +37,48 @@ export async function uploadLogoImage(
       };
     }
 
-    const supabase = await createClient();
+    let resolvedTenantId = tenantId;
 
-    // Resolve tenant slug to UUID
-    const { data: tenantId, error: resolveError } = await supabase.rpc(
-      "resolve_tenant",
-      {
-        slug_input: tenantSlug,
+    // If tenantId is provided, use it directly (bypasses slug resolution)
+    // This is the preferred method for admin operations on inactive tenants
+    if (!resolvedTenantId) {
+      const supabase = await createClient();
+
+      // If tenantId is not provided, resolve tenant slug to UUID
+      // Note: resolve_tenant RPC may filter by active=true, so we handle inactive tenants
+      const { data: resolvedId, error: resolveError } = await supabase.rpc(
+        "resolve_tenant",
+        {
+          slug_input: tenantSlug,
+        }
+      );
+
+      if (resolveError || !resolvedId) {
+        // If resolve_tenant fails (e.g., tenant is inactive), try direct lookup
+        // This allows admin to upload logos even when tenant is deactivated
+        const { data: tenant, error: tenantError } = await supabase
+          .from("tenants")
+          .select("id")
+          .eq("slug", tenantSlug)
+          .maybeSingle();
+
+        if (tenantError || !tenant || !tenant.id) {
+          console.error("Failed to resolve tenant:", {
+            error: resolveError || tenantError,
+            slug: tenantSlug,
+          });
+          return {
+            url: null,
+            error: `Tenant not found: ${tenantSlug}`,
+          };
+        }
+        resolvedTenantId = tenant.id;
+      } else {
+        resolvedTenantId = resolvedId;
       }
-    );
+    }
 
-    if (resolveError || !tenantId) {
+    if (!resolvedTenantId) {
       return {
         url: null,
         error: `Tenant not found: ${tenantSlug}`,
@@ -53,13 +86,13 @@ export async function uploadLogoImage(
     }
 
     // Create tenant-scoped client
-    const tenantSupabase = await createTenantClient(tenantId);
+    const tenantSupabase = await createTenantClient(resolvedTenantId);
 
     // Get existing logo URL to delete old file if it exists
     const { data: existingTenant } = await tenantSupabase
       .from("tenants")
       .select("logo_url")
-      .eq("id", tenantId)
+      .eq("id", resolvedTenantId)
       .single();
 
     // Delete old logo from storage if it exists and is in our bucket
@@ -86,7 +119,7 @@ export async function uploadLogoImage(
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 8);
     const fileExt = file.name.split(".").pop();
-    const fileName = `${tenantId}/${timestamp}_${random}.${fileExt}`;
+    const fileName = `${resolvedTenantId}/${timestamp}_${random}.${fileExt}`;
 
     // Convert File to ArrayBuffer (for Node.js Buffer)
     const arrayBuffer = await file.arrayBuffer();
@@ -108,7 +141,7 @@ export async function uploadLogoImage(
         error: uploadError,
         message: uploadError.message,
         fileName,
-        tenantId,
+        tenantId: resolvedTenantId,
       });
       return {
         url: null,

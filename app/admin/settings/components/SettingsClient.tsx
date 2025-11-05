@@ -103,7 +103,8 @@ export default function SettingsClient({
 
     try {
       // Upload the file
-      const result = await uploadLogoImage(tenant.slug, file);
+      // Pass tenantId to bypass resolve_tenant RPC (which may filter by active=true)
+      const result = await uploadLogoImage(tenant.slug, file, tenantId);
 
       if (result.url) {
         // Update logo URL in state
