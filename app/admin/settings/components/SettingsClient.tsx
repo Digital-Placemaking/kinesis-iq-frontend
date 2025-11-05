@@ -499,14 +499,14 @@ export default function SettingsClient({
             {staffList.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800"
+                className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-700 dark:bg-zinc-800"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
                     {member.email?.charAt(0).toUpperCase() || "?"}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 wrap-break-word">
                       {member.email || "Unknown"}
                     </p>
                     <p className="text-xs text-zinc-600 dark:text-zinc-400">
@@ -514,13 +514,15 @@ export default function SettingsClient({
                     </p>
                   </div>
                 </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    roleColors[member.role] || roleColors.staff
-                  }`}
-                >
-                  {roleLabels[member.role] || member.role}
-                </span>
+                <div className="sm:shrink-0">
+                  <span
+                    className={`inline-flex max-w-full items-center justify-center rounded-full px-3 py-1 text-xs font-medium wrap-break-word ${
+                      roleColors[member.role] || roleColors.staff
+                    }`}
+                  >
+                    {roleLabels[member.role] || member.role}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
