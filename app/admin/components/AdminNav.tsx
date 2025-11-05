@@ -12,18 +12,60 @@ interface NavTab {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  roles?: ("owner" | "admin" | "staff")[]; // Which roles can see this tab
 }
 
-const navTabs: NavTab[] = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/visitors", label: "Visitors", icon: Eye },
-  { href: "/admin/questions", label: "Questions", icon: FileText },
-  { href: "/admin/coupons", label: "Coupons", icon: Gift },
-  { href: "/admin/emails", label: "Emails", icon: Mail },
+const allNavTabs: NavTab[] = [
+  {
+    href: "/admin",
+    label: "Overview",
+    icon: LayoutDashboard,
+    roles: ["owner", "admin"],
+  },
+  {
+    href: "/admin/visitors",
+    label: "Visitors",
+    icon: Eye,
+    roles: ["owner", "admin"],
+  },
+  {
+    href: "/admin/questions",
+    label: "Questions",
+    icon: FileText,
+    roles: ["owner", "admin"],
+  },
+  {
+    href: "/admin/coupons",
+    label: "Coupons",
+    icon: Gift,
+    roles: ["owner", "admin", "staff"],
+  },
+  {
+    href: "/admin/emails",
+    label: "Emails",
+    icon: Mail,
+    roles: ["owner", "admin"],
+  },
 ];
 
-export default function AdminNav() {
+interface AdminNavProps {
+  userRole?: "owner" | "admin" | "staff" | null;
+}
+
+export default function AdminNav({ userRole }: AdminNavProps) {
   const pathname = usePathname();
+
+  // Filter tabs based on user role
+  // Staff can only see "Coupons", owner/admin can see all
+  const navTabs =
+    userRole === "staff"
+      ? allNavTabs.filter((tab) => tab.roles?.includes("staff"))
+      : allNavTabs.filter(
+          (tab) =>
+            !tab.roles ||
+            tab.roles.includes("owner") ||
+            tab.roles.includes("admin")
+        );
 
   return (
     <nav className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">

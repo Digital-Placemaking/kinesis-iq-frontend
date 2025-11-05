@@ -42,8 +42,12 @@ export async function middleware(request: NextRequest) {
   const isAdminRoute =
     pathname.startsWith("/admin") && !pathname.match(/\/[^/]+\/admin/);
 
-  // Allow login page
-  if (pathname === "/admin/login") {
+  // Allow login and auth pages
+  if (
+    pathname === "/admin/login" ||
+    pathname.startsWith("/auth/callback") ||
+    pathname.startsWith("/auth/reset-password")
+  ) {
     return response;
   }
 

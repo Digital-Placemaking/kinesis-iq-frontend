@@ -23,14 +23,17 @@ interface IssuedCoupon {
 
 interface IssuedCouponsListProps {
   tenantSlug: string;
+  canEditCoupons?: boolean; // Not used here, but passed for consistency. Staff CAN edit issued coupons.
 }
 
 /**
  * List of issued coupons with pagination
  * Allows editing coupon status and tracking
+ * Staff can validate/invalidate issued coupons (but not edit main coupons)
  */
 export default function IssuedCouponsList({
   tenantSlug,
+  canEditCoupons = true,
 }: IssuedCouponsListProps) {
   const [issuedCoupons, setIssuedCoupons] = useState<IssuedCoupon[]>([]);
   const [currentPage, setCurrentPage] = useState(1);

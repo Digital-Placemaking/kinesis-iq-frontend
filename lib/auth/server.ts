@@ -184,3 +184,23 @@ export function hasRequiredRole(
 
   return roleHierarchy[owner.role] >= roleHierarchy[requiredRole];
 }
+
+/**
+ * Checks if user is owner or admin (can edit coupons)
+ */
+export function isOwnerOrAdmin(owner: BusinessOwner | null): boolean {
+  if (!owner) {
+    return false;
+  }
+  return owner.role === "owner" || owner.role === "admin";
+}
+
+/**
+ * Gets the current user's role for a tenant
+ */
+export async function getCurrentUserRole(
+  tenantSlug: string
+): Promise<BusinessOwnerRole | null> {
+  const owner = await getBusinessOwnerForTenantSlug(tenantSlug);
+  return owner?.role || null;
+}

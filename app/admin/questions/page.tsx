@@ -13,10 +13,10 @@ export default async function QuestionsPage() {
   const user = await requireAuth();
   const supabase = await createClient();
 
-  // Find user's tenant
+  // Find user's tenant and role
   const { data: staff } = await supabase
     .from("staff")
-    .select("tenant_id")
+    .select("tenant_id, role")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true })
     .limit(1);
@@ -26,6 +26,13 @@ export default async function QuestionsPage() {
   }
 
   const tenantId = staff[0].tenant_id;
+  const userRole = staff[0].role;
+
+  // Redirect staff users to coupons page (they can only access issued coupons)
+  if (userRole === "staff") {
+    redirect("/admin/coupons");
+  }
+
   const tenantSupabase = await createTenantClient(tenantId);
 
   // Get tenant slug for actions
@@ -64,7 +71,7 @@ export default async function QuestionsPage() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout userRole={userRole}>
       <QuestionsClient
         questions={questions || []}
         tenantSlug={tenant.slug}

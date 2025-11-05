@@ -71,3 +71,6 @@ export { submitFeedback } from "./actions/feedback";
 
 // Analytics actions
 export { getAnalyticsSummary } from "./actions/analytics";
+
+// Auth actions
+export { updatePassword } from "./actions/auth";

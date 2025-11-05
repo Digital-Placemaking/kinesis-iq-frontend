@@ -48,6 +48,12 @@ export default async function AdminPage() {
 
   const tenantId = staff[0].tenant_id;
   const owner = staff[0];
+  const userRole = staff[0].role;
+
+  // Redirect staff users to coupons page (they can only access issued coupons)
+  if (userRole === "staff") {
+    redirect("/admin/coupons");
+  }
 
   // Create tenant-scoped client to query tenant info (RLS may block regular client)
   const tenantSupabase = await createTenantClient(tenantId);
@@ -102,7 +108,7 @@ export default async function AdminPage() {
   ];
 
   return (
-    <AdminLayout>
+    <AdminLayout userRole={userRole}>
       <div className="mx-auto max-w-7xl">
         <DashboardHeader
           userEmail={owner.email || user.email}

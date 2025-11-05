@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ScrollArrow from "./components/ScrollArrow";
 import Footer from "./components/Footer";
+import AuthCallbackHandler from "./components/AuthCallbackHandler";
 
 export const metadata: Metadata = {
   title: "Digital Placemaking",
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      <AuthCallbackHandler />
       {/* Hero Section - Full Viewport */}
       <section className="relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
         {/* Decorative gradient blur */}

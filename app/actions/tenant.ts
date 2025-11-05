@@ -34,10 +34,13 @@ export async function getTenantBySlug(
     }
 
     // Fetch tenant data using tenant-scoped client
+    // Explicitly select logo_url to ensure it's included
     const tenantSupabase = await createTenantClient(tenantId);
     const { data: tenant, error: tenantError } = await tenantSupabase
       .from("tenants")
-      .select("*")
+      .select(
+        "id, slug, name, logo_url, website_url, theme, active, created_at"
+      )
       .eq("id", tenantId)
       .eq("active", true)
       .single();

@@ -22,13 +22,19 @@ interface Coupon {
 interface CouponsListProps {
   coupons: Coupon[];
   tenantSlug: string;
+  canEditCoupons?: boolean;
 }
 
 /**
  * List of coupons with edit/delete actions
  * Extracted from CouponsClient for use in tabs
+ * Staff role cannot edit/delete coupons (only owner/admin)
  */
-export default function CouponsList({ coupons, tenantSlug }: CouponsListProps) {
+export default function CouponsList({
+  coupons,
+  tenantSlug,
+  canEditCoupons = true,
+}: CouponsListProps) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const router = useRouter();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -59,14 +65,18 @@ export default function CouponsList({ coupons, tenantSlug }: CouponsListProps) {
             Active Coupons
           </h2>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Manage your promotional coupons
+            {canEditCoupons
+              ? "Manage your promotional coupons"
+              : "View promotional coupons (staff cannot edit)"}
           </p>
         </div>
-        <div className="shrink-0">
-          <ActionButton icon={Plus} onClick={() => setIsAddOpen(true)}>
-            Add Coupon
-          </ActionButton>
-        </div>
+        {canEditCoupons && (
+          <div className="shrink-0">
+            <ActionButton icon={Plus} onClick={() => setIsAddOpen(true)}>
+              Add Coupon
+            </ActionButton>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -129,25 +139,27 @@ export default function CouponsList({ coupons, tenantSlug }: CouponsListProps) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 sm:ml-4 sm:shrink-0">
-                    <a
-                      href={`/admin/coupons/${coupon.id}/edit`}
-                      className="rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                      title="Edit"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </a>
-                    <button
-                      className="rounded-lg p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                      title="Delete"
-                      onClick={() => {
-                        setSelectedId(coupon.id);
-                        setIsDeleteOpen(true);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {canEditCoupons && (
+                    <div className="flex items-center gap-2 sm:ml-4 sm:shrink-0">
+                      <a
+                        href={`/admin/coupons/${coupon.id}/edit`}
+                        className="rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        title="Edit"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </a>
+                      <button
+                        className="rounded-lg p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                        title="Delete"
+                        onClick={() => {
+                          setSelectedId(coupon.id);
+                          setIsDeleteOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </Card>
             );
