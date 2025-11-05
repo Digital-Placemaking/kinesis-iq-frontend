@@ -1,6 +1,6 @@
 "use client";
 
-import { Gift } from "lucide-react";
+import { Gift, CheckCircle } from "lucide-react";
 
 interface Coupon {
   id: string;
@@ -10,6 +10,7 @@ interface Coupon {
   expires_at?: string | null;
   active?: boolean;
   created_at?: string;
+  alreadyRedeemed?: boolean;
 }
 
 interface CouponCardProps {
@@ -101,16 +102,23 @@ export default function CouponCard({
         )}
       </div>
 
-      {/* Claim Button */}
+      {/* Claim Button / Redeemed Status */}
       <div className="shrink-0">
-        <button
-          type="button"
-          onClick={handleClaimClick}
-          disabled={coupon.active === false || !email}
-          className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-black"
-        >
-          Claim Now
-        </button>
+        {coupon.alreadyRedeemed ? (
+          <div className="flex items-center gap-2 rounded-lg bg-green-100 px-4 py-2 text-sm font-medium text-green-800 dark:bg-green-900/20 dark:text-green-400">
+            <CheckCircle className="h-4 w-4" />
+            Redeemed
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleClaimClick}
+            disabled={coupon.active === false || !email}
+            className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-black"
+          >
+            Claim Now
+          </button>
+        )}
       </div>
     </div>
   );

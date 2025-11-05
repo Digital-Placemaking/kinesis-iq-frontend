@@ -3,6 +3,7 @@ import {
   getCouponsForTenant,
   getTenantBySlug,
   verifyEmailOptIn,
+  isCouponAlreadyRedeemed,
 } from "@/app/actions";
 import { toTenantDisplay } from "@/lib/utils/tenant";
 import CouponsList from "./components/CouponsList";
@@ -39,12 +40,20 @@ export default async function CouponsPage({
     slug
   );
 
-  // Get coupons for tenant
-  const { coupons, error: couponsError } = await getCouponsForTenant(slug);
-
   if (tenantError || !tenantData) {
     notFound();
   }
+
+  // If tenant is inactive, show deactivated message
+  if (!tenantData.active) {
+    const { default: DeactivatedMessage } = await import(
+      "../components/DeactivatedMessage"
+    );
+    return <DeactivatedMessage tenantName={tenantData.name} />;
+  }
+
+  // Get coupons for tenant
+  const { coupons, error: couponsError } = await getCouponsForTenant(slug);
 
   if (couponsError) {
     return (
@@ -61,7 +70,24 @@ export default async function CouponsPage({
 
   const tenant = toTenantDisplay(tenantData);
 
-  return <CouponsList tenant={tenant} coupons={coupons || []} email={email} />;
+  // Check redemption status for each coupon
+  const couponsWithStatus = await Promise.all(
+    (coupons || []).map(async (coupon) => {
+      const { redeemed } = await isCouponAlreadyRedeemed(
+        slug,
+        coupon.id,
+        email
+      );
+      return {
+        ...coupon,
+        alreadyRedeemed: redeemed,
+      };
+    })
+  );
+
+  return (
+    <CouponsList tenant={tenant} coupons={couponsWithStatus} email={email} />
+  );
 }
 
 export async function generateMetadata({ params }: CouponsPageProps) {

@@ -3,8 +3,10 @@ import {
   getSurveyForCoupon,
   verifyEmailOptIn,
   hasCompletedSurveyForTenant,
+  getTenantBySlug,
 } from "@/app/actions";
 import SurveyContainer from "./components/SurveyContainer";
+import DeactivatedMessage from "../../../components/DeactivatedMessage";
 
 // Force dynamic rendering to ensure fresh data on each request
 export const dynamic = "force-dynamic";
@@ -25,6 +27,20 @@ export default async function SurveyPage({
   // Verify email opt-in before allowing access
   if (!email) {
     redirect(`/${slug}/coupons`);
+  }
+
+  // Check if tenant is active
+  const { tenant: tenantData, error: tenantError } = await getTenantBySlug(
+    slug
+  );
+
+  if (tenantError || !tenantData) {
+    notFound();
+  }
+
+  // If tenant is inactive, show deactivated message
+  if (!tenantData.active) {
+    return <DeactivatedMessage tenantName={tenantData.name} />;
   }
 
   // Verify email opt-in - if verification fails, still allow access

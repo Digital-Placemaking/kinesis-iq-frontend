@@ -20,6 +20,14 @@ export default async function CompletedPage({ params }: CompletedPageProps) {
     redirect(`/${slug}`);
   }
 
+  // If tenant is inactive, show deactivated message
+  if (!tenantData.active) {
+    const { default: DeactivatedMessage } = await import(
+      "../../components/DeactivatedMessage"
+    );
+    return <DeactivatedMessage tenantName={tenantData.name} />;
+  }
+
   const tenant = toTenantDisplay(tenantData);
 
   return <SurveyCompletion tenant={tenant} />;

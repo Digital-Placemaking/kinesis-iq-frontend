@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Share2, Download, Bell } from "lucide-react";
+import { Copy, Share2, Download, Bell, Info } from "lucide-react";
 import type { TenantDisplay } from "@/lib/types/tenant";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
@@ -34,6 +34,7 @@ interface CouponCompletionProps {
   email?: string | null;
   sessionId?: string | null;
   error?: string | null;
+  isAlreadyRedeemed?: boolean;
 }
 
 export default function CouponCompletion({
@@ -45,6 +46,7 @@ export default function CouponCompletion({
   email,
   sessionId,
   error,
+  isAlreadyRedeemed = false,
 }: CouponCompletionProps) {
   const [copied, setCopied] = useState(false);
   const [walletLoading, setWalletLoading] = useState(false);
@@ -183,6 +185,21 @@ export default function CouponCompletion({
           {couponCode && (
             <div className="mb-4">
               <CouponCodeDisplay code={couponCode} />
+              {/* Show message if this is an existing redeemed coupon */}
+              {isAlreadyRedeemed && (
+                <div className="mt-3 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                  <Info className="h-4 w-4 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">
+                      This is your existing coupon code.
+                    </p>
+                    <p className="mt-1">
+                      This coupon has already been redeemed. You'll keep the
+                      same code every time you complete a survey.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

@@ -23,6 +23,14 @@ export default async function SurveyPage({ params }: SurveyPageProps) {
     redirect(`/${slug}`);
   }
 
+  // If tenant is inactive, show deactivated message
+  if (!tenantData.active) {
+    const { default: DeactivatedMessage } = await import(
+      "../components/DeactivatedMessage"
+    );
+    return <DeactivatedMessage tenantName={tenantData.name} />;
+  }
+
   // Fetch survey for this tenant
   const { survey, error } = await getSurveyForTenant(slug);
 

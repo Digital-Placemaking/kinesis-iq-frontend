@@ -13,8 +13,19 @@ import type {
 
 /**
  * Issued Coupon Actions
- * Server actions for issued coupon operations (issuing, validating, checking)
+ * Server actions for issued coupon operations
+ *
+ * Organized by functionality:
+ * - Helper functions
+ * - Coupon issuance
+ * - Query/check operations
+ * - Validation and redemption
+ * - Admin operations
  */
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
 
 /**
  * Generates a unique coupon code
@@ -25,6 +36,10 @@ function generateCouponCode(prefix: string = "CPN"): string {
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `${prefix}-${timestamp}-${random}`;
 }
+
+// ============================================================================
+// Coupon Issuance
+// ============================================================================
 
 /**
  * Issues a coupon code to a user
@@ -103,41 +118,26 @@ export async function issueCoupon(
         // TODO: Ensure RLS policy allows reads for issued_coupons based on email
       }
 
-      // If we found an existing coupon, return it (don't create duplicates)
+      // If we found an existing coupon, ALWAYS return it (don't create duplicates)
+      // Users should keep the same coupon code they always had, regardless of redemption status
       // Expiration is checked at redemption time, not when displaying the coupon
       if (!checkError && existingCoupons && existingCoupons.length > 0) {
         const existing = existingCoupons[0];
 
-        // Only check if coupon is fully redeemed or has an invalid status
-        // Don't check expiration - that's handled at redemption time
-        const isFullyRedeemed =
-          existing.redemptions_count >= existing.max_redemptions;
-
-        const isValidStatus =
-          existing.status === "issued" || existing.status === "redeemed";
-
-        // If coupon is not fully redeemed and has valid status, return it
-        // This prevents creating duplicate coupons on page refresh
-        if (!isFullyRedeemed && isValidStatus) {
-          console.log("Returning existing coupon:", {
-            couponId: existing.id,
-            code: existing.code,
-            email,
-            status: existing.status,
-          });
-          return {
-            issuedCoupon: existing as any,
-            error: null,
-          };
-        }
-
-        // If coupon is fully redeemed or has invalid status, we might create a new one
-        // But this should rarely happen - typically one coupon per email/coupon combo
-        console.log("Existing coupon found but invalid:", {
-          isFullyRedeemed,
-          isValidStatus,
+        // Always return the existing coupon - same code, same coupon
+        // Redemption status doesn't matter - they keep their original coupon
+        console.log("Returning existing coupon:", {
+          couponId: existing.id,
+          code: existing.code,
+          email,
           status: existing.status,
+          redemptions_count: existing.redemptions_count,
+          max_redemptions: existing.max_redemptions,
         });
+        return {
+          issuedCoupon: existing as any,
+          error: null,
+        };
       } else {
         console.log("No existing coupon found:", {
           checkError: checkError?.message,
@@ -217,6 +217,10 @@ export async function issueCoupon(
   }
 }
 
+// ============================================================================
+// Query/Check Operations
+// ============================================================================
+
 /**
  * Checks if a user has completed any survey for a tenant
  * If they have, they can skip surveys for all coupons in that tenant
@@ -270,6 +274,76 @@ export async function hasCompletedSurveyForTenant(
   } catch (err) {
     return {
       completed: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Checks if a user has already fully redeemed a coupon for a specific coupon_id
+ * Returns true if they have an issued_coupon with redemptions_count >= max_redemptions
+ */
+export async function isCouponAlreadyRedeemed(
+  tenantSlug: string,
+  couponId: string,
+  email: string
+): Promise<{ redeemed: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant slug to UUID
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      {
+        slug_input: tenantSlug,
+      }
+    );
+
+    if (resolveError || !tenantId) {
+      return {
+        redeemed: false,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Check if there's an issued_coupon for this email + coupon_id that's fully redeemed
+    const { data: existingCoupon, error: checkError } = await tenantSupabase
+      .from("issued_coupons")
+      .select("id, redemptions_count, max_redemptions, status")
+      .eq("coupon_id", couponId)
+      .eq("email", email)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
+    if (checkError) {
+      return {
+        redeemed: false,
+        error: checkError.message || "Failed to check redemption status",
+      };
+    }
+
+    // Check if fully redeemed
+    if (existingCoupon) {
+      const isFullyRedeemed =
+        existingCoupon.redemptions_count >= existingCoupon.max_redemptions ||
+        existingCoupon.status === "redeemed";
+
+      return {
+        redeemed: isFullyRedeemed,
+        error: null,
+      };
+    }
+
+    return {
+      redeemed: false,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      redeemed: false,
       error: err instanceof Error ? err.message : "An error occurred",
     };
   }
@@ -364,6 +438,10 @@ export async function checkExistingCoupon(
     };
   }
 }
+
+// ============================================================================
+// Validation and Redemption
+// ============================================================================
 
 /**
  * Validates a coupon code
@@ -464,12 +542,50 @@ export async function validateCouponCode(
 
     // If redeem is true, redeem the coupon
     if (redeem) {
+      // Check if the email associated with this issued_coupon already has a fully redeemed coupon for this coupon_id
+      if (issuedCoupon.email) {
+        const { data: existingIssuedCoupon, error: checkError } =
+          await tenantSupabase
+            .from("issued_coupons")
+            .select(
+              "id, coupon_id, email, status, redemptions_count, max_redemptions"
+            )
+            .eq("coupon_id", issuedCoupon.coupon_id)
+            .eq("email", issuedCoupon.email) // The customer's email from the issued_coupon
+            .eq("tenant_id", tenantId)
+            .neq("id", issuedCoupon.id) // Exclude the current coupon being redeemed
+            .maybeSingle();
+
+        if (checkError) {
+          console.error("Error checking existing issued coupon:", checkError);
+        }
+
+        // Check if this customer already has a fully redeemed coupon for this coupon_id
+        if (existingIssuedCoupon) {
+          const isFullyRedeemed =
+            existingIssuedCoupon.redemptions_count >=
+              existingIssuedCoupon.max_redemptions ||
+            existingIssuedCoupon.status === "redeemed";
+
+          if (isFullyRedeemed) {
+            return {
+              valid: false,
+              issuedCoupon: issuedCoupon as any,
+              error: "This customer has already redeemed this coupon",
+              message:
+                "You cannot redeem the same coupon multiple times for the same customer",
+            };
+          }
+        }
+      }
+
       const newRedemptionsCount = issuedCoupon.redemptions_count + 1;
       const newStatus =
         newRedemptionsCount >= issuedCoupon.max_redemptions
           ? "redeemed"
           : issuedCoupon.status;
 
+      // Update issued coupon
       const { data: updatedCoupon, error: updateError } = await tenantSupabase
         .from("issued_coupons")
         .update({
@@ -514,8 +630,13 @@ export async function validateCouponCode(
   }
 }
 
+// ============================================================================
+// Admin Operations
+// ============================================================================
+
 /**
  * Fetches issued coupons with pagination
+ * Used by admin dashboard
  */
 export async function getIssuedCouponsPaginated(
   tenantSlug: string,
@@ -570,10 +691,17 @@ export async function getIssuedCouponsPaginated(
     // Calculate offset
     const offset = (page - 1) * itemsPerPage;
 
-    // Fetch paginated issued coupons
+    // Fetch paginated issued coupons with coupon title
     const { data: issuedCoupons, error: fetchError } = await tenantSupabase
       .from("issued_coupons")
-      .select("*")
+      .select(
+        `
+        *,
+        coupons:coupon_id (
+          title
+        )
+      `
+      )
       .order("issued_at", { ascending: false })
       .range(offset, offset + itemsPerPage - 1);
 
@@ -604,6 +732,7 @@ export async function getIssuedCouponsPaginated(
 
 /**
  * Updates an issued coupon
+ * Used by admin dashboard for status changes and redemption count adjustments
  */
 export async function updateIssuedCoupon(
   tenantSlug: string,

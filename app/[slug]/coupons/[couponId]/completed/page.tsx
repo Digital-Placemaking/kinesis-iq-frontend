@@ -41,6 +41,14 @@ export default async function CompletedPage({
     notFound();
   }
 
+  // If tenant is inactive, show deactivated message
+  if (!tenantData.active) {
+    const { default: DeactivatedMessage } = await import(
+      "../../../components/DeactivatedMessage"
+    );
+    return <DeactivatedMessage tenantName={tenantData.name} />;
+  }
+
   // Get coupon data
   const { coupon, error: couponError } = await getCouponById(slug, couponId);
 
@@ -90,6 +98,11 @@ export default async function CompletedPage({
     ? `session_${email.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`
     : null;
 
+  // Check if this coupon is already fully redeemed
+  const isAlreadyRedeemed =
+    issuedCoupon.status === "redeemed" ||
+    issuedCoupon.redemptions_count >= issuedCoupon.max_redemptions;
+
   return (
     <CouponCompletion
       tenant={tenant}
@@ -99,6 +112,7 @@ export default async function CompletedPage({
       tenantSlug={slug}
       email={email}
       sessionId={sessionId}
+      isAlreadyRedeemed={isAlreadyRedeemed}
     />
   );
 }

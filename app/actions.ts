@@ -18,7 +18,11 @@
  */
 
 // Tenant actions
-export { getTenantBySlug, updateTenantWebsiteUrl } from "./actions/tenant";
+export {
+  getTenantBySlug,
+  updateTenantWebsiteUrl,
+  updateTenantSettings,
+} from "./actions/tenant";
 
 // Coupon actions
 export {
@@ -61,6 +65,7 @@ export {
   issueCoupon,
   hasCompletedSurveyForTenant,
   checkExistingCoupon,
+  isCouponAlreadyRedeemed,
   validateCouponCode,
   getIssuedCouponsPaginated,
   updateIssuedCoupon,
@@ -77,3 +82,9 @@ export { getAnalyticsSummary } from "./actions/analytics";
 
 // Auth actions
 export { updatePassword } from "./actions/auth";
+
+// Staff actions
+export { getStaffForTenant } from "./actions/staff";
+
+// Storage actions
+export { uploadLogoImage } from "./actions/storage";

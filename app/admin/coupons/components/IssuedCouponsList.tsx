@@ -6,7 +6,17 @@ import { getIssuedCouponsPaginated, updateIssuedCoupon } from "@/app/actions";
 import Pagination, { PAGINATION } from "@/app/components/ui/Pagination";
 import Card from "@/app/components/ui/Card";
 import Spinner from "@/app/components/ui/Spinner";
-import { Edit, CheckCircle, XCircle, Clock, ChevronDown } from "lucide-react";
+import {
+  Edit,
+  CheckCircle,
+  XCircle,
+  Clock,
+  ChevronDown,
+  Plus,
+  Minus,
+  Copy,
+  Check,
+} from "lucide-react";
 
 interface IssuedCoupon {
   id: string;
@@ -19,6 +29,9 @@ interface IssuedCoupon {
   issued_at: string;
   expires_at: string | null;
   metadata: Record<string, any> | null;
+  coupons?: {
+    title: string;
+  } | null;
 }
 
 interface IssuedCouponsListProps {
@@ -42,6 +55,10 @@ export default function IssuedCouponsList({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [updatingRedemptionId, setUpdatingRedemptionId] = useState<
+    string | null
+  >(null);
+  const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const router = useRouter();
 
   const fetchIssuedCoupons = async (page: number) => {
@@ -101,6 +118,66 @@ export default function IssuedCouponsList({
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleCopyCode = async (code: string, couponId: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCodeId(couponId);
+      setTimeout(() => {
+        setCopiedCodeId(null);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy code:", err);
+    }
+  };
+
+  const handleRedemptionCountChange = async (
+    issuedCoupon: IssuedCoupon,
+    delta: number
+  ) => {
+    setUpdatingRedemptionId(issuedCoupon.id);
+    try {
+      const newRedemptionsCount = Math.max(
+        0,
+        Math.min(
+          issuedCoupon.redemptions_count + delta,
+          issuedCoupon.max_redemptions
+        )
+      );
+
+      // Determine new status based on redemption count
+      let newStatus: "issued" | "redeemed" | "revoked" | "expired" =
+        issuedCoupon.status;
+
+      if (newRedemptionsCount >= issuedCoupon.max_redemptions) {
+        newStatus = "redeemed";
+      } else if (
+        issuedCoupon.status === "redeemed" &&
+        newRedemptionsCount < issuedCoupon.max_redemptions
+      ) {
+        // If decremented below max, revert to issued status
+        newStatus = "issued";
+      }
+
+      const result = await updateIssuedCoupon(tenantSlug, issuedCoupon.id, {
+        redemptions_count: newRedemptionsCount,
+        status: newStatus,
+      });
+
+      if (result.success) {
+        // Refresh the list
+        await fetchIssuedCoupons(currentPage);
+      } else {
+        console.error("Failed to update redemption count:", result.error);
+        setError(result.error || "Failed to update redemption count");
+      }
+    } catch (err) {
+      console.error("Error updating redemption count:", err);
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setUpdatingRedemptionId(null);
     }
   };
 
@@ -175,19 +252,40 @@ export default function IssuedCouponsList({
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1 min-w-0">
-                        <div className="mb-2 flex flex-wrap items-center gap-2 sm:gap-3">
-                          <span className="font-mono text-base sm:text-lg font-semibold text-black dark:text-zinc-50 break-all">
-                            {issuedCoupon.code}
-                          </span>
-                          <span
-                            className={`flex items-center gap-1 rounded-full px-2 sm:px-3 py-1 text-xs font-medium shrink-0 ${getStatusColor(
-                              issuedCoupon.status
-                            )}`}
-                          >
-                            {getStatusIcon(issuedCoupon.status)}
-                            {issuedCoupon.status.charAt(0).toUpperCase() +
-                              issuedCoupon.status.slice(1)}
-                          </span>
+                        <div className="mb-2 flex flex-col gap-2">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <button
+                              onClick={() =>
+                                handleCopyCode(
+                                  issuedCoupon.code,
+                                  issuedCoupon.id
+                                )
+                              }
+                              className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 font-mono text-base sm:text-lg font-semibold text-black transition-colors hover:bg-zinc-50 active:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800 dark:active:bg-zinc-700"
+                              title="Copy code to clipboard"
+                            >
+                              {issuedCoupon.code}
+                              {copiedCodeId === issuedCoupon.id ? (
+                                <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                              ) : (
+                                <Copy className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                              )}
+                            </button>
+                            <span
+                              className={`flex items-center gap-1 rounded-full px-2 sm:px-3 py-1 text-xs font-medium shrink-0 ${getStatusColor(
+                                issuedCoupon.status
+                              )}`}
+                            >
+                              {getStatusIcon(issuedCoupon.status)}
+                              {issuedCoupon.status.charAt(0).toUpperCase() +
+                                issuedCoupon.status.slice(1)}
+                            </span>
+                          </div>
+                          {issuedCoupon.coupons?.title && (
+                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                              {issuedCoupon.coupons.title}
+                            </p>
+                          )}
                         </div>
                         <div className="grid gap-2 text-xs sm:text-sm sm:grid-cols-2 lg:grid-cols-4">
                           <div>
@@ -198,14 +296,46 @@ export default function IssuedCouponsList({
                               {issuedCoupon.email || "Anonymous"}
                             </span>
                           </div>
-                          <div>
+                          <div className="flex items-center gap-2">
                             <span className="text-zinc-600 dark:text-zinc-400">
                               Redemptions:{" "}
                             </span>
-                            <span className="font-medium text-black dark:text-zinc-50">
-                              {issuedCoupon.redemptions_count} /{" "}
-                              {issuedCoupon.max_redemptions}
-                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() =>
+                                  handleRedemptionCountChange(issuedCoupon, -1)
+                                }
+                                disabled={
+                                  updatingRedemptionId === issuedCoupon.id ||
+                                  issuedCoupon.redemptions_count === 0
+                                }
+                                className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+                                title="Decrement redemption count"
+                              >
+                                <Minus className="h-4 w-4" />
+                              </button>
+                              <span className="font-medium text-black dark:text-zinc-50 min-w-[3rem] text-center">
+                                {issuedCoupon.redemptions_count} /{" "}
+                                {issuedCoupon.max_redemptions}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  handleRedemptionCountChange(issuedCoupon, 1)
+                                }
+                                disabled={
+                                  updatingRedemptionId === issuedCoupon.id ||
+                                  issuedCoupon.redemptions_count >=
+                                    issuedCoupon.max_redemptions
+                                }
+                                className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+                                title="Increment redemption count"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </button>
+                            </div>
+                            {updatingRedemptionId === issuedCoupon.id && (
+                              <Spinner size="sm" />
+                            )}
                           </div>
                           <div>
                             <span className="text-zinc-600 dark:text-zinc-400">

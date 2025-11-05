@@ -6,7 +6,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Eye, FileText, Gift, Mail } from "lucide-react";
+import {
+  LayoutDashboard,
+  Eye,
+  FileText,
+  Gift,
+  Mail,
+  Settings,
+} from "lucide-react";
 
 interface NavTab {
   href: string;
@@ -44,6 +51,12 @@ const allNavTabs: NavTab[] = [
     href: "/admin/emails",
     label: "Emails",
     icon: Mail,
+    roles: ["owner", "admin"],
+  },
+  {
+    href: "/admin/settings",
+    label: "Settings",
+    icon: Settings,
     roles: ["owner", "admin"],
   },
 ];
