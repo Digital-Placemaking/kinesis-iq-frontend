@@ -68,6 +68,7 @@ export default function WebsiteUrlSettings({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField
+          id="website-url"
           label="Website URL"
           type="url"
           placeholder="https://example.com or /custom-page"

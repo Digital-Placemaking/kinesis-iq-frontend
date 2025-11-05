@@ -14,6 +14,7 @@ interface FormFieldProps {
   required?: boolean;
   disabled?: boolean;
   icon?: LucideIcon;
+  helpText?: string;
 }
 
 export default function FormField({
@@ -26,6 +27,7 @@ export default function FormField({
   required = false,
   disabled = false,
   icon: Icon,
+  helpText,
 }: FormFieldProps) {
   return (
     <div>
@@ -52,6 +54,11 @@ export default function FormField({
           }`}
         />
       </div>
+      {helpText && (
+        <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+          {helpText}
+        </p>
+      )}
     </div>
   );
 }
