@@ -2,9 +2,10 @@
  * Form field component with icon
  * Reusable input field with label and icon support
  */
+import React from "react";
 import { LucideIcon } from "lucide-react";
 
-interface FormFieldProps {
+export interface FormFieldProps {
   id: string;
   label: string;
   type: string;
@@ -17,7 +18,7 @@ interface FormFieldProps {
   helpText?: string;
 }
 
-export default function FormField({
+const FormField: React.FC<FormFieldProps> = ({
   id,
   label,
   type,
@@ -28,7 +29,7 @@ export default function FormField({
   disabled = false,
   icon: Icon,
   helpText,
-}: FormFieldProps) {
+}) => {
   return (
     <div>
       <label
@@ -61,4 +62,6 @@ export default function FormField({
       )}
     </div>
   );
-}
+};
+
+export default FormField;
