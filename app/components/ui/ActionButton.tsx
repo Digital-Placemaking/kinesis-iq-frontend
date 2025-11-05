@@ -9,7 +9,7 @@ interface ActionButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "outline";
   className?: string;
   type?: "button" | "submit" | "reset";
 }
@@ -29,6 +29,8 @@ export default function ActionButton({
   const variantClasses = {
     primary: "bg-blue-600 text-white",
     secondary:
+      "border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800",
+    outline:
       "border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800",
   };
 

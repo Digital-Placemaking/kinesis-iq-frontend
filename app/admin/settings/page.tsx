@@ -44,7 +44,7 @@ export default async function SettingsPage() {
   // Note: We don't filter by active here - admin should be able to see inactive tenants
   const { data: tenant, error: tenantError } = await tenantSupabase
     .from("tenants")
-    .select("id, slug, name, logo_url, website_url, active, created_at")
+    .select("id, slug, name, logo_url, website_url, theme, active, created_at")
     .eq("id", tenantId)
     .maybeSingle();
 
