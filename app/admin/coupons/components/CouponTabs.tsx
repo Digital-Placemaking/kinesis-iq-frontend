@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Ticket, Gift } from "lucide-react";
+import { Ticket, Gift, Scan } from "lucide-react";
 import CouponsList from "./CouponsList";
 import IssuedCouponsList from "./IssuedCouponsList";
+import RedeemCouponModal from "./RedeemCouponModal";
+import ActionButton from "@/app/components/ui/ActionButton";
 
 type TabType = "coupons" | "issued";
 
@@ -26,9 +28,32 @@ export default function CouponTabs({
   const [activeTab, setActiveTab] = useState<TabType>(
     canEditCoupons ? "coupons" : "issued"
   );
+  const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
 
   return (
     <div className="mx-auto max-w-7xl">
+      {/* Redeem Coupon Button - Always visible */}
+      <div className="mb-6 flex justify-end">
+        <ActionButton
+          icon={Scan}
+          onClick={() => setIsRedeemModalOpen(true)}
+          variant="primary"
+          className="w-auto sm:w-auto"
+        >
+          Redeem Coupon
+        </ActionButton>
+      </div>
+
+      {/* Redeem Coupon Modal */}
+      <RedeemCouponModal
+        isOpen={isRedeemModalOpen}
+        onClose={() => setIsRedeemModalOpen(false)}
+        tenantSlug={tenantSlug}
+        onRedeemed={() => {
+          // Refresh the page to show updated coupon status
+          window.location.reload();
+        }}
+      />
       {/* Tab Navigation - Hide "Coupons" tab for staff */}
       {canEditCoupons && (
         <div className="mb-6 border-b border-zinc-200 dark:border-zinc-800">
