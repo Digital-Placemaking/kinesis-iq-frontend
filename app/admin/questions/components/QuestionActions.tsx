@@ -20,7 +20,9 @@ import {
   ToggleLeft,
   ToggleRight,
   Trash2,
+  BarChart3,
 } from "lucide-react";
+import QuestionResultsModal from "./QuestionResultsModal";
 
 interface QuestionActionsProps {
   tenantSlug: string;
@@ -28,6 +30,8 @@ interface QuestionActionsProps {
   questionIndex: number;
   totalQuestions: number;
   isActive: boolean;
+  questionText: string;
+  questionType: string;
 }
 
 export default function QuestionActions({
@@ -36,12 +40,15 @@ export default function QuestionActions({
   questionIndex,
   totalQuestions,
   isActive,
+  questionText,
+  questionType,
 }: QuestionActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
 
   const handleMoveUp = () => {
     if (questionIndex === 0) return; // Already at top
@@ -151,6 +158,13 @@ export default function QuestionActions({
           )}
         </button>
         <button
+          onClick={() => setIsResultsModalOpen(true)}
+          className="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+          title="View Results"
+        >
+          <BarChart3 className="h-4 w-4" />
+        </button>
+        <button
           onClick={() => setIsEditModalOpen(true)}
           className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
           title="Edit"
@@ -180,6 +194,14 @@ export default function QuestionActions({
         message="Are you sure you want to delete this question? This action cannot be undone."
         confirmText="Delete Question"
         isLoading={isPending}
+      />
+      <QuestionResultsModal
+        isOpen={isResultsModalOpen}
+        onClose={() => setIsResultsModalOpen(false)}
+        tenantSlug={tenantSlug}
+        questionId={questionId}
+        questionText={questionText}
+        questionType={questionType}
       />
     </div>
   );

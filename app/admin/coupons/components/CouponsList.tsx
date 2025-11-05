@@ -7,6 +7,7 @@ import { deleteCoupon } from "@/app/actions";
 import Card from "@/app/components/ui/Card";
 import ActionButton from "@/app/components/ui/ActionButton";
 import AddCouponModal from "./AddCouponModal";
+import EditCouponModal from "./EditCouponModal";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
 interface Coupon {
@@ -36,6 +37,8 @@ export default function CouponsList({
   canEditCoupons = true,
 }: CouponsListProps) {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedCouponId, setSelectedCouponId] = useState<string | null>(null);
   const router = useRouter();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -141,13 +144,16 @@ export default function CouponsList({
                   </div>
                   {canEditCoupons && (
                     <div className="flex items-center gap-2 sm:ml-4 sm:shrink-0">
-                      <a
-                        href={`/admin/coupons/${coupon.id}/edit`}
+                      <button
+                        onClick={() => {
+                          setSelectedCouponId(coupon.id);
+                          setIsEditOpen(true);
+                        }}
                         className="rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                         title="Edit"
                       >
                         <Edit className="h-4 w-4" />
-                      </a>
+                      </button>
                       <button
                         className="rounded-lg p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                         title="Delete"
@@ -182,6 +188,23 @@ export default function CouponsList({
           router.refresh();
         }}
       />
+
+      {selectedCouponId && (
+        <EditCouponModal
+          isOpen={isEditOpen}
+          onClose={() => {
+            setIsEditOpen(false);
+            setSelectedCouponId(null);
+          }}
+          tenantSlug={tenantSlug}
+          couponId={selectedCouponId}
+          onUpdated={() => {
+            setIsEditOpen(false);
+            setSelectedCouponId(null);
+            router.refresh();
+          }}
+        />
+      )}
 
       <DeleteConfirmationModal
         isOpen={isDeleteOpen}

@@ -609,7 +609,7 @@ export async function updateIssuedCoupon(
   tenantSlug: string,
   issuedCouponId: string,
   updates: {
-    status?: "issued" | "redeemed" | "expired" | "cancelled";
+    status?: "issued" | "redeemed" | "revoked" | "expired";
     redemptions_count?: number;
     metadata?: Record<string, any>;
   }

@@ -177,6 +177,82 @@ export async function createCoupon(
 }
 
 /**
+ * Updates an existing coupon
+ */
+export async function updateCoupon(
+  tenantSlug: string,
+  couponId: string,
+  updates: {
+    title?: string;
+    description?: string;
+    discount?: string | null;
+    expires_at?: string | null;
+    active?: boolean;
+  }
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Resolve tenant
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      { slug_input: tenantSlug }
+    );
+    if (resolveError || !tenantId) {
+      return { success: false, error: `Tenant not found: ${tenantSlug}` };
+    }
+
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Prepare update data
+    const updateData: any = {};
+    if (updates.title !== undefined) updateData.title = updates.title;
+    if (updates.description !== undefined)
+      updateData.description = updates.description;
+    if (updates.discount !== undefined) updateData.discount = updates.discount;
+    if (updates.expires_at !== undefined)
+      updateData.expires_at = updates.expires_at;
+    if (updates.active !== undefined) updateData.active = updates.active;
+
+    const { data, error: updateError } = await tenantSupabase
+      .from("coupons")
+      .update(updateData)
+      .eq("id", couponId)
+      .select();
+
+    if (updateError) {
+      return {
+        success: false,
+        error: updateError.message || "Failed to update coupon",
+      };
+    }
+
+    if (!data || data.length === 0) {
+      return {
+        success: false,
+        error: "Update blocked - no rows were updated. Check RLS policies.",
+      };
+    }
+
+    return { success: true, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
  * Deletes a coupon by ID for a tenant
  */
 export async function deleteCoupon(

@@ -2,182 +2,43 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
+import type { QuestionType } from "@/lib/types/survey";
 
 /**
- * Question Management Actions
- * Server actions for survey question CRUD operations and management
+ * Question Results Types
  */
-
-/**
- * Reorders a survey question by moving it up or down
- * Swaps the order_index with the adjacent question using a 3-step swap
- */
-export async function reorderQuestion(
-  tenantSlug: string,
-  questionId: string,
-  direction: "up" | "down"
-): Promise<{ success: boolean; error: string | null }> {
-  try {
-    const supabase = await createClient();
-
-    // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return {
-        success: false,
-        error: "Not authenticated",
-      };
-    }
-
-    // Resolve tenant slug to UUID
-    const { data: tenantId, error: resolveError } = await supabase.rpc(
-      "resolve_tenant",
-      {
-        slug_input: tenantSlug,
-      }
-    );
-
-    if (resolveError || !tenantId) {
-      return {
-        success: false,
-        error: `Tenant not found: ${tenantSlug}`,
-      };
-    }
-
-    // Create tenant-scoped client
-    const tenantSupabase = await createTenantClient(tenantId);
-
-    // Fetch the current question
-    const { data: currentQuestion, error: fetchError } = await tenantSupabase
-      .from("survey_questions")
-      .select("id, order_index")
-      .eq("id", questionId)
-      .single();
-
-    if (fetchError || !currentQuestion) {
-      return {
-        success: false,
-        error: "Question not found",
-      };
-    }
-
-    const currentIndex = currentQuestion.order_index;
-    const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
-
-    // Validate new index is not negative
-    if (newIndex < 0) {
-      return {
-        success: false,
-        error: "Cannot move up - already at top",
-      };
-    }
-
-    // Fetch the question at the target position
-    const { data: targetQuestion, error: targetError } = await tenantSupabase
-      .from("survey_questions")
-      .select("id, order_index")
-      .eq("tenant_id", tenantId)
-      .eq("order_index", newIndex)
-      .maybeSingle();
-
-    if (targetError) {
-      return {
-        success: false,
-        error: targetError.message || "Failed to find target question",
-      };
-    }
-
-    if (!targetQuestion) {
-      return {
-        success: false,
-        error: `Cannot move ${direction} - already at ${
-          direction === "up" ? "top" : "bottom"
-        }`,
-      };
-    }
-
-    // Swap the order_index values using a 3-step swap to avoid unique constraint violations
-    const tempIndex = -(Date.now() % 1000000);
-
-    // Step 1: Move current question to temp index
-    const { error: updateCurrentToTempError } = await tenantSupabase
-      .from("survey_questions")
-      .update({ order_index: tempIndex })
-      .eq("id", questionId);
-
-    if (updateCurrentToTempError) {
-      return {
-        success: false,
-        error:
-          updateCurrentToTempError.message || "Failed to update question order",
-      };
-    }
-
-    // Step 2: Move target question to current index
-    const { error: updateTargetToCurrentError } = await tenantSupabase
-      .from("survey_questions")
-      .update({ order_index: currentIndex })
-      .eq("id", targetQuestion.id);
-
-    if (updateTargetToCurrentError) {
-      // Rollback: restore current question
-      await tenantSupabase
-        .from("survey_questions")
-        .update({ order_index: currentIndex })
-        .eq("id", questionId);
-      return {
-        success: false,
-        error:
-          updateTargetToCurrentError.message ||
-          "Failed to update question order",
-      };
-    }
-
-    // Step 3: Move current question (now at temp) to new index
-    const { error: updateCurrentToNewError } = await tenantSupabase
-      .from("survey_questions")
-      .update({ order_index: newIndex })
-      .eq("id", questionId);
-
-    if (updateCurrentToNewError) {
-      // Rollback: restore both
-      await tenantSupabase
-        .from("survey_questions")
-        .update({ order_index: currentIndex })
-        .eq("id", questionId);
-      await tenantSupabase
-        .from("survey_questions")
-        .update({ order_index: newIndex })
-        .eq("id", targetQuestion.id);
-      return {
-        success: false,
-        error:
-          updateCurrentToNewError.message || "Failed to update question order",
-      };
-    }
-
-    return {
-      success: true,
-      error: null,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "An error occurred",
-    };
-  }
+export interface QuestionResult {
+  totalResponses: number;
+  questionType: string;
+  questionText: string;
+  options?: string[];
+  // For multiple/single choice: { [option]: count }
+  choiceCounts?: Record<string, number>;
+  // For numeric/slider/nps/likert/rating: { min, max, mean, median, distribution }
+  numericStats?: {
+    min: number;
+    max: number;
+    mean: number;
+    median: number;
+    distribution: Record<number, number>; // value -> count
+  };
+  // For yes/no: { yes: count, no: count }
+  booleanCounts?: { yes: number; no: number };
+  // For open text: array of responses (paginated)
+  textResponses?: string[];
+  // For date: { [date]: count }
+  dateCounts?: Record<string, number>;
+  // For time: { [time]: count }
+  timeCounts?: Record<string, number>;
 }
 
 /**
- * Toggles the active status of a survey question
+ * Fetches all responses for a specific question
  */
-export async function toggleQuestionStatus(
+export async function getQuestionResults(
   tenantSlug: string,
   questionId: string
-): Promise<{ success: boolean; error: string | null }> {
+): Promise<{ results: QuestionResult | null; error: string | null }> {
   try {
     const supabase = await createClient();
 
@@ -191,7 +52,7 @@ export async function toggleQuestionStatus(
 
     if (resolveError || !tenantId) {
       return {
-        success: false,
+        results: null,
         error: `Tenant not found: ${tenantSlug}`,
       };
     }
@@ -199,376 +60,258 @@ export async function toggleQuestionStatus(
     // Create tenant-scoped client
     const tenantSupabase = await createTenantClient(tenantId);
 
-    // Fetch current question status
-    const { data: question, error: fetchError } = await tenantSupabase
+    // Fetch the question to get its type and options
+    const { data: question, error: questionError } = await tenantSupabase
       .from("survey_questions")
-      .select("id, is_active")
+      .select("id, question, type, options")
       .eq("id", questionId)
       .single();
 
-    if (fetchError || !question) {
+    if (questionError || !question) {
       return {
-        success: false,
+        results: null,
         error: "Question not found",
       };
     }
 
-    // Toggle the status (default to true if null)
-    const newStatus = !(question.is_active ?? true);
+    // Fetch all responses for this question
+    const { data: responses, error: responsesError } = await tenantSupabase
+      .from("survey_responses")
+      .select("answer")
+      .eq("question_id", questionId);
 
-    const { error: updateError } = await tenantSupabase
-      .from("survey_questions")
-      .update({ is_active: newStatus })
-      .eq("id", questionId);
-
-    if (updateError) {
+    if (responsesError) {
       return {
-        success: false,
-        error: updateError.message || "Failed to update question status",
+        results: null,
+        error: `Failed to fetch responses: ${responsesError.message}`,
       };
     }
 
-    return {
-      success: true,
-      error: null,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "An error occurred",
-    };
-  }
-}
+    const totalResponses = responses?.length || 0;
 
-/**
- * Updates a survey question
- * Handles all question types and their specific fields
- */
-export async function updateQuestion(
-  tenantSlug: string,
-  questionId: string,
-  updates: {
-    question?: string;
-    type?: string;
-    options?: string[] | any[];
-    is_active?: boolean;
-  }
-): Promise<{ success: boolean; error: string | null }> {
-  try {
-    const supabase = await createClient();
-
-    // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    if (totalResponses === 0) {
       return {
-        success: false,
-        error: "Not authenticated",
+        results: {
+          totalResponses: 0,
+          questionType: question.type,
+          questionText: question.question,
+          options: Array.isArray(question.options) ? question.options : [],
+        },
+        error: null,
       };
     }
 
-    // Resolve tenant slug to UUID
-    const { data: tenantId, error: resolveError } = await supabase.rpc(
-      "resolve_tenant",
-      {
-        slug_input: tenantSlug,
-      }
-    );
+    // Process responses based on question type
+    const questionType = question.type;
+    const options = Array.isArray(question.options) ? question.options : [];
 
-    if (resolveError || !tenantId) {
-      return {
-        success: false,
-        error: `Tenant not found: ${tenantSlug}`,
-      };
-    }
+    if (
+      questionType === "multiple_choice" ||
+      questionType === "single_choice" ||
+      questionType === "ranked_choice"
+    ) {
+      // Count choices
+      const choiceCounts: Record<string, number> = {};
 
-    // Create tenant-scoped client
-    const tenantSupabase = await createTenantClient(tenantId);
-
-    // Build update object
-    const updateData: any = {};
-    if (updates.question !== undefined) updateData.question = updates.question;
-    if (updates.type !== undefined) updateData.type = updates.type;
-    if (updates.options !== undefined) updateData.options = updates.options;
-    if (updates.is_active !== undefined)
-      updateData.is_active = updates.is_active;
-
-    // Update the question
-    const { data, error: updateError } = await tenantSupabase
-      .from("survey_questions")
-      .update(updateData)
-      .eq("id", questionId)
-      .select()
-      .single();
-
-    if (updateError) {
-      return {
-        success: false,
-        error: updateError.message || "Failed to update question",
-      };
-    }
-
-    if (!data) {
-      return {
-        success: false,
-        error: "Update blocked - no rows were updated. Check RLS policies.",
-      };
-    }
-
-    return {
-      success: true,
-      error: null,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "An error occurred",
-    };
-  }
-}
-
-/**
- * Creates a new survey question
- * Automatically assigns the next order_index
- */
-export async function createQuestion(
-  tenantSlug: string,
-  questionData: {
-    question: string;
-    type: string;
-    options?: string[] | any[];
-    is_active?: boolean;
-  }
-): Promise<{
-  success: boolean;
-  questionId: string | null;
-  error: string | null;
-}> {
-  try {
-    const supabase = await createClient();
-
-    // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return {
-        success: false,
-        questionId: null,
-        error: "Not authenticated",
-      };
-    }
-
-    // Resolve tenant slug to UUID
-    const { data: tenantId, error: resolveError } = await supabase.rpc(
-      "resolve_tenant",
-      {
-        slug_input: tenantSlug,
-      }
-    );
-
-    if (resolveError || !tenantId) {
-      return {
-        success: false,
-        questionId: null,
-        error: `Tenant not found: ${tenantSlug}`,
-      };
-    }
-
-    // Create tenant-scoped client
-    const tenantSupabase = await createTenantClient(tenantId);
-
-    // Get the next order_index (max + 1)
-    const { data: existingQuestions } = await tenantSupabase
-      .from("survey_questions")
-      .select("order_index")
-      .order("order_index", { ascending: false })
-      .limit(1);
-
-    const nextOrderIndex =
-      existingQuestions && existingQuestions.length > 0
-        ? (existingQuestions[0].order_index || 0) + 1
-        : 1;
-
-    // Build insert object
-    const insertData: any = {
-      tenant_id: tenantId,
-      question: questionData.question,
-      type: questionData.type,
-      order_index: nextOrderIndex,
-      is_active: questionData.is_active ?? true,
-    };
-
-    // Only include options if they're provided and the type requires them
-    const requiresOptions = [
-      "multiple_choice",
-      "single_choice",
-      "ranked_choice",
-      "sentiment",
-    ].includes(questionData.type);
-
-    if (requiresOptions) {
-      insertData.options = questionData.options || [];
-    } else {
-      insertData.options = [];
-    }
-
-    // Insert the question
-    const { data, error: insertError } = await tenantSupabase
-      .from("survey_questions")
-      .insert(insertData)
-      .select()
-      .single();
-
-    if (insertError) {
-      return {
-        success: false,
-        questionId: null,
-        error: insertError.message || "Failed to create question",
-      };
-    }
-
-    if (!data) {
-      return {
-        success: false,
-        questionId: null,
-        error: "Insert blocked - no rows were created. Check RLS policies.",
-      };
-    }
-
-    return {
-      success: true,
-      questionId: data.id,
-      error: null,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      questionId: null,
-      error: err instanceof Error ? err.message : "An error occurred",
-    };
-  }
-}
-
-/**
- * Deletes a survey question
- * Also handles reordering remaining questions to fill gaps
- */
-export async function deleteQuestion(
-  tenantSlug: string,
-  questionId: string
-): Promise<{ success: boolean; error: string | null }> {
-  try {
-    const supabase = await createClient();
-
-    // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return {
-        success: false,
-        error: "Not authenticated",
-      };
-    }
-
-    // Resolve tenant slug to UUID
-    const { data: tenantId, error: resolveError } = await supabase.rpc(
-      "resolve_tenant",
-      {
-        slug_input: tenantSlug,
-      }
-    );
-
-    if (resolveError || !tenantId) {
-      return {
-        success: false,
-        error: `Tenant not found: ${tenantSlug}`,
-      };
-    }
-
-    // Create tenant-scoped client
-    const tenantSupabase = await createTenantClient(tenantId);
-
-    // Get the question's order_index before deletion
-    const { data: questionToDelete, error: fetchQuestionError } =
-      await tenantSupabase
-        .from("survey_questions")
-        .select("order_index")
-        .eq("id", questionId)
-        .single();
-
-    if (fetchQuestionError || !questionToDelete) {
-      return {
-        success: false,
-        error: "Question not found",
-      };
-    }
-
-    const deletedOrderIndex = questionToDelete.order_index;
-
-    // Delete the question
-    const { error: deleteError } = await tenantSupabase
-      .from("survey_questions")
-      .delete()
-      .eq("id", questionId);
-
-    if (deleteError) {
-      return {
-        success: false,
-        error: deleteError.message || "Failed to delete question",
-      };
-    }
-
-    // Reorder remaining questions to fill the gap
-    const { data: questionsToReorder, error: fetchReorderError } =
-      await tenantSupabase
-        .from("survey_questions")
-        .select("id, order_index")
-        .eq("tenant_id", tenantId)
-        .gt("order_index", deletedOrderIndex)
-        .order("order_index", { ascending: true });
-
-    if (fetchReorderError) {
-      console.warn(
-        "Failed to fetch questions for reordering:",
-        fetchReorderError
-      );
-    } else if (questionsToReorder && questionsToReorder.length > 0) {
-      // Update each question's order_index
-      for (const question of questionsToReorder) {
-        const { error: updateError } = await tenantSupabase
-          .from("survey_questions")
-          .update({ order_index: question.order_index - 1 })
-          .eq("id", question.id);
-
-        if (updateError) {
-          console.warn(
-            `Failed to reorder question ${question.id}:`,
-            updateError
-          );
+      responses?.forEach((response: any) => {
+        const answer = response.answer;
+        if (answer?.array) {
+          // Multiple choice - array of selected options
+          answer.array.forEach((option: string) => {
+            choiceCounts[option] = (choiceCounts[option] || 0) + 1;
+          });
+        } else if (answer?.text) {
+          // Single choice - text option
+          choiceCounts[answer.text] = (choiceCounts[answer.text] || 0) + 1;
         }
-      }
+      });
+
+      return {
+        results: {
+          totalResponses,
+          questionType,
+          questionText: question.question,
+          options,
+          choiceCounts,
+        },
+        error: null,
+      };
     }
 
+    if (questionType === "yes_no") {
+      // Count yes/no
+      let yesCount = 0;
+      let noCount = 0;
+
+      responses?.forEach((response: any) => {
+        const answer = response.answer;
+        if (answer?.boolean === true) yesCount++;
+        else if (answer?.boolean === false) noCount++;
+      });
+
+      return {
+        results: {
+          totalResponses,
+          questionType,
+          questionText: question.question,
+          booleanCounts: { yes: yesCount, no: noCount },
+        },
+        error: null,
+      };
+    }
+
+    if (
+      questionType === "nps" ||
+      questionType === "likert_5" ||
+      questionType === "likert_7" ||
+      questionType === "rating_5" ||
+      questionType === "numeric" ||
+      questionType === "slider" ||
+      questionType === "sentiment"
+    ) {
+      // Numeric statistics
+      const numbers: number[] = [];
+      const distribution: Record<number, number> = {};
+
+      responses?.forEach((response: any) => {
+        const answer = response.answer;
+        if (answer?.number !== undefined && answer?.number !== null) {
+          const num = Number(answer.number);
+          numbers.push(num);
+          distribution[num] = (distribution[num] || 0) + 1;
+        }
+      });
+
+      if (numbers.length === 0) {
+        return {
+          results: {
+            totalResponses,
+            questionType,
+            questionText: question.question,
+            numericStats: {
+              min: 0,
+              max: 0,
+              mean: 0,
+              median: 0,
+              distribution: {},
+            },
+          },
+          error: null,
+        };
+      }
+
+      numbers.sort((a, b) => a - b);
+      const min = numbers[0];
+      const max = numbers[numbers.length - 1];
+      const mean = numbers.reduce((sum, n) => sum + n, 0) / numbers.length;
+      const median =
+        numbers.length % 2 === 0
+          ? (numbers[numbers.length / 2 - 1] + numbers[numbers.length / 2]) / 2
+          : numbers[Math.floor(numbers.length / 2)];
+
+      return {
+        results: {
+          totalResponses,
+          questionType,
+          questionText: question.question,
+          numericStats: {
+            min,
+            max,
+            mean: Number(mean.toFixed(2)),
+            median: Number(median.toFixed(2)),
+            distribution,
+          },
+        },
+        error: null,
+      };
+    }
+
+    if (questionType === "open_text") {
+      // Text responses
+      const textResponses: string[] = [];
+
+      responses?.forEach((response: any) => {
+        const answer = response.answer;
+        if (answer?.text && answer.text.trim()) {
+          textResponses.push(answer.text);
+        }
+      });
+
+      return {
+        results: {
+          totalResponses,
+          questionType,
+          questionText: question.question,
+          textResponses,
+        },
+        error: null,
+      };
+    }
+
+    if (questionType === "date") {
+      // Date counts
+      const dateCounts: Record<string, number> = {};
+
+      responses?.forEach((response: any) => {
+        const answer = response.answer;
+        if (answer?.text) {
+          const date = answer.text.split("T")[0]; // Get date part only
+          dateCounts[date] = (dateCounts[date] || 0) + 1;
+        }
+      });
+
+      return {
+        results: {
+          totalResponses,
+          questionType,
+          questionText: question.question,
+          dateCounts,
+        },
+        error: null,
+      };
+    }
+
+    if (questionType === "time") {
+      // Time counts
+      const timeCounts: Record<string, number> = {};
+
+      responses?.forEach((response: any) => {
+        const answer = response.answer;
+        if (answer?.text) {
+          timeCounts[answer.text] = (timeCounts[answer.text] || 0) + 1;
+        }
+      });
+
+      return {
+        results: {
+          totalResponses,
+          questionType,
+          questionText: question.question,
+          timeCounts,
+        },
+        error: null,
+      };
+    }
+
+    // Unknown question type
     return {
-      success: true,
+      results: {
+        totalResponses,
+        questionType,
+        questionText: question.question,
+      },
       error: null,
     };
   } catch (err) {
     return {
-      success: false,
+      results: null,
       error: err instanceof Error ? err.message : "An error occurred",
     };
   }
 }
 
 /**
- * Fetches a single survey question by ID
+ * Fetches a single question by ID
  */
 export async function getQuestionById(
   tenantSlug: string,
@@ -596,16 +339,16 @@ export async function getQuestionById(
     const tenantSupabase = await createTenantClient(tenantId);
 
     // Fetch the question
-    const { data: question, error: fetchError } = await tenantSupabase
+    const { data: question, error: questionError } = await tenantSupabase
       .from("survey_questions")
       .select("*")
       .eq("id", questionId)
       .single();
 
-    if (fetchError || !question) {
+    if (questionError || !question) {
       return {
         question: null,
-        error: fetchError?.message || "Question not found",
+        error: questionError?.message || "Question not found",
       };
     }
 
@@ -616,6 +359,461 @@ export async function getQuestionById(
   } catch (err) {
     return {
       question: null,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Creates a new survey question
+ */
+export async function createQuestion(
+  tenantSlug: string,
+  question: {
+    question: string;
+    type: QuestionType;
+    options?: string[];
+    is_active?: boolean;
+  }
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Resolve tenant
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      { slug_input: tenantSlug }
+    );
+    if (resolveError || !tenantId) {
+      return { success: false, error: `Tenant not found: ${tenantSlug}` };
+    }
+
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Get max order_index to append to end
+    const { data: questions, error: orderError } = await tenantSupabase
+      .from("survey_questions")
+      .select("order_index")
+      .order("order_index", { ascending: false })
+      .limit(1);
+
+    const maxOrder =
+      questions && questions.length > 0 ? questions[0].order_index : 0;
+    const newOrderIndex = maxOrder + 1;
+
+    const insertData: any = {
+      tenant_id: tenantId,
+      question: question.question,
+      type: question.type,
+      options:
+        question.options && question.options.length > 0
+          ? question.options
+          : null,
+      order_index: newOrderIndex,
+      is_active: question.is_active ?? true,
+    };
+
+    const { error: insertError } = await tenantSupabase
+      .from("survey_questions")
+      .insert(insertData);
+
+    if (insertError) {
+      return {
+        success: false,
+        error: insertError.message || "Failed to create question",
+      };
+    }
+
+    return { success: true, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Updates an existing survey question
+ */
+export async function updateQuestion(
+  tenantSlug: string,
+  questionId: string,
+  updates: {
+    question?: string;
+    type?: QuestionType;
+    options?: string[];
+    is_active?: boolean;
+  }
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Resolve tenant
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      { slug_input: tenantSlug }
+    );
+    if (resolveError || !tenantId) {
+      return { success: false, error: `Tenant not found: ${tenantSlug}` };
+    }
+
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Prepare update data
+    const updateData: any = {};
+    if (updates.question !== undefined) updateData.question = updates.question;
+    if (updates.type !== undefined) updateData.type = updates.type;
+    if (updates.options !== undefined) {
+      updateData.options =
+        updates.options && updates.options.length > 0 ? updates.options : null;
+    }
+    if (updates.is_active !== undefined)
+      updateData.is_active = updates.is_active;
+
+    const { data, error: updateError } = await tenantSupabase
+      .from("survey_questions")
+      .update(updateData)
+      .eq("id", questionId)
+      .select();
+
+    if (updateError) {
+      return {
+        success: false,
+        error: updateError.message || "Failed to update question",
+      };
+    }
+
+    if (!data || data.length === 0) {
+      return {
+        success: false,
+        error: "Update blocked - no rows were updated. Check RLS policies.",
+      };
+    }
+
+    return { success: true, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Deletes a survey question and reorders remaining questions
+ */
+export async function deleteQuestion(
+  tenantSlug: string,
+  questionId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Resolve tenant
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      { slug_input: tenantSlug }
+    );
+    if (resolveError || !tenantId) {
+      return { success: false, error: `Tenant not found: ${tenantSlug}` };
+    }
+
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Get the question to find its order_index
+    const { data: question, error: questionError } = await tenantSupabase
+      .from("survey_questions")
+      .select("order_index")
+      .eq("id", questionId)
+      .single();
+
+    if (questionError || !question) {
+      return {
+        success: false,
+        error: "Question not found",
+      };
+    }
+
+    const deletedOrderIndex = question.order_index;
+
+    // Delete the question
+    const { error: deleteError } = await tenantSupabase
+      .from("survey_questions")
+      .delete()
+      .eq("id", questionId);
+
+    if (deleteError) {
+      return {
+        success: false,
+        error: deleteError.message || "Failed to delete question",
+      };
+    }
+
+    // Reorder remaining questions (decrement order_index for questions after deleted one)
+    // Fetch all questions with order_index > deletedOrderIndex
+    const { data: questionsToReorder, error: fetchError } = await tenantSupabase
+      .from("survey_questions")
+      .select("id, order_index")
+      .gt("order_index", deletedOrderIndex);
+
+    if (fetchError) {
+      console.error("Failed to fetch questions for reordering:", fetchError);
+      // Don't fail the delete if reorder fails, just log it
+    } else if (questionsToReorder && questionsToReorder.length > 0) {
+      // Update each question's order_index
+      for (const question of questionsToReorder) {
+        await tenantSupabase
+          .from("survey_questions")
+          .update({ order_index: question.order_index - 1 })
+          .eq("id", question.id);
+      }
+    }
+
+    return { success: true, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Toggles the active status of a question
+ */
+export async function toggleQuestionStatus(
+  tenantSlug: string,
+  questionId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Resolve tenant
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      { slug_input: tenantSlug }
+    );
+    if (resolveError || !tenantId) {
+      return { success: false, error: `Tenant not found: ${tenantSlug}` };
+    }
+
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Get current status
+    const { data: question, error: questionError } = await tenantSupabase
+      .from("survey_questions")
+      .select("is_active")
+      .eq("id", questionId)
+      .single();
+
+    if (questionError || !question) {
+      return {
+        success: false,
+        error: "Question not found",
+      };
+    }
+
+    // Toggle status
+    const newStatus = !(question.is_active ?? true);
+
+    const { data, error: updateError } = await tenantSupabase
+      .from("survey_questions")
+      .update({ is_active: newStatus })
+      .eq("id", questionId)
+      .select();
+
+    if (updateError) {
+      return {
+        success: false,
+        error: updateError.message || "Failed to toggle question status",
+      };
+    }
+
+    if (!data || data.length === 0) {
+      return {
+        success: false,
+        error: "Update blocked - no rows were updated. Check RLS policies.",
+      };
+    }
+
+    return { success: true, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Reorders a question up or down
+ */
+export async function reorderQuestion(
+  tenantSlug: string,
+  questionId: string,
+  direction: "up" | "down"
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Resolve tenant
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant",
+      { slug_input: tenantSlug }
+    );
+    if (resolveError || !tenantId) {
+      return { success: false, error: `Tenant not found: ${tenantSlug}` };
+    }
+
+    const tenantSupabase = await createTenantClient(tenantId);
+
+    // Get current question
+    const { data: currentQuestion, error: currentError } = await tenantSupabase
+      .from("survey_questions")
+      .select("order_index")
+      .eq("id", questionId)
+      .single();
+
+    if (currentError || !currentQuestion) {
+      return {
+        success: false,
+        error: "Question not found",
+      };
+    }
+
+    const currentOrder = currentQuestion.order_index;
+    const targetOrder =
+      direction === "up" ? currentOrder - 1 : currentOrder + 1;
+
+    // Get the question at the target position
+    const { data: targetQuestion, error: targetError } = await tenantSupabase
+      .from("survey_questions")
+      .select("id, order_index")
+      .eq("order_index", targetOrder)
+      .single();
+
+    if (targetError || !targetQuestion) {
+      return {
+        success: false,
+        error: `Cannot move ${direction === "up" ? "up" : "down"}: already at ${
+          direction === "up" ? "top" : "bottom"
+        }`,
+      };
+    }
+
+    // Swap order indices using a temporary value to avoid unique constraint violations
+    // Step 1: Set current question to a temporary negative value
+    const tempOrder = -1;
+    const { error: step1Error } = await tenantSupabase
+      .from("survey_questions")
+      .update({ order_index: tempOrder })
+      .eq("id", questionId);
+
+    if (step1Error) {
+      return {
+        success: false,
+        error: step1Error.message || "Failed to reorder question",
+      };
+    }
+
+    // Step 2: Set target question to current order
+    const { error: step2Error } = await tenantSupabase
+      .from("survey_questions")
+      .update({ order_index: currentOrder })
+      .eq("id", targetQuestion.id);
+
+    if (step2Error) {
+      // Rollback: restore current question
+      await tenantSupabase
+        .from("survey_questions")
+        .update({ order_index: currentOrder })
+        .eq("id", questionId);
+      return {
+        success: false,
+        error: step2Error.message || "Failed to reorder question",
+      };
+    }
+
+    // Step 3: Set current question to target order
+    const { data, error: step3Error } = await tenantSupabase
+      .from("survey_questions")
+      .update({ order_index: targetOrder })
+      .eq("id", questionId)
+      .select();
+
+    if (step3Error) {
+      // Rollback: restore both questions
+      await tenantSupabase
+        .from("survey_questions")
+        .update({ order_index: currentOrder })
+        .eq("id", questionId);
+      await tenantSupabase
+        .from("survey_questions")
+        .update({ order_index: targetOrder })
+        .eq("id", targetQuestion.id);
+      return {
+        success: false,
+        error: step3Error.message || "Failed to reorder question",
+      };
+    }
+
+    if (!data || data.length === 0) {
+      return {
+        success: false,
+        error: "Update blocked - no rows were updated. Check RLS policies.",
+      };
+    }
+
+    return { success: true, error: null };
+  } catch (err) {
+    return {
+      success: false,
       error: err instanceof Error ? err.message : "An error occurred",
     };
   }

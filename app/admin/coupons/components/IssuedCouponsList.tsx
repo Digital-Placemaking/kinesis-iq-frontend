@@ -13,7 +13,7 @@ interface IssuedCoupon {
   coupon_id: string;
   code: string;
   email: string | null;
-  status: "issued" | "redeemed" | "expired" | "cancelled";
+  status: "issued" | "redeemed" | "revoked" | "expired";
   redemptions_count: number;
   max_redemptions: number;
   issued_at: string;
@@ -81,7 +81,7 @@ export default function IssuedCouponsList({
 
   const handleStatusChange = async (
     issuedCouponId: string,
-    newStatus: "issued" | "redeemed" | "expired" | "cancelled"
+    newStatus: "issued" | "redeemed" | "revoked" | "expired"
   ) => {
     setUpdatingId(issuedCouponId);
     try {
@@ -120,7 +120,7 @@ export default function IssuedCouponsList({
       case "redeemed":
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       case "expired":
-      case "cancelled":
+      case "revoked":
         return <XCircle className="h-4 w-4 text-red-600" />;
       default:
         return <Clock className="h-4 w-4 text-blue-600" />;
@@ -132,7 +132,7 @@ export default function IssuedCouponsList({
       case "redeemed":
         return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
       case "expired":
-      case "cancelled":
+      case "revoked":
         return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
       default:
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
@@ -240,8 +240,8 @@ export default function IssuedCouponsList({
                           >
                             <option value="issued">Issued</option>
                             <option value="redeemed">Redeemed</option>
+                            <option value="revoked">Revoked</option>
                             <option value="expired">Expired</option>
-                            <option value="cancelled">Cancelled</option>
                           </select>
                           <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600 dark:text-zinc-400" />
                         </div>

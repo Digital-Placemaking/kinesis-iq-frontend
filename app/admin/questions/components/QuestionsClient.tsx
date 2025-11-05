@@ -96,6 +96,8 @@ export default function QuestionsClient({
                         questionIndex={index}
                         totalQuestions={questions.length}
                         isActive={isActive}
+                        questionText={question.question}
+                        questionType={question.type}
                       />
                     </div>
                   </div>

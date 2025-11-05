@@ -25,6 +25,7 @@ export {
   getCouponById,
   getCouponsForTenant,
   createCoupon,
+  updateCoupon,
   deleteCoupon,
 } from "./actions/coupons";
 
@@ -51,7 +52,9 @@ export {
   createQuestion,
   deleteQuestion,
   getQuestionById,
+  getQuestionResults,
 } from "./actions/questions";
+export type { QuestionResult } from "./actions/questions";
 
 // Issued coupon actions
 export {
