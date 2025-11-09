@@ -448,7 +448,9 @@ export async function getCouponStatus(
 
 /**
  * Checks if a user already has an issued coupon for a specific coupon
- * Returns the existing coupon if found and valid
+ * Returns the existing coupon if found, regardless of redemption status
+ * This allows the completed page to display coupons even if already redeemed
+ * Rate limited but less strict than coupon issuance (20 requests/min vs 3/10sec)
  */
 export async function checkExistingCoupon(
   tenantSlug: string,
@@ -460,6 +462,22 @@ export async function checkExistingCoupon(
   error: string | null;
 }> {
   try {
+    // Rate limiting: use email as identifier if available, otherwise use IP
+    // Less strict than coupon issuance (COUPON_CHECK vs COUPON_ISSUE)
+    const headersList = await headers();
+    const identifier = getClientIdentifier(email, headersList);
+    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.COUPON_CHECK);
+    console.log("CHECKING IF COUPON EXISTS");
+    if (!rateLimit.allowed) {
+      return {
+        exists: false,
+        issuedCoupon: null,
+        error: `Too many coupon check requests. Please try again in ${Math.ceil(
+          (rateLimit.resetAt - Date.now()) / 1000
+        )} seconds.`,
+      };
+    }
+
     const supabase = await createClient();
 
     // Resolve tenant slug to UUID
@@ -501,30 +519,12 @@ export async function checkExistingCoupon(
 
     const existing = existingCoupons[0];
 
-    // Check if coupon is still valid (not expired, not fully redeemed)
-    const isExpired = existing.expires_at
-      ? new Date(existing.expires_at) < new Date()
-      : false;
-
-    const isFullyRedeemed =
-      existing.redemptions_count >= existing.max_redemptions;
-
-    const isValidStatus =
-      existing.status === "issued" || existing.status === "redeemed";
-
-    // If coupon is still valid, return it
-    if (!isExpired && !isFullyRedeemed && isValidStatus) {
-      return {
-        exists: true,
-        issuedCoupon: existing as any,
-        error: null,
-      };
-    }
-
-    // If coupon exists but is invalid, return that it doesn't exist
+    // Always return the existing coupon if found, regardless of redemption status
+    // This allows the completed page to display the coupon even if it's already redeemed
+    // The redemption status is checked separately for display purposes
     return {
-      exists: false,
-      issuedCoupon: null,
+      exists: true,
+      issuedCoupon: existing as any,
       error: null,
     };
   } catch (err) {

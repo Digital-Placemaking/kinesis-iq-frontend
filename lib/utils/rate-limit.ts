@@ -1,7 +1,17 @@
 /**
  * Rate limiting utility
  * Simple in-memory rate limiter for server actions
- * Can be upgraded to Redis for production/multi-instance deployments
+ *
+ * NOTE: This in-memory implementation has limitations:
+ * - Rate limits are NOT shared across server instances/containers
+ * - Rate limits are lost on server restarts
+ * - In serverless environments (Vercel, AWS Lambda), each invocation may have a separate Map
+ * - Users can bypass rate limits by hitting different instances
+ *
+ * For production/multi-instance deployments, upgrade to Redis or a database-backed solution:
+ * - Redis (Upstash, Vercel KV, or self-hosted)
+ * - Supabase Postgres (use your existing database)
+ * - This ensures rate limits work correctly across all instances and persist across restarts
  */
 
 type RateLimitConfig = {

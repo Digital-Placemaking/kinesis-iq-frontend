@@ -28,6 +28,12 @@ export const RATE_LIMITS = {
     windowMs: 10 * 1000, // Per 10 seconds
   },
 
+  // Coupon check rate limits (for checking existing coupons - less strict than issuance)
+  COUPON_CHECK: {
+    maxRequests: 20, // Maximum 20 coupon checks
+    windowMs: 60 * 1000, // Per 60 seconds (1 minute)
+  },
+
   // General API rate limits
   GENERAL: {
     maxRequests: 20, // Maximum 20 requests

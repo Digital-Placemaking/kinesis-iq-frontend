@@ -4,6 +4,7 @@ import {
   verifyEmailOptIn,
   getCouponById,
   issueCoupon,
+  checkExistingCoupon,
 } from "@/app/actions";
 import { toTenantDisplay } from "@/lib/utils/tenant";
 import CouponCompletion from "./components/CouponCompletion";
@@ -56,23 +57,48 @@ export default async function CompletedPage({
     notFound();
   }
 
-  // Issue coupon code (create issued_coupon record)
-  // The issueCoupon function handles duplicate prevention internally
-  // It will return the existing coupon if one already exists for this email/coupon
-  const { issuedCoupon, error: issueError } = await issueCoupon(
-    slug,
-    couponId,
-    email,
-    coupon.expires_at || null
-  );
-
   const tenant = toTenantDisplay(tenantData);
+
+  // First, check if user already has an issued coupon for this coupon
+  // This avoids unnecessary API calls when the coupon is already redeemed
+  // Rate limited but less strict than coupon issuance
+  const {
+    exists,
+    issuedCoupon: existingCoupon,
+    error: checkError,
+  } = await checkExistingCoupon(slug, couponId, email);
+
+  let issuedCoupon;
+  let issueError: string | null = null;
+
+  if (exists && existingCoupon) {
+    // User already has an issued coupon - use it directly
+    // This skips the issueCoupon call entirely, saving an API request
+    issuedCoupon = existingCoupon;
+  } else if (checkError) {
+    // Rate limit error or other check error - log but try to issue anyway
+    console.warn("Error checking existing coupon:", checkError);
+    // Continue to issueCoupon below
+  } else {
+    // No existing coupon found - issue a new one
+    // This only happens for first-time coupon claims
+    const issueResult = await issueCoupon(
+      slug,
+      couponId,
+      email,
+      coupon.expires_at || null
+    );
+
+    issuedCoupon = issueResult.issuedCoupon;
+    issueError = issueResult.error;
+  }
 
   // If issue fails, show error on page instead of redirecting (for debugging)
   if (issueError || !issuedCoupon) {
     // Log the error for debugging
-    console.error("Failed to issue coupon:", {
+    console.error("Failed to get or issue coupon:", {
       error: issueError,
+      checkError,
       slug,
       couponId,
       email,
@@ -87,7 +113,7 @@ export default async function CompletedPage({
         couponCode={null}
         issuedCouponId={null}
         tenantSlug={slug}
-        error={issueError || "Failed to issue coupon"}
+        error={issueError || checkError || "Failed to get or issue coupon"}
       />
     );
   }
