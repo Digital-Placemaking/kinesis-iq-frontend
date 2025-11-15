@@ -54,6 +54,31 @@ Set the standard Supabase vars:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (only for protected scripts/migrations; not exposed client-side)
 
+### Rate Limiting (Upstash Redis)
+
+Rate limiting uses Upstash Redis for distributed rate limiting across all server instances. This provides fast in-memory lookups that scale well with high concurrent load.
+
+**Setup:**
+
+1. Create an account at https://upstash.com
+2. Create a new Redis database
+3. Copy your REST API credentials
+4. Add environment variables to your `.env.local` (or Vercel project settings):
+   ```
+   UPSTASH_REDIS_REST_URL=your_redis_url_here
+   UPSTASH_REDIS_REST_TOKEN=your_redis_token_here
+   ```
+
+**Benefits:**
+
+- Fast in-memory lookups (~1-2ms latency)
+- Better performance than database queries for high-throughput scenarios
+- Automatic key expiration (no cleanup needed)
+- Works across all server instances and persists across restarts
+- Serverless-friendly (REST API, no persistent connections)
+
+**Pricing:** Free tier includes 10,000 commands/day. Paid tier is $0.20 per 100,000 commands. Perfect for rate limiting use case.
+
 ## Multi‑Tenant + RLS (Important)
 
 - Tenant context is passed via `x-tenant-id` on every Supabase request using `createTenantClient(tenantId)`.

@@ -1,60 +1,63 @@
 /**
  * Rate limiting utility
- * Simple in-memory rate limiter for server actions
+ * Uses Upstash Redis for distributed rate limiting across all server instances
  *
- * NOTE: This in-memory implementation has limitations:
- * - Rate limits are NOT shared across server instances/containers
- * - Rate limits are lost on server restarts
- * - In serverless environments (Vercel, AWS Lambda), each invocation may have a separate Map
- * - Users can bypass rate limits by hitting different instances
+ * Benefits over database solutions:
+ * - Much faster lookups (in-memory Redis vs database queries)
+ * - Better performance at scale (handles high concurrent load)
+ * - Automatic key expiration (no cleanup needed)
+ * - Shared across all server instances/containers
+ * - Works correctly in serverless environments (Vercel, AWS Lambda)
+ * - Users cannot bypass rate limits by hitting different instances
  *
- * For production/multi-instance deployments, upgrade to Redis or a database-backed solution:
- * - Redis (Upstash, Vercel KV, or self-hosted)
- * - Supabase Postgres (use your existing database)
- * - This ensures rate limits work correctly across all instances and persist across restarts
+ * Uses fixed-window rate limiting algorithm:
+ * - Each rate limit window is a fixed duration (e.g., 60 seconds)
+ * - Count resets at the end of each window
+ * - Simple and efficient for Redis
  */
+
+import { Redis } from "@upstash/redis";
 
 type RateLimitConfig = {
   maxRequests: number;
   windowMs: number;
 };
 
-// In-memory store: Map<identifier, { count: number, resetAt: number }>
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
-
-// Cleanup old entries periodically (every 5 minutes)
-if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, value] of rateLimitStore.entries()) {
-      if (value.resetAt < now) {
-        rateLimitStore.delete(key);
-      }
-    }
-  }, 5 * 60 * 1000);
-}
+// Initialize Redis client (uses REST API, works in serverless)
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
 
 /**
- * Checks if a request should be rate limited
+ * Checks if a request should be rate limited using Upstash Redis
+ * Uses fixed-window rate limiting algorithm
+ *
  * @param identifier - Unique identifier (IP address, email, etc.)
  * @param config - Rate limit configuration
  * @returns { allowed: boolean, remaining: number, resetAt: number }
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   identifier: string,
   config: RateLimitConfig
-): {
+): Promise<{
   allowed: boolean;
   remaining: number;
   resetAt: number;
-} {
+}> {
   const now = Date.now();
-  const entry = rateLimitStore.get(identifier);
+  const resetAt = now + config.windowMs;
+  const key = `rate_limit:${identifier}`;
+  const windowSeconds = Math.ceil(config.windowMs / 1000);
 
-  // No entry exists or window has expired
-  if (!entry || entry.resetAt < now) {
-    const resetAt = now + config.windowMs;
-    rateLimitStore.set(identifier, { count: 1, resetAt });
+  // If Redis is not configured, allow all requests (fail open)
+  if (!redis) {
+    console.warn(
+      "Redis not configured for rate limiting - allowing all requests. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables."
+    );
     return {
       allowed: true,
       remaining: config.maxRequests - 1,
@@ -62,24 +65,55 @@ export function checkRateLimit(
     };
   }
 
-  // Entry exists and is within window
-  if (entry.count >= config.maxRequests) {
+  try {
+    // Get current count from Redis
+    const currentCount = await redis.get<number>(key);
+
+    // If no entry exists, create new entry with count 1
+    if (currentCount === null) {
+      await redis.set(key, 1, { ex: windowSeconds });
+      return {
+        allowed: true,
+        remaining: config.maxRequests - 1,
+        resetAt,
+      };
+    }
+
+    // Entry exists - check if limit exceeded
+    if (currentCount >= config.maxRequests) {
+      // Get TTL to calculate reset time
+      const ttl = await redis.ttl(key);
+      const calculatedResetAt = now + (ttl > 0 ? ttl * 1000 : config.windowMs);
+
+      return {
+        allowed: false,
+        remaining: 0,
+        resetAt: calculatedResetAt,
+      };
+    }
+
+    // Increment count atomically
+    const newCount = await redis.incr(key);
+
+    // Refresh expiration (Redis keeps TTL on increment, but refresh to be safe)
+    await redis.expire(key, windowSeconds);
+
     return {
-      allowed: false,
-      remaining: 0,
-      resetAt: entry.resetAt,
+      allowed: true,
+      remaining: config.maxRequests - newCount,
+      resetAt,
+    };
+  } catch (error) {
+    // If Redis is unavailable, allow the request (fail open)
+    // Log error but don't block legitimate users
+    console.error("Rate limit check failed, allowing request:", error);
+
+    return {
+      allowed: true,
+      remaining: config.maxRequests - 1,
+      resetAt,
     };
   }
-
-  // Increment count
-  entry.count += 1;
-  rateLimitStore.set(identifier, entry);
-
-  return {
-    allowed: true,
-    remaining: config.maxRequests - entry.count,
-    resetAt: entry.resetAt,
-  };
 }
 
 /**

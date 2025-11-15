@@ -193,7 +193,10 @@ export async function submitSurveyAnswers(
     // Rate limiting: use email if available, otherwise use IP
     const headersList = await headers();
     const identifier = getClientIdentifier(submission.email, headersList);
-    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.SURVEY_SUBMIT);
+    const rateLimit = await checkRateLimit(
+      identifier,
+      RATE_LIMITS.SURVEY_SUBMIT
+    );
 
     if (!rateLimit.allowed) {
       return {

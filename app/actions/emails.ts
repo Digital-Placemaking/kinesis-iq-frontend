@@ -19,7 +19,10 @@ export async function submitEmail(tenantSlug: string, email: string) {
     // Rate limiting: use email as identifier
     const headersList = await headers();
     const identifier = getClientIdentifier(email, headersList);
-    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.EMAIL_SUBMIT);
+    const rateLimit = await checkRateLimit(
+      identifier,
+      RATE_LIMITS.EMAIL_SUBMIT
+    );
 
     if (!rateLimit.allowed) {
       return {
@@ -101,7 +104,10 @@ export async function submitEmailOptIn(tenantSlug: string, email: string) {
     // Rate limiting: use email as identifier
     const headersList = await headers();
     const identifier = getClientIdentifier(email, headersList);
-    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.EMAIL_OPT_IN);
+    const rateLimit = await checkRateLimit(
+      identifier,
+      RATE_LIMITS.EMAIL_OPT_IN
+    );
 
     if (!rateLimit.allowed) {
       return {

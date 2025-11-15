@@ -56,7 +56,10 @@ export async function issueCoupon(
     // Rate limiting: use email as identifier if available, otherwise use IP
     const headersList = await headers();
     const identifier = getClientIdentifier(email, headersList);
-    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.COUPON_ISSUE);
+    const rateLimit = await checkRateLimit(
+      identifier,
+      RATE_LIMITS.COUPON_ISSUE
+    );
 
     // if (!rateLimit.allowed) {
     //   return {
@@ -466,7 +469,10 @@ export async function checkExistingCoupon(
     // Less strict than coupon issuance (COUPON_CHECK vs COUPON_ISSUE)
     const headersList = await headers();
     const identifier = getClientIdentifier(email, headersList);
-    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.COUPON_CHECK);
+    const rateLimit = await checkRateLimit(
+      identifier,
+      RATE_LIMITS.COUPON_CHECK
+    );
     console.log("CHECKING IF COUPON EXISTS");
     if (!rateLimit.allowed) {
       return {
