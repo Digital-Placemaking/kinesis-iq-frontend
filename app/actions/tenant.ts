@@ -1,9 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import type { Tenant, TenantResponse } from "@/lib/types/tenant";
 import { isReservedSubdomain } from "@/lib/constants/subdomains";
+import { checkRateLimit, getClientIdentifier } from "@/lib/utils/rate-limit";
+import { RATE_LIMITS } from "@/lib/constants/rate-limits";
 
 /**
  * Tenant Actions
@@ -250,6 +253,40 @@ export async function updateTenantSettings(
     }
     if (updates.subdomain !== undefined) {
       const subdomainValue = updates.subdomain?.trim() || null;
+
+      // Get current tenant to check if subdomain is actually changing
+      const tenantSupabase = await createTenantClient(resolvedTenantId);
+      const { data: currentTenant } = await tenantSupabase
+        .from("tenants")
+        .select("subdomain")
+        .eq("id", resolvedTenantId)
+        .single();
+
+      const currentSubdomain = currentTenant?.subdomain || null;
+      const isSubdomainChanging = subdomainValue !== currentSubdomain;
+
+      // Only apply rate limiting if subdomain is actually changing
+      if (isSubdomainChanging) {
+        // Rate limiting: use tenant ID as identifier (unique per tenant)
+        const headersList = await headers();
+        const identifier = `tenant:${resolvedTenantId}`;
+        const rateLimit = await checkRateLimit(
+          identifier,
+          RATE_LIMITS.SUBDOMAIN_CHANGE
+        );
+
+        if (!rateLimit.allowed) {
+          const hoursUntilReset = Math.ceil(
+            (rateLimit.resetAt - Date.now()) / (1000 * 60 * 60)
+          );
+          return {
+            success: false,
+            error: `Subdomain can only be changed once per day. Please try again in ${hoursUntilReset} hour${
+              hoursUntilReset !== 1 ? "s" : ""
+            }.`,
+          };
+        }
+      }
 
       // Validate subdomain format if provided
       if (subdomainValue) {

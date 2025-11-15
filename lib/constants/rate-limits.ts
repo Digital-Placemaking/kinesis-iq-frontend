@@ -39,4 +39,10 @@ export const RATE_LIMITS = {
     maxRequests: 20, // Maximum 20 requests
     windowMs: 60 * 1000, // Per 60 seconds (1 minute)
   },
+
+  // Subdomain change rate limits (once per day)
+  SUBDOMAIN_CHANGE: {
+    maxRequests: 1, // Maximum 1 subdomain change
+    windowMs: 24 * 60 * 60 * 1000, // Per 24 hours (1 day)
+  },
 } as const;

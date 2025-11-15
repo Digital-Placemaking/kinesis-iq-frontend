@@ -25,6 +25,7 @@ import {
 } from "@/app/actions";
 import Card from "@/app/components/ui/Card";
 import ActionButton from "@/app/components/ui/ActionButton";
+import Modal from "@/app/components/ui/Modal";
 
 interface SettingsClientProps {
   tenant: Tenant;
@@ -61,6 +62,7 @@ export default function SettingsClient({
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     tenant.logo_url || null
   );
+  const [showSubdomainConfirm, setShowSubdomainConfirm] = useState(false);
 
   // Track original values (will be updated after successful saves)
   const [originalValues, setOriginalValues] = useState({
@@ -199,9 +201,26 @@ export default function SettingsClient({
   };
 
   const handleSave = async () => {
+    // Check if subdomain is changing
+    const currentSubdomain = originalValues.subdomain || "";
+    const newSubdomain = subdomain.trim() || "";
+    const isSubdomainChanging = newSubdomain !== currentSubdomain;
+
+    // If subdomain is changing, show confirmation modal
+    if (isSubdomainChanging) {
+      setShowSubdomainConfirm(true);
+      return;
+    }
+
+    // Otherwise, proceed with save immediately
+    await performSave();
+  };
+
+  const performSave = async () => {
     setLoading(true);
     setError(null);
     setSuccess(null);
+    setShowSubdomainConfirm(false);
 
     try {
       // Update tenant settings (name, active)
@@ -645,6 +664,74 @@ export default function SettingsClient({
           </div>
         )}
       </Card>
+
+      {/* Subdomain Change Confirmation Modal */}
+      <Modal
+        isOpen={showSubdomainConfirm}
+        onClose={() => setShowSubdomainConfirm(false)}
+        title="Confirm Subdomain Change"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-zinc-700 dark:text-zinc-300">
+            You are about to change your subdomain. This will update how
+            customers access your pilot page.
+          </p>
+
+          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  Current subdomain:
+                </span>
+                <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                  {originalValues.subdomain || "(none)"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  New subdomain:
+                </span>
+                <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                  {subdomain.trim() || "(removing subdomain)"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+            <p className="text-xs text-amber-800 dark:text-amber-300">
+              <strong>Important:</strong> Subdomain changes are limited to once
+              per day. Make sure this is the subdomain you want before
+              confirming.
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              onClick={() => setShowSubdomainConfirm(false)}
+              disabled={loading}
+              className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={performSave}
+              disabled={loading}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Updating...
+                </span>
+              ) : (
+                "Confirm Change"
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
