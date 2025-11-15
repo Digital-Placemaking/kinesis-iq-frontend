@@ -3,7 +3,7 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const TARGET_EMAIL = "abuyuanjustin@gmail.com";
+const TARGET_EMAIL = "sales@digitalplacemaking.ca";
 
 export async function submitContactForm(
   name: string,
