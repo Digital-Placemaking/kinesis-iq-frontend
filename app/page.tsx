@@ -7,18 +7,20 @@ export const metadata: Metadata = {
   description: "Digital Placemaking",
 };
 
+const PREVIEW_IMAGE_URL = "https://placehold.co/1600x1200";
+
 export default function HomePage() {
   return (
     <div className="min-h-screen">
       <AuthCallbackHandler />
       {/* Hero Section - Split Layout */}
-      <section className="relative flex min-h-screen items-center bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+      <section className="relative flex min-h-screen items-center overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
         {/* Decorative gradient blur */}
         <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center">
           <div className="h-[50vh] w-[50vh] rounded-full bg-blue-600/10 blur-3xl dark:bg-blue-500/10" />
         </div>
 
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:gap-16">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:pr-0">
           {/* Left Side - Main Content */}
           <div className="flex flex-col justify-center space-y-8 py-12 lg:py-24">
             <div className="space-y-2">
@@ -66,85 +68,14 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right Side - Preview Cards */}
-          <div className="relative hidden lg:block">
-            <div className="sticky top-24 space-y-4">
-              {/* Preview Card 1 */}
-              <div className="group overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg transition-shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-900/30" />
-                      <div>
-                        <h3 className="font-semibold text-black dark:text-zinc-50">
-                          Analytics Dashboard
-                        </h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Real-time insights
-                        </p>
-                      </div>
-                    </div>
-                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-2 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
-                    <div className="h-2 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800" />
-                    <div className="h-2 w-1/2 rounded bg-zinc-200 dark:bg-zinc-800" />
-                  </div>
-                </div>
-                <div className="h-32 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20" />
-              </div>
-
-              {/* Preview Card 2 */}
-              <div className="group overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg transition-shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-900/30" />
-                      <div>
-                        <h3 className="font-semibold text-black dark:text-zinc-50">
-                          Predictive Models
-                        </h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Forecast trends
-                        </p>
-                      </div>
-                    </div>
-                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-2 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
-                    <div className="h-2 w-4/5 rounded bg-zinc-200 dark:bg-zinc-800" />
-                    <div className="h-2 w-2/3 rounded bg-zinc-200 dark:bg-zinc-800" />
-                  </div>
-                </div>
-                <div className="h-32 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20" />
-              </div>
-
-              {/* Preview Card 3 - Cutoff */}
-              <div className="group overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg transition-shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-900/30" />
-                      <div>
-                        <h3 className="font-semibold text-black dark:text-zinc-50">
-                          Engagement Metrics
-                        </h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Track interactions
-                        </p>
-                      </div>
-                    </div>
-                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-2 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
-                    <div className="h-2 w-5/6 rounded bg-zinc-200 dark:bg-zinc-800" />
-                  </div>
-                </div>
-                <div className="h-24 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20" />
-              </div>
+          {/* Right Side - Preview Image */}
+          <div className="relative hidden lg:flex items-center justify-center">
+            <div className="sticky top-0">
+              <img
+                src={PREVIEW_IMAGE_URL}
+                alt="KinesisIQ Platform Preview"
+                className="h-[400px] w-full rounded-xl object-cover"
+              />
             </div>
           </div>
         </div>
