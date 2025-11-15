@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import Footer from "./components/Footer";
 import AuthCallbackHandler from "./components/AuthCallbackHandler";
 
-const PREVIEW_IMAGE_URL = "https://placehold.co/1600x1200";
+const PREVIEW_IMAGE_URL = "/questions-dashboard-preview.png";
 
 function ScrollAnimation({ children }: { children: React.ReactNode }) {
   const ref = useRef(null);
@@ -35,7 +35,7 @@ export default function HomePage() {
           <div className="h-[50vh] w-[50vh] rounded-full bg-blue-600/10 blur-3xl dark:bg-blue-500/10" />
         </div>
 
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:pr-0">
+        <div className="mx-auto grid w-full max-w-8xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:pr-0">
           {/* Left Side - Main Content */}
           <div className="flex flex-col justify-center space-y-8 py-12 lg:py-24">
             <motion.div
@@ -99,6 +99,16 @@ export default function HomePage() {
               </a>
               <a
                 href="#what-is-kinesisiq"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const element = document.getElementById("what-is-kinesisiq");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
                 className="inline-flex items-center rounded-lg border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 Learn more →
@@ -107,7 +117,7 @@ export default function HomePage() {
           </div>
 
           {/* Right Side - Preview Image */}
-          <div className="relative hidden lg:flex items-center justify-center">
+          <div className="relative hidden lg:flex items-center justify-center left-[150px]">
             <motion.div
               className="sticky top-0"
               initial={{ opacity: 0, x: 30 }}
@@ -121,7 +131,7 @@ export default function HomePage() {
               <img
                 src={PREVIEW_IMAGE_URL}
                 alt="KinesisIQ Platform Preview"
-                className="h-[400px] w-full rounded-xl object-cover"
+                className="w-full rounded-l-xl object-cover"
               />
             </motion.div>
           </div>
