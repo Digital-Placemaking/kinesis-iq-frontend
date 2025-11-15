@@ -25,18 +25,18 @@ export default function Footer() {
 
           {/* Navigation Links - Absolutely Centered */}
           <nav className="absolute left-1/2 top-1/2 z-0 flex -translate-x-1/2 -translate-y-1/2 flex-wrap items-center justify-center gap-6 text-sm sm:top-1/2">
-            <a
-              href="#"
+            <Link
+              href="/about-us"
               className="text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               About Us
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              href="/contact"
               className="text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               Contact
-            </a>
+            </Link>
             <a
               href="#"
               className="text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"

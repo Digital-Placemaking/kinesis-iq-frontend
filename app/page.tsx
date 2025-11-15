@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-
 import Footer from "./components/Footer";
 import AuthCallbackHandler from "./components/AuthCallbackHandler";
 
@@ -53,7 +52,7 @@ export default function HomePage() {
 
             <div className="flex flex-wrap gap-4">
               <a
-                href="/getStarted"
+                href="/contact"
                 className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
               >
                 Get started
