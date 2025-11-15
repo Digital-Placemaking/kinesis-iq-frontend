@@ -60,14 +60,16 @@ The analytics system uses server actions to record events, ensuring reliable tra
 
 ## Tech Stack
 
-- Next.js 16 with App Router
-- TypeScript
-- React 19
-- Tailwind CSS
-- shadcn/ui components
-- Supabase (PostgreSQL with RLS, Authentication)
-- Upstash Redis (Rate limiting)
-- Google Wallet API (Coupon passes)
+- **Framework:** Next.js 16 with App Router
+- **Language:** TypeScript
+- **UI Library:** React 19
+- **Styling:** Tailwind CSS
+- **Components:** shadcn/ui components, Lucide React (icons)
+- **Database & Auth:** Supabase (PostgreSQL with RLS, Authentication)
+- **Rate Limiting:** Upstash Redis
+- **Email Service:** Resend
+- **APIs:** Google Wallet API (Coupon passes)
+- **Utilities:** class-variance-authority, clsx, tailwind-merge
 
 ## Environment Setup
 
@@ -97,6 +99,17 @@ To set up Upstash Redis:
 - `NEXT_GOOGLE_WALLET_CLASS_ID` - Google Wallet class ID
 - `NEXT_GOOGLE_SERVICE_ACCOUNT_EMAIL` - Service account email
 - `NEXT_GOOGLE_PRIVATE_KEY` - Service account private key
+
+**Resend Configuration (for contact form emails):**
+
+- `RESEND_API_KEY` - Resend API key for sending emails
+
+To set up Resend:
+
+1. Create an account at https://resend.com
+2. Generate an API key from the dashboard
+3. Verify your sending domain (the from email is set to `noreply@yourdomain.com` in the code)
+4. Add `RESEND_API_KEY` to your `.env.local` file (or Vercel project settings)
 
 ### Local Development
 

@@ -12,6 +12,7 @@
  * - issued-coupons.ts: Issued coupon operations
  * - wallet.ts: Google Wallet integration
  * - feedback.ts: Feedback submission
+ * - contact.ts: Contact form submissions
  *
  * Note: Each action file has "use server" directive at the top.
  * This file is just a re-export module, so it doesn't need "use server".
@@ -90,3 +91,6 @@ export { getStaffForTenant } from "./actions/staff";
 
 // Storage actions
 export { uploadLogoImage } from "./actions/storage";
+
+// Contact actions
+export { submitContactForm } from "./actions/contact";

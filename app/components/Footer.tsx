@@ -67,8 +67,8 @@ export default function Footer() {
         {/* Copyright */}
         <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-800">
           <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
-            © {new Date().getFullYear()} Digital Placemaking. All rights
-            reserved.
+            © {new Date().getFullYear()} KinesisIQ by Digital Placemaking. All
+            rights reserved.
           </p>
         </div>
       </div>
