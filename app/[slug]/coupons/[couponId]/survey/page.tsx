@@ -5,7 +5,7 @@ import {
   hasCompletedSurveyForTenant,
   getTenantBySlug,
 } from "@/app/actions";
-import SurveyContainer from "./components/SurveyContainer";
+import SurveyContainer from "@/app/components/survey/SurveyContainer";
 import DeactivatedMessage from "../../../components/DeactivatedMessage";
 
 // Force dynamic rendering to ensure fresh data on each request

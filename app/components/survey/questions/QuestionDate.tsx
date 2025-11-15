@@ -1,6 +1,7 @@
-/**
- * Date picker question component
- */
+// QuestionDate
+// Renders a date picker input for date-type survey questions with optional min/max date constraints.
+// Used in: app/components/survey/QuestionCard.tsx
+
 "use client";
 
 interface QuestionDateProps {

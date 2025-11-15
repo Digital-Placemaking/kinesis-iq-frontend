@@ -58,14 +58,14 @@ export async function issueCoupon(
     const identifier = getClientIdentifier(email, headersList);
     const rateLimit = checkRateLimit(identifier, RATE_LIMITS.COUPON_ISSUE);
 
-    if (!rateLimit.allowed) {
-      return {
-        issuedCoupon: null,
-        error: `Too many coupon requests. Please try again in ${Math.ceil(
-          (rateLimit.resetAt - Date.now()) / 1000
-        )} seconds.`,
-      };
-    }
+    // if (!rateLimit.allowed) {
+    //   return {
+    //     issuedCoupon: null,
+    //     error: `Too many coupon requests. Please try again in ${Math.ceil(
+    //       (rateLimit.resetAt - Date.now()) / 1000
+    //     )} seconds.`,
+    //   };
+    // }
 
     const supabase = await createClient();
 

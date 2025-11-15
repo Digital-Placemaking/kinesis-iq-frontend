@@ -1,3 +1,7 @@
+// SurveyNavigation
+// Provides Previous/Next/Submit navigation buttons for survey forms.
+// Used in: app/components/survey/SurveyContainer.tsx
+
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface SurveyNavigationProps {

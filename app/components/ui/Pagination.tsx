@@ -1,3 +1,7 @@
+// Pagination
+// Reusable pagination component with page numbers, navigation buttons, and item count display.
+// Used in: Admin list components (CouponsClient, QuestionsClient, IssuedCouponsList, etc.).
+
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";

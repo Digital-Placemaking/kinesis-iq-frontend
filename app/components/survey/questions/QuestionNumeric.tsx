@@ -1,7 +1,7 @@
-/**
- * Numeric input question component
- * For numeric-only responses
- */
+// QuestionNumeric
+// Renders a numeric input field for numeric-only survey responses with optional min/max constraints.
+// Used in: app/components/survey/QuestionCard.tsx
+
 "use client";
 
 interface QuestionNumericProps {

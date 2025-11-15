@@ -1,7 +1,7 @@
-/**
- * Reusable card container component
- * Provides consistent styling for card-based layouts
- */
+// Card
+// Reusable card container component that provides consistent styling for card-based layouts.
+// Used in: Various components throughout the app for displaying content in cards.
+
 interface CardProps {
   children: React.ReactNode;
   className?: string;

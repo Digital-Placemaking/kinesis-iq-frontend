@@ -1,7 +1,7 @@
-/**
- * Component shown when a tenant pilot is deactivated
- * Informs users they must contact the business owner
- */
+// DeactivatedMessage
+// Displays a message when a tenant pilot is deactivated, informing users they must contact the business owner.
+// Used in: app/[slug]/page.tsx, app/[slug]/coupons/[couponId]/survey/page.tsx
+
 import Card from "@/app/components/ui/Card";
 import Footer from "@/app/components/Footer";
 import { Mail, AlertCircle } from "lucide-react";

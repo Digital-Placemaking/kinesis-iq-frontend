@@ -1,3 +1,7 @@
+// SurveyCompletion
+// Completion page component displayed after completing an anonymous survey with thank you message and email opt-in.
+// Used in: app/[slug]/survey/completed/page.tsx
+
 "use client";
 
 import { useState } from "react";

@@ -1,3 +1,7 @@
+// CouponCodeDisplay
+// Displays coupon code with copy-to-clipboard functionality and visual feedback.
+// Used in: app/[slug]/coupons/[couponId]/completed/components/CouponCompletion.tsx
+
 "use client";
 
 import { useState } from "react";

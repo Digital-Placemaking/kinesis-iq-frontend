@@ -1,7 +1,7 @@
-/**
- * Info box component
- * Displays colored information boxes with title and content
- */
+// InfoBox
+// Displays colored information boxes with optional title and content in different variants (info, warning, success).
+// Used in: Various components for displaying informational messages.
+
 interface InfoBoxProps {
   title?: string;
   children: React.ReactNode;

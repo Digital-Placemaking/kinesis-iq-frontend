@@ -1,7 +1,7 @@
-/**
- * Primary action button component
- * Consistent styling for main action buttons
- */
+// ActionButton
+// Reusable action button component with consistent styling and multiple variants (primary, secondary, outline).
+// Used in: Admin components and forms throughout the app.
+
 import { LucideIcon } from "lucide-react";
 
 interface ActionButtonProps {

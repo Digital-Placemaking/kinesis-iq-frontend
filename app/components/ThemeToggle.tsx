@@ -1,3 +1,7 @@
+// ThemeToggle
+// Toggle button component for switching between light and dark themes with localStorage persistence.
+// Used in: app/components/Footer.tsx
+
 "use client";
 
 import { Moon, Sun } from "lucide-react";

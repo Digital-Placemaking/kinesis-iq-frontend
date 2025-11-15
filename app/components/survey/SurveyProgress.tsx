@@ -1,19 +1,32 @@
+// SurveyProgress
+// Displays progress bar and question counter for survey forms.
+// Used in: app/[slug]/survey/page.tsx, app/[slug]/coupons/[couponId]/survey/page.tsx
+
 interface SurveyProgressProps {
-  currentQuestion: number;
-  totalQuestions: number;
+  current?: number;
+  total?: number;
+  currentQuestion?: number;
+  totalQuestions?: number;
 }
 
 export default function SurveyProgress({
+  current,
+  total,
   currentQuestion,
   totalQuestions,
 }: SurveyProgressProps) {
-  const percentage = (currentQuestion / totalQuestions) * 100;
+  // Support both prop name variations for backward compatibility
+  const currentVal = current ?? currentQuestion ?? 0;
+  const totalVal = total ?? totalQuestions ?? 0;
+
+  // Guard against division by zero
+  const percentage = totalVal > 0 ? (currentVal / totalVal) * 100 : 0;
 
   return (
     <div className="mb-8">
       <div className="mb-2 flex items-center justify-between text-sm text-zinc-600 dark:text-zinc-400">
         <span>
-          Question {currentQuestion} of {totalQuestions}
+          Question {currentVal} of {totalVal}
         </span>
         <span>{Math.round(percentage)}%</span>
       </div>

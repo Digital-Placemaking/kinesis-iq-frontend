@@ -1,7 +1,7 @@
-/**
- * Social login button component
- * Handles Apple and Google OAuth login buttons
- */
+// SocialLoginButton
+// Renders social login buttons for Apple and Google OAuth (currently disabled, to be implemented).
+// Used in: app/[slug]/components/TenantLanding.tsx
+
 "use client";
 
 interface SocialLoginButtonProps {

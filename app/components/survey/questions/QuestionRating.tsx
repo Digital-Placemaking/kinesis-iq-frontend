@@ -1,3 +1,7 @@
+// QuestionRating
+// Renders a rating scale (1-5 by default) for rating-type survey questions.
+// Used in: app/components/survey/QuestionCard.tsx
+
 interface QuestionRatingProps {
   value: number | null;
   onChange: (value: number) => void;

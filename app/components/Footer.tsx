@@ -1,3 +1,7 @@
+// Footer
+// Site-wide footer component with navigation links, logo, theme toggle, and admin link.
+// Used in: app/components/layout.tsx, app/[slug]/components/TenantLanding.tsx
+
 import Link from "next/link";
 import { Settings } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";

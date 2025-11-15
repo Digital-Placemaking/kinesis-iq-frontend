@@ -1,7 +1,7 @@
-/**
- * Delete confirmation modal component
- * Reusable modal for confirming destructive actions
- */
+// DeleteConfirmationModal
+// Reusable confirmation modal component for confirming destructive actions like deletions.
+// Used in: Admin components for delete operations (QuestionsClient, CouponsClient, etc.).
+
 "use client";
 
 import Modal from "./Modal";

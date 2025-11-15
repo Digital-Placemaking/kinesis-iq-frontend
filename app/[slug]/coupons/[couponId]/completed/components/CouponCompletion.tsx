@@ -1,3 +1,7 @@
+// CouponCompletion
+// Completion page component displayed after completing a coupon survey, showing coupon code and redemption options.
+// Used in: app/[slug]/coupons/[couponId]/completed/page.tsx
+
 "use client";
 
 import { useState } from "react";

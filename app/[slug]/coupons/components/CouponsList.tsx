@@ -1,3 +1,7 @@
+// CouponsList
+// Displays a list of available coupons for a tenant with header, logo, and coupon cards.
+// Used in: app/[slug]/coupons/page.tsx
+
 import Link from "next/link";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";

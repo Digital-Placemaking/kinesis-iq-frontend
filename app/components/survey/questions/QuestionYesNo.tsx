@@ -1,6 +1,7 @@
-/**
- * Yes/No boolean question component
- */
+// QuestionYesNo
+// Renders Yes/No buttons for boolean survey questions.
+// Used in: app/components/survey/QuestionCard.tsx
+
 "use client";
 
 interface QuestionYesNoProps {

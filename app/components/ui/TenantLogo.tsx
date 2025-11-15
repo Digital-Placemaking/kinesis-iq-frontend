@@ -1,7 +1,7 @@
-/**
- * Tenant logo component
- * Displays tenant logo or fallback initial letter
- */
+// TenantLogo
+// Displays tenant logo image or fallback initial letter if no logo is available.
+// Used in: app/[slug]/components/TenantLanding.tsx, various admin components.
+
 import type { TenantDisplay } from "@/lib/types/tenant";
 
 interface TenantLogoProps {

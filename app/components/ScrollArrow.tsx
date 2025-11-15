@@ -1,3 +1,7 @@
+// ScrollArrow
+// Animated scroll indicator button that smoothly scrolls to content below the fold.
+// Used in: app/page.tsx (root landing page)
+
 "use client";
 
 import { ChevronDown } from "lucide-react";

@@ -1,7 +1,7 @@
-/**
- * Section separator component
- * Displays a horizontal line with centered text
- */
+// SectionSeparator
+// Displays a horizontal separator line with centered text label.
+// Used in: app/[slug]/components/TenantLanding.tsx for separating form sections.
+
 interface SectionSeparatorProps {
   text: string;
   className?: string;

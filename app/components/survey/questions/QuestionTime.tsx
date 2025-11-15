@@ -1,6 +1,7 @@
-/**
- * Time picker question component
- */
+// QuestionTime
+// Renders a time picker input for time-type survey questions with optional min/max time constraints.
+// Used in: app/components/survey/QuestionCard.tsx
+
 "use client";
 
 interface QuestionTimeProps {

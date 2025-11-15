@@ -1,7 +1,7 @@
-/**
- * Admin navigation tabs component
- * Provides tabbed navigation for different admin sections
- */
+// AdminNav
+// Navigation tabs component for admin dashboard with role-based access control and active route highlighting.
+// Used in: app/admin/components/AdminLayout.tsx
+
 "use client";
 
 import Link from "next/link";

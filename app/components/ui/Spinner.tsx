@@ -1,7 +1,7 @@
-/**
- * Spinner component
- * Reusable loading spinner for use throughout the app
- */
+// Spinner
+// Reusable loading spinner component for displaying loading states throughout the app.
+// Used in: Various components for loading indicators.
+
 import { Loader2 } from "lucide-react";
 
 interface SpinnerProps {

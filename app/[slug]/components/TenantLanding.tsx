@@ -1,3 +1,7 @@
+// TenantLanding
+// Main landing page component for tenant sites that handles email submission and social login.
+// Used in: app/[slug]/page.tsx
+
 "use client";
 
 import { Mail } from "lucide-react";

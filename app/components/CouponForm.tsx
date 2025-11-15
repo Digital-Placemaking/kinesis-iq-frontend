@@ -1,3 +1,7 @@
+// CouponForm
+// Form component for testing coupon retrieval by tenant slug (development/testing tool).
+// Used in: app/page.tsx (root page for testing)
+
 "use client";
 
 import { useState } from "react";

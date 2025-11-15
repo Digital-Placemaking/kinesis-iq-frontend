@@ -1,7 +1,7 @@
-/**
- * Multiple choice question component
- * Allows users to select multiple options from a list
- */
+// QuestionCheckbox
+// Renders checkboxes for multiple-choice survey questions allowing users to select multiple options.
+// Used in: app/components/survey/QuestionCard.tsx
+
 "use client";
 
 interface QuestionCheckboxProps {

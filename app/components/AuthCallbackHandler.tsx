@@ -1,14 +1,13 @@
+// AuthCallbackHandler
+// Handles Supabase Auth callbacks from hash fragments, establishes session, and redirects users.
+// Used in: app/auth/callback/route.ts
+
 "use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-/**
- * Client component to handle Supabase Auth callbacks from hash fragments
- * Checks for access_token in URL hash and establishes session
- * Handles implicit flow (non-PKCE) where tokens are in hash fragments
- */
 export default function AuthCallbackHandler() {
   const router = useRouter();
 

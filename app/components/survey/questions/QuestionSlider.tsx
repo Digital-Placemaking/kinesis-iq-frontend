@@ -1,7 +1,7 @@
-/**
- * Slider question component
- * For range-based numeric input
- */
+// QuestionSlider
+// Renders a range slider for range-based numeric survey input with customizable min/max/step values.
+// Used in: app/components/survey/QuestionCard.tsx
+
 "use client";
 
 interface QuestionSliderProps {

@@ -1,3 +1,7 @@
+// VisitWebsiteButton
+// Reusable button component that links to tenant's website URL or falls back to tenant landing page.
+// Used in: app/[slug]/coupons/[couponId]/completed/components/CouponCompletion.tsx
+
 "use client";
 
 import Link from "next/link";
@@ -9,10 +13,6 @@ interface VisitWebsiteButtonProps {
   className?: string;
 }
 
-/**
- * Reusable "Visit Our Website" button component
- * Uses the tenant's website_url if set, otherwise falls back to tenant landing page
- */
 export default function VisitWebsiteButton({
   tenant,
   className = "",
@@ -32,4 +32,3 @@ export default function VisitWebsiteButton({
     </Link>
   );
 }
-

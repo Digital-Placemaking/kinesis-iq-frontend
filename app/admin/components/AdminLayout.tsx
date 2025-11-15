@@ -1,7 +1,7 @@
-/**
- * Admin layout wrapper component
- * Provides consistent layout with navigation for all admin pages
- */
+// AdminLayout
+// Layout wrapper component that provides consistent navigation and layout structure for all admin pages.
+// Used in: All admin pages (app/admin/page.tsx, app/admin/coupons/page.tsx, etc.)
+
 import AdminNav from "./AdminNav";
 import Footer from "@/app/components/Footer";
 

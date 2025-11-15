@@ -1,7 +1,7 @@
-/**
- * Modal component
- * Reusable modal dialog with backdrop and close functionality
- */
+// Modal
+// Reusable modal dialog component with backdrop, close functionality, and keyboard shortcuts.
+// Used in: Admin components for modals (AddCouponModal, EditQuestionModal, etc.).
+
 "use client";
 
 import { useEffect } from "react";

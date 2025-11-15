@@ -1,7 +1,7 @@
-/**
- * Likert scale question component
- * Supports 5-point and 7-point Likert scales
- */
+// QuestionLikert
+// Renders Likert scale questions supporting 5-point and 7-point scales with optional labels.
+// Used in: app/components/survey/QuestionCard.tsx
+
 "use client";
 
 interface QuestionLikertProps {
