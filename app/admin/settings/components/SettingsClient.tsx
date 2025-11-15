@@ -12,7 +12,8 @@ import {
   XCircle,
   Globe,
   Upload,
-  X,
+  Link2,
+  HelpCircle,
 } from "lucide-react";
 import type { Tenant } from "@/lib/types/tenant";
 import type { BusinessOwner } from "@/lib/auth/server";
@@ -42,12 +43,14 @@ export default function SettingsClient({
   const originalName = tenant.name || "";
   const originalLogoUrl = tenant.logo_url || "";
   const originalWebsiteUrl = tenant.website_url || "";
+  const originalSubdomain = tenant.subdomain || "";
   const originalActive = tenant.active ?? true;
 
   // Initialize all fields with existing tenant values
   const [name, setName] = useState(originalName);
   const [logoUrl, setLogoUrl] = useState(originalLogoUrl);
   const [websiteUrl, setWebsiteUrl] = useState(originalWebsiteUrl);
+  const [subdomain, setSubdomain] = useState(originalSubdomain);
   const [active, setActive] = useState(originalActive);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -64,14 +67,41 @@ export default function SettingsClient({
     name: originalName,
     logoUrl: originalLogoUrl,
     websiteUrl: originalWebsiteUrl,
+    subdomain: originalSubdomain,
     active: originalActive,
   });
+
+  // Get the base domain from current location
+  const getBaseDomain = () => {
+    if (typeof window === "undefined") return "yourdomain.com";
+
+    const hostname = window.location.hostname;
+
+    // Handle localhost for testing
+    if (hostname === "localhost" || hostname.includes("localhost")) {
+      return "localhost";
+    }
+
+    // Extract base domain (remove subdomain if present)
+    // e.g., "subdomain.example.com" -> "example.com"
+    // e.g., "example.com" -> "example.com"
+    const parts = hostname.split(".");
+    if (parts.length >= 2) {
+      // Take the last two parts for domain.tld
+      return parts.slice(-2).join(".");
+    }
+
+    return hostname;
+  };
+
+  const baseDomain = getBaseDomain();
 
   // Check if any values have changed
   const hasChanges =
     name.trim() !== originalValues.name ||
     logoUrl.trim() !== originalValues.logoUrl ||
     websiteUrl.trim() !== originalValues.websiteUrl ||
+    subdomain.trim() !== originalValues.subdomain ||
     active !== originalValues.active;
 
   const validateAndUploadFile = async (file: File) => {
@@ -192,6 +222,7 @@ export default function SettingsClient({
           ...(logoUrl !== tenant.logo_url && {
             logo_url: logoUrl.trim() || null,
           }),
+          subdomain: subdomain.trim() || null,
           active,
         },
         tenantId
@@ -212,6 +243,7 @@ export default function SettingsClient({
           name: name.trim(),
           logoUrl: logoUrl.trim() || "",
           websiteUrl: websiteUrl.trim() || "",
+          subdomain: subdomain.trim() || "",
           active,
         });
         // Refresh staff list in case anything changed
@@ -396,6 +428,91 @@ export default function SettingsClient({
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Subdomain */}
+          <div>
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+              <Link2 className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+              Custom Subdomain
+              <div className="group relative inline-block ml-1">
+                <HelpCircle className="h-4 w-4 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 cursor-help transition-colors" />
+                <div className="absolute right-0 bottom-full mb-2 w-80 p-3 bg-zinc-900 dark:bg-zinc-800 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                  <div className="space-y-2">
+                    <p className="font-semibold text-white">
+                      What is a Custom Subdomain?
+                    </p>
+                    <p className="text-zinc-300">
+                      A subdomain is a prefix to your domain that creates a
+                      unique URL for your pilot.
+                    </p>
+                    <div className="pt-2 border-t border-zinc-700">
+                      <p className="font-semibold text-white mb-1">
+                        Path-Based (Default):
+                      </p>
+                      <p className="text-zinc-300">
+                        Your pilot uses the path in the URL:{" "}
+                        <code className="text-blue-300">
+                          {baseDomain}/{tenant.slug || "your-slug"}
+                        </code>
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-zinc-700">
+                      <p className="font-semibold text-white mb-1">
+                        Subdomain:
+                      </p>
+                      <p className="text-zinc-300">
+                        Your pilot has its own subdomain:{" "}
+                        <code className="text-blue-300">
+                          mysubdomain.{baseDomain}
+                        </code>
+                      </p>
+                      <p className="text-zinc-300 mt-1">
+                        This makes your URL shorter and more memorable. Leave
+                        empty to use path-based routing.
+                      </p>
+                    </div>
+                  </div>
+                  {/* Arrow */}
+                  <div className="absolute top-full right-4 -mt-1">
+                    <div className="border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-800"></div>
+                  </div>
+                </div>
+              </div>
+            </label>
+            <p className="mb-2 text-xs text-zinc-600 dark:text-zinc-400">
+              Set a custom subdomain for your pilot (e.g., "mybusiness" for{" "}
+              mybusiness.{baseDomain}). Leave empty to use path-based routing.
+            </p>
+            <input
+              type="text"
+              value={subdomain}
+              onChange={(e) => setSubdomain(e.target.value.toLowerCase())}
+              placeholder="mybusiness"
+              pattern="[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-400"
+            />
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              Must be 3-63 characters, lowercase alphanumeric with hyphens only.
+              Cannot start or end with a hyphen. Some subdomains are reserved.
+            </p>
+            {subdomain.trim() && (
+              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                Your pilot will be accessible at:{" "}
+                <a
+                  href={`http${
+                    baseDomain === "localhost" ? "" : "s"
+                  }://${subdomain.trim()}.${baseDomain}${
+                    baseDomain === "localhost" ? ":3000" : ""
+                  }`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium underline hover:text-blue-700 dark:hover:text-blue-300"
+                >
+                  {subdomain.trim()}.{baseDomain}
+                </a>
+              </p>
+            )}
           </div>
 
           {/* Website URL */}

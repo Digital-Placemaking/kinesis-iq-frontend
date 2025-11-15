@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import type { Tenant, TenantResponse } from "@/lib/types/tenant";
+import { isReservedSubdomain } from "@/lib/constants/subdomains";
 
 /**
  * Tenant Actions
@@ -55,7 +56,76 @@ export async function getTenantBySlug(
     const { data: tenant, error: tenantError } = await tenantSupabase
       .from("tenants")
       .select(
-        "id, slug, name, logo_url, website_url, theme, active, created_at"
+        "id, slug, subdomain, name, logo_url, website_url, theme, active, created_at"
+      )
+      .eq("id", resolvedTenantId)
+      .single();
+
+    if (tenantError || !tenant) {
+      return {
+        error: `Failed to fetch tenant data: ${tenantError?.message}`,
+        tenant: null,
+      };
+    }
+
+    return {
+      error: null,
+      tenant: tenant as Tenant,
+    };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "An error occurred",
+      tenant: null,
+    };
+  }
+}
+
+/**
+ * Fetches a tenant by subdomain
+ * Note: Can work with inactive tenants (for admin access)
+ */
+export async function getTenantBySubdomain(
+  tenantSubdomain: string
+): Promise<TenantResponse> {
+  try {
+    const supabase = await createClient();
+
+    // Resolve tenant subdomain to UUID
+    // Note: resolve_tenant_by_subdomain RPC may filter by active=true, so we handle inactive tenants
+    const { data: tenantId, error: resolveError } = await supabase.rpc(
+      "resolve_tenant_by_subdomain",
+      {
+        subdomain_input: tenantSubdomain,
+      }
+    );
+
+    let resolvedTenantId = tenantId;
+
+    if (resolveError || !resolvedTenantId) {
+      // If resolve_tenant_by_subdomain fails (e.g., tenant is inactive), try direct lookup
+      // This allows fetching tenant data even when tenant is deactivated
+      const { data: tenant, error: tenantError } = await supabase
+        .from("tenants")
+        .select("id")
+        .eq("subdomain", tenantSubdomain)
+        .maybeSingle();
+
+      if (tenantError || !tenant || !tenant.id) {
+        return {
+          error: `Tenant not found: ${tenantSubdomain}`,
+          tenant: null,
+        };
+      }
+      resolvedTenantId = tenant.id;
+    }
+
+    // Fetch tenant data using tenant-scoped client
+    // Note: We don't filter by active=true here - caller should check if needed
+    const tenantSupabase = await createTenantClient(resolvedTenantId);
+    const { data: tenant, error: tenantError } = await tenantSupabase
+      .from("tenants")
+      .select(
+        "id, slug, subdomain, name, logo_url, website_url, theme, active, created_at"
       )
       .eq("id", resolvedTenantId)
       .single();
@@ -90,6 +160,7 @@ export async function updateTenantSettings(
     name?: string;
     logo_url?: string | null;
     active?: boolean;
+    subdomain?: string | null;
   },
   tenantId?: string
 ): Promise<{ success: boolean; error: string | null }> {
@@ -176,6 +247,56 @@ export async function updateTenantSettings(
     }
     if (updates.active !== undefined) {
       updateData.active = updates.active;
+    }
+    if (updates.subdomain !== undefined) {
+      const subdomainValue = updates.subdomain?.trim() || null;
+
+      // Validate subdomain format if provided
+      if (subdomainValue) {
+        // Subdomain must be lowercase alphanumeric with hyphens, 3-63 characters
+        const subdomainRegex = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
+        if (!subdomainRegex.test(subdomainValue)) {
+          return {
+            success: false,
+            error:
+              "Subdomain must be 3-63 characters, lowercase alphanumeric with hyphens only, and cannot start or end with a hyphen",
+          };
+        }
+
+        // Check for reserved subdomains
+        if (isReservedSubdomain(subdomainValue)) {
+          return {
+            success: false,
+            error: `Subdomain "${subdomainValue}" is reserved and cannot be used`,
+          };
+        }
+
+        // Check for uniqueness (excluding current tenant)
+        const supabase = await createClient();
+        const { data: existingTenant, error: checkError } = await supabase
+          .from("tenants")
+          .select("id")
+          .eq("subdomain", subdomainValue)
+          .neq("id", resolvedTenantId)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error("Error checking subdomain uniqueness:", checkError);
+          return {
+            success: false,
+            error: "Failed to validate subdomain uniqueness",
+          };
+        }
+
+        if (existingTenant) {
+          return {
+            success: false,
+            error: `Subdomain "${subdomainValue}" is already taken by another tenant`,
+          };
+        }
+      }
+
+      updateData.subdomain = subdomainValue;
     }
 
     if (Object.keys(updateData).length === 0) {

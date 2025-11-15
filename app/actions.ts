@@ -20,6 +20,7 @@
 // Tenant actions
 export {
   getTenantBySlug,
+  getTenantBySubdomain,
   updateTenantWebsiteUrl,
   updateTenantSettings,
 } from "./actions/tenant";

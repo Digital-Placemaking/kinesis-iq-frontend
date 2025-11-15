@@ -12,6 +12,7 @@ export interface TenantTheme {
 export interface Tenant {
   id: string;
   slug: string;
+  subdomain: string | null;
   name: string;
   logo_url: string | null;
   website_url: string | null;
