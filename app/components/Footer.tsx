@@ -10,11 +10,11 @@ export default function Footer() {
   return (
     <footer className="border-t border-zinc-200 bg-white py-8 dark:border-zinc-800 dark:bg-zinc-950">
       <div className="mx-auto max-w-7xl px-8">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex min-h-12 flex-col gap-6 sm:flex-row sm:items-center">
           {/* Logo Section */}
           <Link
             href="/"
-            className="flex items-center transition-opacity hover:opacity-80"
+            className="z-10 flex items-center transition-opacity hover:opacity-80 sm:shrink-0"
           >
             <img
               src="/dp-logo.png"
@@ -23,8 +23,8 @@ export default function Footer() {
             />
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="flex flex-wrap items-center gap-6 text-sm">
+          {/* Navigation Links - Absolutely Centered */}
+          <nav className="absolute left-1/2 top-1/2 z-0 flex -translate-x-1/2 -translate-y-1/2 flex-wrap items-center justify-center gap-6 text-sm sm:top-1/2">
             <a
               href="#"
               className="text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -52,7 +52,7 @@ export default function Footer() {
           </nav>
 
           {/* Right Side Actions */}
-          <div className="flex items-center gap-4 justify-end sm:justify-start">
+          <div className="z-10 ml-auto flex items-center gap-4 sm:shrink-0">
             <Link
               href="/admin"
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
