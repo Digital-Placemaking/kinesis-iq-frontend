@@ -125,8 +125,17 @@ export async function middleware(request: NextRequest) {
       if (url.pathname === "/") {
         url.pathname = `/${tenant.slug}`;
       } else {
-        // Prepend the tenant slug to the pathname
-        url.pathname = `/${tenant.slug}${url.pathname}`;
+        // Check if pathname already starts with the tenant slug
+        // This prevents double prepending when links already include the slug
+        if (url.pathname.startsWith(`/${tenant.slug}/`)) {
+          // Already has slug, don't prepend again
+          // Pathname is already correct (e.g., /company1/coupons)
+        } else if (url.pathname === `/${tenant.slug}`) {
+          // Pathname is exactly /{slug}, already correct
+        } else {
+          // Prepend the tenant slug to the pathname
+          url.pathname = `/${tenant.slug}${url.pathname}`;
+        }
       }
 
       // Rewrite the request to the slug-based path

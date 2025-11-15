@@ -5,6 +5,7 @@
 "use client";
 
 import { Gift, CheckCircle, XCircle, Clock } from "lucide-react";
+import { getTenantPath } from "@/lib/utils/subdomain";
 
 interface Coupon {
   id: string;
@@ -35,9 +36,12 @@ export default function CouponCard({
     }
 
     // Navigate to survey page for this coupon
-    const surveyUrl = `/${tenantSlug}/coupons/${
-      coupon.id
-    }/survey?email=${encodeURIComponent(email)}`;
+    // Use getTenantPath to handle subdomain routing correctly
+    const surveyPath = getTenantPath(
+      tenantSlug,
+      `/coupons/${coupon.id}/survey`
+    );
+    const surveyUrl = `${surveyPath}?email=${encodeURIComponent(email)}`;
     console.log("Navigating to survey:", surveyUrl);
 
     // Use window.location for a hard redirect to ensure it works

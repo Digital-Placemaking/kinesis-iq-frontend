@@ -14,6 +14,7 @@ import TenantLogo from "@/app/components/ui/TenantLogo";
 import Spinner from "@/app/components/ui/Spinner";
 import SocialLoginButton from "./ui/SocialLoginButton";
 import SectionSeparator from "@/app/components/ui/SectionSeparator";
+import { getTenantPath } from "@/lib/utils/subdomain";
 import type { TenantDisplay } from "@/lib/types/tenant";
 
 interface TenantLandingProps {
@@ -61,9 +62,11 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
       if (result && typeof result.success === "boolean") {
         if (result.success === true) {
           // Redirect to coupons page with email as query parameter
-          const redirectUrl = `/${
-            tenant.slug
-          }/coupons?email=${encodeURIComponent(email.trim())}`;
+          // Use getTenantPath to handle subdomain routing correctly
+          const couponsPath = getTenantPath(tenant.slug, "/coupons");
+          const redirectUrl = `${couponsPath}?email=${encodeURIComponent(
+            email.trim()
+          )}`;
           console.log("Redirecting to:", redirectUrl);
 
           // Force immediate redirect - use multiple methods to ensure it works
@@ -118,7 +121,7 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
       // if (user?.email) {
       //   await submitEmailOptIn(tenant.slug, user.email);
       // }
-      router.push(`/${tenant.slug}/coupons`);
+      router.push(getTenantPath(tenant.slug, "/coupons"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
@@ -128,7 +131,7 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
   const handleFeedbackClick = () => {
     // Navigate to anonymous survey page
     if (typeof window !== "undefined") {
-      window.location.href = `/${tenant.slug}/survey`;
+      window.location.href = getTenantPath(tenant.slug, "/survey");
     }
   };
 

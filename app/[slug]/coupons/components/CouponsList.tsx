@@ -6,6 +6,7 @@ import Link from "next/link";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
 import Card from "@/app/components/ui/Card";
+import { getTenantPath } from "@/lib/utils/subdomain";
 import type { TenantDisplay } from "@/lib/types/tenant";
 import CouponCard from "./CouponCard";
 
@@ -36,7 +37,7 @@ export default function CouponsList({
         {/* Header */}
         <div className="mb-8 text-center">
           <Link
-            href={`/${tenant.slug}`}
+            href={getTenantPath(tenant.slug, "/")}
             className="mb-6 inline-flex items-center gap-2 text-sm text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           >
             <svg
