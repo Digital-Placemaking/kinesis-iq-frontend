@@ -1,6 +1,12 @@
-// InfoBox
-// Displays colored information boxes with optional title and content in different variants (info, warning, success).
-// Used in: Various components for displaying informational messages.
+/**
+ * InfoBox Component
+ * Modern information box using shadcn Alert component
+ * Displays colored information boxes with optional title and content
+ */
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface InfoBoxProps {
   title?: string;
@@ -15,32 +21,35 @@ export default function InfoBox({
   variant = "info",
   className = "",
 }: InfoBoxProps) {
-  // Variant color mapping
-  const variantClasses = {
-    info: "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20",
-    warning: "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20",
-    success:
-      "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20",
+  const variantConfig = {
+    info: {
+      icon: Info,
+      variant: undefined as "default" | "destructive" | undefined,
+      className:
+        "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20 [&>svg]:text-blue-600 dark:[&>svg]:text-blue-400",
+    },
+    warning: {
+      icon: AlertTriangle,
+      variant: "destructive" as const,
+      className:
+        "border-destructive/50 bg-destructive/10 dark:border-destructive/50 dark:bg-destructive/20",
+    },
+    success: {
+      icon: CheckCircle2,
+      variant: undefined as "default" | "destructive" | undefined,
+      className:
+        "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20 [&>svg]:text-green-600 dark:[&>svg]:text-green-400",
+    },
   };
 
-  const textClasses = {
-    info: "text-blue-600 dark:text-blue-400",
-    warning: "text-red-600 dark:text-red-400",
-    success: "text-green-600 dark:text-green-400",
-  };
+  const config = variantConfig[variant];
+  const Icon = config.icon;
 
   return (
-    <div
-      className={`rounded-xl border p-3 ${variantClasses[variant]} ${className}`}
-    >
-      {title && (
-        <p
-          className={`mb-1 text-center text-xs font-medium uppercase tracking-wide ${textClasses[variant]}`}
-        >
-          {title}
-        </p>
-      )}
-      {children}
-    </div>
+    <Alert variant={config.variant} className={cn(config.className, className)}>
+      <Icon className="h-4 w-4" />
+      {title && <AlertTitle>{title}</AlertTitle>}
+      <AlertDescription>{children}</AlertDescription>
+    </Alert>
   );
 }

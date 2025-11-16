@@ -100,7 +100,7 @@ export async function generateGoogleWalletPass(
       cardTitle: { defaultValue: { language: string; value: string } };
       header: { defaultValue: { language: string; value: string } };
       subheader?: { defaultValue: { language: string; value: string } };
-      barcode?: { type: string; value: string };
+      barcode?: { type: string; value: string; alternateText?: string };
       validTimeInterval?: { start: { date: string }; end: { date: string } };
       heroImage?: { sourceUri: { uri: string } };
       logo?: { sourceUri: { uri: string } };

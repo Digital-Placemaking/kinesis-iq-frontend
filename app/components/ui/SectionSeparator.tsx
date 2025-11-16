@@ -1,6 +1,11 @@
-// SectionSeparator
-// Displays a horizontal separator line with centered text label.
-// Used in: app/[slug]/components/TenantLanding.tsx for separating form sections.
+/**
+ * SectionSeparator Component
+ * Modern separator using shadcn Separator component
+ * Displays a horizontal separator line with centered text label
+ */
+
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface SectionSeparatorProps {
   text: string;
@@ -12,15 +17,12 @@ export default function SectionSeparator({
   className = "",
 }: SectionSeparatorProps) {
   return (
-    <div className={`relative ${className}`}>
-      <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-zinc-300 dark:border-zinc-700"></div>
-      </div>
-      <div className="relative flex justify-center text-sm">
-        <span className="bg-gradient-to-b from-zinc-50 to-white px-2 text-zinc-500 dark:from-black dark:to-zinc-950 dark:text-zinc-400">
-          {text}
-        </span>
-      </div>
+    <div className={cn("relative flex items-center gap-4", className)}>
+      <Separator className="flex-1" />
+      <span className="text-sm text-muted-foreground whitespace-nowrap">
+        {text}
+      </span>
+      <Separator className="flex-1" />
     </div>
   );
 }

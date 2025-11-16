@@ -97,14 +97,16 @@ export async function getQuestionResults(
 
       responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
-        if (answer?.array) {
-          // Multiple choice - array of selected options
-          answer.array.forEach((option: string) => {
-            choiceCounts[option] = (choiceCounts[option] || 0) + 1;
-          });
-        } else if (answer?.text) {
-          // Single choice - text option
-          choiceCounts[answer.text] = (choiceCounts[answer.text] || 0) + 1;
+        if (answer && typeof answer === "object") {
+          if ("array" in answer && Array.isArray(answer.array)) {
+            // Multiple choice - array of selected options
+            answer.array.forEach((option: string) => {
+              choiceCounts[option] = (choiceCounts[option] || 0) + 1;
+            });
+          } else if ("text" in answer && typeof answer.text === "string") {
+            // Single choice - text option
+            choiceCounts[answer.text] = (choiceCounts[answer.text] || 0) + 1;
+          }
         }
       });
 
@@ -127,8 +129,10 @@ export async function getQuestionResults(
 
       responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
-        if (answer?.boolean === true) yesCount++;
-        else if (answer?.boolean === false) noCount++;
+        if (answer && typeof answer === "object" && "boolean" in answer) {
+          if (answer.boolean === true) yesCount++;
+          else if (answer.boolean === false) noCount++;
+        }
       });
 
       return {
@@ -157,7 +161,13 @@ export async function getQuestionResults(
 
       responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
-        if (answer?.number !== undefined && answer?.number !== null) {
+        if (
+          answer &&
+          typeof answer === "object" &&
+          "number" in answer &&
+          answer.number !== undefined &&
+          answer.number !== null
+        ) {
           const num = Number(answer.number);
           numbers.push(num);
           distribution[num] = (distribution[num] || 0) + 1;
@@ -214,7 +224,14 @@ export async function getQuestionResults(
 
       responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
-        if (answer?.text && answer.text.trim()) {
+        if (
+          answer &&
+          typeof answer === "object" &&
+          "text" in answer &&
+          answer.text &&
+          typeof answer.text === "string" &&
+          answer.text.trim()
+        ) {
           textResponses.push(answer.text);
         }
       });
@@ -236,7 +253,13 @@ export async function getQuestionResults(
 
       responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
-        if (answer?.text) {
+        if (
+          answer &&
+          typeof answer === "object" &&
+          "text" in answer &&
+          answer.text &&
+          typeof answer.text === "string"
+        ) {
           const date = answer.text.split("T")[0]; // Get date part only
           dateCounts[date] = (dateCounts[date] || 0) + 1;
         }
@@ -259,7 +282,13 @@ export async function getQuestionResults(
 
       responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
-        if (answer?.text) {
+        if (
+          answer &&
+          typeof answer === "object" &&
+          "text" in answer &&
+          answer.text &&
+          typeof answer.text === "string"
+        ) {
           timeCounts[answer.text] = (timeCounts[answer.text] || 0) + 1;
         }
       });

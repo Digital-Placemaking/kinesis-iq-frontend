@@ -17,13 +17,29 @@
 "use client";
 
 import { useInView } from "framer-motion";
-import { useRef } from "react";
-import { motion } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Footer from "./components/Footer";
 import AuthCallbackHandler from "./components/AuthCallbackHandler";
 
-// Preview image displayed on the right side of the hero section
-const PREVIEW_IMAGE_URL = "/questions-dashboard-preview.png";
+// Preview images with subtitles
+const PREVIEW_IMAGES = [
+  {
+    url: "/previews/questions-dashboard-preview.png",
+    subtitle: "Manage survey questions and collect valuable customer insights.",
+  },
+  {
+    url: "/previews/analytics-dashboard-preview.png",
+    subtitle: "Track engagement metrics and visualize data trends over time.",
+  },
+  {
+    url: "/previews/issued-dashboard-preview.png",
+    subtitle: "Monitor coupon issuances and track redemption rates.",
+  },
+];
+
+// Image rotation interval in milliseconds (10 seconds)
+const IMAGE_ROTATION_INTERVAL = 10000;
 
 /**
  * ScrollAnimation Component
@@ -52,6 +68,19 @@ function ScrollAnimation({ children }: { children: React.ReactNode }) {
 }
 
 export default function HomePage() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Rotate images periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % PREVIEW_IMAGES.length);
+    }, IMAGE_ROTATION_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentImage = PREVIEW_IMAGES[currentImageIndex];
+
   return (
     <div className="min-h-screen">
       {/* Handles OAuth callbacks and session establishment */}
@@ -184,8 +213,9 @@ export default function HomePage() {
             Dashboard preview image positioned to extend beyond the grid column.
             Uses sticky positioning to remain visible while scrolling.
             Animates in from the right with a slide effect.
+            Images rotate periodically with fade transitions.
           */}
-          <div className="relative hidden lg:flex items-center justify-center left-[150px] w-[150%]">
+          <div className="relative hidden lg:flex flex-col items-center justify-center left-[150px] w-[150%]">
             <motion.div
               className="sticky top-0 w-full"
               initial={{ opacity: 0, x: 30 }}
@@ -196,11 +226,42 @@ export default function HomePage() {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <img
-                src={PREVIEW_IMAGE_URL}
-                alt="KinesisIQ Platform Preview"
-                className="w-full rounded-l-xl object-cover"
-              />
+              <div className="relative w-full select-none aspect-[16/10]">
+                <AnimatePresence>
+                  <motion.div
+                    key={currentImageIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                      duration: 0.8,
+                      ease: [0.4, 0, 0.2, 1],
+                    }}
+                    className="absolute inset-0 w-full h-full"
+                  >
+                    <img
+                      src={currentImage.url}
+                      alt="KinesisIQ Platform Preview"
+                      className="w-full h-full rounded-l-xl object-cover select-none pointer-events-none"
+                      draggable="false"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+              {/* Subtitle - Left-aligned underneath image */}
+              <motion.p
+                key={`subtitle-${currentImageIndex}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 0.8,
+                  ease: [0.4, 0, 0.2, 1],
+                }}
+                className="mt-4 text-left text-base font-light leading-relaxed text-zinc-400 dark:text-zinc-500 select-none"
+              >
+                {currentImage.subtitle}
+              </motion.p>
             </motion.div>
           </div>
         </div>

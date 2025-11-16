@@ -16,7 +16,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import type { Tenant } from "@/lib/types/tenant";
-import type { BusinessOwner } from "@/lib/auth/server";
+import type { Staff } from "@/lib/types/staff";
 import {
   updateTenantSettings,
   updateTenantWebsiteUrl,
@@ -29,7 +29,7 @@ import Modal from "@/app/components/ui/Modal";
 
 interface SettingsClientProps {
   tenant: Tenant;
-  staffList: BusinessOwner[];
+  staffList: Staff[];
   userRole: "owner" | "admin" | "staff";
   tenantId: string;
 }

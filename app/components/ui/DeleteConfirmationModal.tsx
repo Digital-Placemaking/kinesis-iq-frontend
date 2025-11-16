@@ -1,13 +1,23 @@
-// DeleteConfirmationModal
-// Reusable confirmation modal component for confirming destructive actions like deletions.
-// Used in: Admin components for delete operations (QuestionsClient, CouponsClient, etc.).
+/**
+ * DeleteConfirmationModal Component
+ * Modern confirmation modal using shadcn Dialog and Button components
+ * Used for confirming destructive actions like deletions
+ */
 
 "use client";
 
-import Modal from "./Modal";
-import ActionButton from "./ActionButton";
-import Spinner from "./Spinner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
+import Spinner from "./Spinner";
+import { cn } from "@/lib/utils";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -30,38 +40,35 @@ export default function DeleteConfirmationModal({
   cancelText = "Cancel",
   isLoading = false,
 }: DeleteConfirmationModalProps) {
-  const handleConfirm = () => {
-    onConfirm();
-  };
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
-      <div className="space-y-6">
-        {/* Warning Icon and Message */}
-        <div className="flex items-start gap-4">
-          <div className="shrink-0 rounded-full bg-red-100 p-2 dark:bg-red-900/30">
-            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-          </div>
-          <p className="flex-1 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-            {message}
-          </p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
-          <button
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription asChild>
+            <div className="flex items-start gap-4 pt-4">
+              <div className="shrink-0 rounded-full bg-destructive/10 p-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <p className="flex-1 text-sm leading-relaxed">{message}</p>
+            </div>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button
             type="button"
+            variant="outline"
             onClick={onClose}
             disabled={isLoading}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
           >
             {cancelText}
-          </button>
-          <ActionButton
-            onClick={handleConfirm}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onConfirm}
             disabled={isLoading}
-            variant="secondary"
-            className="min-w-[100px] border-red-300 bg-red-600 text-white hover:bg-red-700 dark:border-red-700 dark:bg-red-600 dark:hover:bg-red-700"
+            className="min-w-[100px]"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -71,9 +78,9 @@ export default function DeleteConfirmationModal({
             ) : (
               confirmText
             )}
-          </ActionButton>
-        </div>
-      </div>
-    </Modal>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

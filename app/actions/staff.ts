@@ -92,7 +92,7 @@ export async function getStaffForTenant(
     }
 
     return {
-      staff: (staff as BusinessOwner[]) || [],
+      staff: (staff as Staff[]) || [],
       error: null,
     };
   } catch (err) {

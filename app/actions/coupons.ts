@@ -162,6 +162,7 @@ export async function createCoupon(
     } = {
       tenant_id: tenantId,
       title: coupon.title,
+      description: coupon.description ?? null,
       discount: coupon.discount ?? null,
       expires_at: coupon.expires_at ?? null,
       active: coupon.active ?? true,

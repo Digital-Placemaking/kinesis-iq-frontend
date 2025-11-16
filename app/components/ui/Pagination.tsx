@@ -1,10 +1,14 @@
-// Pagination
-// Reusable pagination component with page numbers, navigation buttons, and item count display.
-// Used in: Admin list components (CouponsClient, QuestionsClient, IssuedCouponsList, etc.).
+/**
+ * Pagination Component
+ * Modern pagination using shadcn Button components
+ * Reusable pagination component with page numbers, navigation buttons, and item count display
+ */
 
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * Pagination Constants
@@ -104,24 +108,28 @@ export default function Pagination({
 
   return (
     <div
-      className={`flex flex-col items-center gap-4 sm:flex-row sm:justify-between ${className}`}
+      className={cn(
+        "flex flex-col items-center gap-4 sm:flex-row sm:justify-between",
+        className
+      )}
     >
       {/* Item count info */}
-      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+      <div className="text-sm text-muted-foreground">
         Showing {startItem} to {endItem} of {totalItems} items
       </div>
 
       {/* Page navigation */}
       <div className="flex items-center gap-2">
         {/* Previous button */}
-        <button
+        <Button
+          variant="outline"
+          size="icon"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
           aria-label="Previous page"
         >
           <ChevronLeft className="h-4 w-4" />
-        </button>
+        </Button>
 
         {/* Page numbers */}
         <div className="flex items-center gap-1">
@@ -130,7 +138,7 @@ export default function Pagination({
               return (
                 <span
                   key={`ellipsis-${index}`}
-                  className="px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400"
+                  className="px-3 py-2 text-sm text-muted-foreground"
                 >
                   ...
                 </span>
@@ -141,32 +149,30 @@ export default function Pagination({
             const isActive = pageNum === currentPage;
 
             return (
-              <button
+              <Button
                 key={pageNum}
+                variant={isActive ? "default" : "outline"}
+                size="sm"
                 onClick={() => onPageChange(pageNum)}
-                className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "border-blue-500 bg-blue-500 text-white dark:border-blue-600 dark:bg-blue-600"
-                    : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                }`}
                 aria-label={`Page ${pageNum}`}
                 aria-current={isActive ? "page" : undefined}
               >
                 {pageNum}
-              </button>
+              </Button>
             );
           })}
         </div>
 
         {/* Next button */}
-        <button
+        <Button
+          variant="outline"
+          size="icon"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
           aria-label="Next page"
         >
           <ChevronRight className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
     </div>
   );

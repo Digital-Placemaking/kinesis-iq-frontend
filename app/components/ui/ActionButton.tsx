@@ -1,8 +1,12 @@
-// ActionButton
-// Reusable action button component with consistent styling and multiple variants (primary, secondary, outline).
-// Used in: Admin components and forms throughout the app.
+/**
+ * ActionButton Component
+ * Wrapper around shadcn Button for backward compatibility
+ * Maps old variants to new shadcn button variants
+ */
 
+import { Button } from "@/components/ui/button";
 import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ActionButtonProps {
   icon?: LucideIcon;
@@ -23,26 +27,24 @@ export default function ActionButton({
   className = "",
   type = "button",
 }: ActionButtonProps) {
-  const baseClasses =
-    "flex w-full max-w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 whitespace-normal break-words text-center";
-
-  const variantClasses = {
-    primary: "bg-blue-600 text-white",
-    secondary:
-      "border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800",
-    outline:
-      "border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800",
-  };
+  // Map old variants to shadcn variants
+  const shadcnVariant =
+    variant === "primary"
+      ? "default"
+      : variant === "secondary"
+      ? "secondary"
+      : "outline";
 
   return (
-    <button
+    <Button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      variant={shadcnVariant}
+      className={cn("w-full sm:w-auto", className)}
     >
       {Icon && <Icon className="h-4 w-4" />}
       {children}
-    </button>
+    </Button>
   );
 }

@@ -60,7 +60,7 @@ export {
   getQuestionById,
   getQuestionResults,
 } from "./actions/questions";
-export type { QuestionResult } from "./actions/questions";
+export type { QuestionResult } from "@/lib/types/question";
 
 // Issued coupon actions
 export {

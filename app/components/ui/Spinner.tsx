@@ -1,8 +1,11 @@
-// Spinner
-// Reusable loading spinner component for displaying loading states throughout the app.
-// Used in: Various components for loading indicators.
+/**
+ * Spinner Component
+ * Modern loading spinner using Lucide Loader2 icon
+ * Maintains backward compatibility with size prop
+ */
 
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SpinnerProps {
   size?: "sm" | "md" | "lg";
@@ -18,7 +21,11 @@ const sizeClasses = {
 export default function Spinner({ size = "md", className = "" }: SpinnerProps) {
   return (
     <Loader2
-      className={`animate-spin text-zinc-600 dark:text-zinc-400 ${sizeClasses[size]} ${className}`}
+      className={cn(
+        "animate-spin text-muted-foreground",
+        sizeClasses[size],
+        className
+      )}
       aria-label="Loading"
     />
   );

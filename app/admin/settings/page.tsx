@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth, isOwnerOrAdmin } from "@/lib/auth/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
-import type { BusinessOwner } from "@/lib/auth/server";
+import type { Staff } from "@/lib/types/staff";
 import { toTenantDisplay } from "@/lib/utils/tenant";
 import AdminLayout from "../components/AdminLayout";
 import SettingsClient from "./components/SettingsClient";
@@ -87,7 +87,7 @@ export default async function SettingsPage() {
 
         <SettingsClient
           tenant={tenant}
-          staffList={(staffList as BusinessOwner[]) || []}
+          staffList={(staffList as Staff[]) || []}
           userRole={userRole}
           tenantId={tenantId}
         />

@@ -1,6 +1,18 @@
-// Card
-// Reusable card container component that provides consistent styling for card-based layouts.
-// Used in: Various components throughout the app for displaying content in cards.
+/**
+ * Card Component
+ * Wrapper around shadcn Card for backward compatibility
+ * Maintains the variant prop for elevated styling
+ */
+
+import {
+  Card as ShadcnCard,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface CardProps {
   children: React.ReactNode;
@@ -13,13 +25,14 @@ export default function Card({
   className = "",
   variant = "default",
 }: CardProps) {
-  const baseClasses =
-    "rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900";
-  const variantClasses = variant === "elevated" ? "shadow-sm" : "";
-
   return (
-    <div className={`${baseClasses} ${variantClasses} ${className}`}>
+    <ShadcnCard
+      className={cn(variant === "elevated" && "shadow-sm", className)}
+    >
       {children}
-    </div>
+    </ShadcnCard>
   );
 }
+
+// Re-export shadcn card components for advanced usage
+export { CardContent, CardHeader, CardTitle, CardDescription, CardFooter };

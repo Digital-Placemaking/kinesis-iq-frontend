@@ -235,18 +235,19 @@ export default function CouponCompletion({
         )}
 
         {/* Action Buttons */}
-        <div className="mb-6 space-y-2">
-          <ActionButton icon={Copy} onClick={handleCopyCode}>
+        <div className="mb-6 flex flex-col gap-2">
+          <ActionButton icon={Copy} onClick={handleCopyCode} className="w-full">
             {copied ? "Copied!" : "Copy Code"}
           </ActionButton>
           <ActionButton
             icon={Download}
             onClick={handleAddToWallet}
             disabled={!issuedCouponId || walletLoading}
+            className="w-full"
           >
             {walletLoading ? "Generating..." : "Add to Google Wallet"}
           </ActionButton>
-          <ActionButton icon={Share2} onClick={handleShare}>
+          <ActionButton icon={Share2} onClick={handleShare} className="w-full">
             Share with Friends
           </ActionButton>
         </div>
