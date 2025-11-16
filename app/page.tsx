@@ -69,6 +69,46 @@ function ScrollAnimation({ children }: { children: React.ReactNode }) {
 
 export default function HomePage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Preload all images and wait for them to load
+  useEffect(() => {
+    const imagesToLoad = [
+      "/toronto-skyline.jpg",
+      ...PREVIEW_IMAGES.map((img) => img.url),
+      "/dp-logo.png",
+    ];
+
+    let loadedCount = 0;
+    const totalImages = imagesToLoad.length;
+
+    const handleImageLoad = () => {
+      loadedCount++;
+      if (loadedCount === totalImages) {
+        // Small delay to ensure smooth transition
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 300);
+      }
+    };
+
+    const handleImageError = () => {
+      loadedCount++;
+      if (loadedCount === totalImages) {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 300);
+      }
+    };
+
+    // Preload all images
+    imagesToLoad.forEach((src) => {
+      const img = new Image();
+      img.onload = handleImageLoad;
+      img.onerror = handleImageError;
+      img.src = src;
+    });
+  }, []);
 
   // Rotate images periodically
   useEffect(() => {
@@ -85,6 +125,31 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* Handles OAuth callbacks and session establishment */}
       <AuthCallbackHandler />
+
+      {/* Loading Screen */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col items-center gap-4"
+            >
+              <img
+                src="/dp-logo.png"
+                alt="Digital Placemaking"
+                className="h-16 w-16 object-contain"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Hero Section - Split Layout */}
       {/* 
@@ -125,28 +190,7 @@ export default function HomePage() {
             Each section animates in sequence for a polished entrance effect.
           */}
           <div className="flex flex-col justify-center space-y-8 py-12 lg:py-24 lg:pl-32 lg:pr-0">
-            {/* Logo and branding - First animation */}
-            <motion.div
-              className="space-y-2"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-900/60 shadow-sm ring-1 ring-zinc-700 backdrop-blur">
-                  <img
-                    src="/dp-logo.png"
-                    alt="Digital Placemaking"
-                    className="h-8 w-8 object-contain"
-                  />
-                </div>
-                <span className="text-sm font-medium text-zinc-300">
-                  by Digital Placemaking
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Main headline and description - Second animation (0.1s delay) */}
+            {/* Main headline and description - First animation */}
             <motion.div
               className="space-y-6"
               initial={{ opacity: 0, y: 20 }}
@@ -157,9 +201,35 @@ export default function HomePage() {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
-                KinesisIQ
-              </h1>
+              <div className="space-y-4">
+                <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
+                  KinesisIQ
+                </h1>
+                {/* Logo and branding - Badge style */}
+                <motion.div
+                  className="flex items-center gap-3"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.2,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <div className="inline-flex items-center gap-2 rounded-lg bg-zinc-900/60 px-3 py-1.5 backdrop-blur-sm ring-1 ring-zinc-700/50">
+                    <div className="flex h-6 w-6 items-center justify-center">
+                      <img
+                        src="/dp-logo.png"
+                        alt="Digital Placemaking"
+                        className="h-5 w-5 object-contain"
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-zinc-300">
+                      by Digital Placemaking
+                    </span>
+                  </div>
+                </motion.div>
+              </div>
               <p className="text-xl leading-relaxed text-zinc-200 sm:text-2xl">
                 Reading the pulse of humanity—turning insight into foresight.
               </p>
