@@ -21,17 +21,21 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { getTenantPath } from "@/lib/utils/subdomain";
 
 export default function AuthCallbackHandler() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === "undefined") {
+      return;
+    }
+
     // Check for hash fragments (OAuth implicit flow)
-    if (typeof window !== "undefined" && window.location.hash) {
+    if (window.location.hash) {
       const hash = window.location.hash.substring(1); // Remove #
       const params = new URLSearchParams(hash);
       const accessToken = params.get("access_token");
@@ -41,7 +45,9 @@ export default function AuthCallbackHandler() {
       const errorDescription = params.get("error_description");
 
       // Extract tenant slug from URL query params (set during OAuth initiation)
-      const tenantSlug = searchParams.get("tenant");
+      // Read directly from window.location.search to avoid Suspense requirement
+      const urlParams = new URLSearchParams(window.location.search);
+      const tenantSlug = urlParams.get("tenant");
 
       // Handle authentication errors
       if (error) {
@@ -122,7 +128,7 @@ export default function AuthCallbackHandler() {
           });
       }
     }
-  }, [router, searchParams]);
+  }, [router]);
 
   // This component doesn't render anything - it only handles side effects
   return null;
