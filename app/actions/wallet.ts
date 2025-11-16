@@ -4,6 +4,7 @@ import { SignJWT } from "jose";
 import crypto from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
+import type { Coupon } from "@/lib/types/coupon";
 
 /**
  * Wallet Actions
@@ -67,7 +68,7 @@ export async function generateGoogleWalletPass(
       };
     }
 
-    const coupon = issuedCoupon.coupons as any;
+    const coupon = issuedCoupon.coupons as Coupon | null;
     if (!coupon) {
       return {
         saveUrl: null,
@@ -91,7 +92,21 @@ export async function generateGoogleWalletPass(
       ? new Date(coupon.expires_at)
       : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
-    const genericObject: any = {
+    // Google Wallet generic object structure
+    const genericObject: {
+      id: string;
+      classId: string;
+      state: string;
+      cardTitle: { defaultValue: { language: string; value: string } };
+      header: { defaultValue: { language: string; value: string } };
+      subheader?: { defaultValue: { language: string; value: string } };
+      barcode?: { type: string; value: string };
+      validTimeInterval?: { start: { date: string }; end: { date: string } };
+      heroImage?: { sourceUri: { uri: string } };
+      logo?: { sourceUri: { uri: string } };
+      hexBackgroundColor?: string;
+      [key: string]: any; // Allow additional Google Wallet properties
+    } = {
       id: objectId,
       classId: `${issuerId}.${classId}`,
       state: "active",

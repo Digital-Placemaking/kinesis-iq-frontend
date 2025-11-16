@@ -130,7 +130,7 @@ export async function issueCoupon(
         // Always return the existing coupon - same code, same coupon
         // Redemption status doesn't matter - they keep their original coupon
         return {
-          issuedCoupon: existing as any,
+          issuedCoupon: existing as IssuedCoupon,
           error: null,
         };
       } else {
@@ -164,7 +164,7 @@ export async function issueCoupon(
       // If insert succeeded, we're done
       if (!insertError && issuedCoupon) {
         return {
-          issuedCoupon: issuedCoupon as any,
+          issuedCoupon: issuedCoupon as IssuedCoupon,
           error: null,
         };
       }
@@ -594,7 +594,7 @@ export async function validateCouponCode(
         }
         return {
           valid: false,
-          issuedCoupon: issuedCoupon as any,
+          issuedCoupon: issuedCoupon as IssuedCoupon,
           error: "Coupon has expired",
           message: "This coupon has expired",
         };
@@ -660,7 +660,7 @@ export async function validateCouponCode(
           if (isFullyRedeemed) {
             return {
               valid: false,
-              issuedCoupon: issuedCoupon as any,
+              issuedCoupon: issuedCoupon as IssuedCoupon,
               error: "This customer has already redeemed this coupon",
               message:
                 "You cannot redeem the same coupon multiple times for the same customer",
@@ -691,14 +691,14 @@ export async function validateCouponCode(
       if (updateError || !updatedCoupon) {
         return {
           valid: false,
-          issuedCoupon: issuedCoupon as any,
+          issuedCoupon: issuedCoupon as IssuedCoupon,
           error: updateError?.message || "Failed to redeem coupon",
         };
       }
 
       return {
         valid: true,
-        issuedCoupon: updatedCoupon as any,
+        issuedCoupon: updatedCoupon as IssuedCoupon,
         error: null,
         message: "Coupon redeemed successfully",
       };
@@ -855,7 +855,13 @@ export async function updateIssuedCoupon(
     const tenantSupabase = await createTenantClient(tenantId);
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: {
+      status?: string;
+      redemptions_count?: number;
+      redeemed_at?: string | null;
+      revoked_at?: string | null;
+      metadata?: Record<string, any>;
+    } = {};
     if (updates.status !== undefined) updateData.status = updates.status;
     if (updates.redemptions_count !== undefined)
       updateData.redemptions_count = updates.redemptions_count;

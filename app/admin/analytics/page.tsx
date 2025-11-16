@@ -1,17 +1,19 @@
 /**
- * Visitors admin page
- * Displays visitor analytics and engagement metrics
+ * Analytics admin page
+ * Displays visitor analytics, engagement metrics, and time-series trends
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
-import { getAnalyticsSummary } from "@/app/actions";
+import { getAnalyticsSummary, getAnalyticsTimeSeries } from "@/app/actions";
 import AdminLayout from "../components/AdminLayout";
 import Card from "@/app/components/ui/Card";
+import AnalyticsCharts from "./components/AnalyticsCharts";
+import MetricTooltip from "./components/MetricTooltip";
 import { Eye, CheckCircle, Copy, Download, Wallet } from "lucide-react";
 
-export default async function VisitorsPage() {
+export default async function AnalyticsPage() {
   const user = await requireAuth();
   const supabase = await createClient();
 
@@ -48,8 +50,11 @@ export default async function VisitorsPage() {
     redirect("/admin/login?error=tenant_not_found");
   }
 
-  // Fetch analytics summary from analytics_events table
-  const analyticsSummary = await getAnalyticsSummary(tenant.slug);
+  // Fetch analytics summary and time-series data
+  const [analyticsSummary, timeSeriesData] = await Promise.all([
+    getAnalyticsSummary(tenant.slug),
+    getAnalyticsTimeSeries(tenant.slug, 30),
+  ]);
 
   const pageVisits = analyticsSummary.pageVisits;
   const congratulations = analyticsSummary.congratulations;
@@ -84,10 +89,10 @@ export default async function VisitorsPage() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
-            Visitors
+            Analytics
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-            Track visitor engagement and conversion metrics
+            Track visitor engagement, conversion metrics, and trends over time
           </p>
         </div>
 
@@ -96,9 +101,12 @@ export default async function VisitorsPage() {
           <Card className="p-3 sm:p-4" variant="elevated">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                  Page Visits
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                    Page Visits
+                  </p>
+                  <MetricTooltip description="Unique visitors who have visited your tenant landing page. Counted by email or session ID." />
+                </div>
                 <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
                   {pageVisits}
                 </p>
@@ -110,9 +118,12 @@ export default async function VisitorsPage() {
           <Card className="p-3 sm:p-4" variant="elevated">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                  Congratulations
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                    Congratulations
+                  </p>
+                  <MetricTooltip description="Unique visitors who completed a survey and reached the congratulations page. This represents survey completion rate." />
+                </div>
                 <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
                   {congratulations}
                 </p>
@@ -124,9 +135,12 @@ export default async function VisitorsPage() {
           <Card className="p-3 sm:p-4" variant="elevated">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                  Copy Code
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                    Copy Code
+                  </p>
+                  <MetricTooltip description="Total number of times visitors clicked the copy button to copy their coupon code to clipboard." />
+                </div>
                 <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
                   {copyCode}
                 </p>
@@ -138,9 +152,12 @@ export default async function VisitorsPage() {
           <Card className="p-3 sm:p-4" variant="elevated">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                  Downloads
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                    Downloads
+                  </p>
+                  <MetricTooltip description="Total number of times visitors downloaded their coupon as an image file." />
+                </div>
                 <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
                   {downloads}
                 </p>
@@ -152,9 +169,12 @@ export default async function VisitorsPage() {
           <Card className="p-3 sm:p-4" variant="elevated">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                  Wallet Adds
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                    Wallet Adds
+                  </p>
+                  <MetricTooltip description="Total number of times visitors successfully added their coupon to Google Wallet or Apple Wallet." />
+                </div>
                 <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
                   {walletAdds}
                 </p>
@@ -219,6 +239,22 @@ export default async function VisitorsPage() {
             </div>
           </div>
         </Card>
+
+        {/* Time-Series Charts */}
+        {timeSeriesData.error ? (
+          <Card className="p-4 sm:p-6" variant="elevated">
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Error loading analytics data: {timeSeriesData.error}
+            </p>
+          </Card>
+        ) : (
+          <div className="mt-8">
+            <AnalyticsCharts
+              tenantSlug={tenant.slug}
+              initialTimeSeriesData={timeSeriesData.data}
+            />
+          </div>
+        )}
       </div>
     </AdminLayout>
   );

@@ -227,7 +227,14 @@ export async function updateTenantSettings(
     const tenantSupabase = await createTenantClient(resolvedTenantId);
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: {
+      name?: string;
+      logo_url?: string | null;
+      website_url?: string | null;
+      theme?: { primary: string; secondary: string } | null;
+      active?: boolean;
+      subdomain?: string | null;
+    } = {};
     if (updates.name !== undefined) {
       if (!updates.name.trim()) {
         return {

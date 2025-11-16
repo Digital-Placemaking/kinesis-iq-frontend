@@ -3,34 +3,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import type { QuestionType } from "@/lib/types/survey";
-
-/**
- * Question Results Types
- */
-export interface QuestionResult {
-  totalResponses: number;
-  questionType: string;
-  questionText: string;
-  options?: string[];
-  // For multiple/single choice: { [option]: count }
-  choiceCounts?: Record<string, number>;
-  // For numeric/slider/nps/likert/rating: { min, max, mean, median, distribution }
-  numericStats?: {
-    min: number;
-    max: number;
-    mean: number;
-    median: number;
-    distribution: Record<number, number>; // value -> count
-  };
-  // For yes/no: { yes: count, no: count }
-  booleanCounts?: { yes: number; no: number };
-  // For open text: array of responses (paginated)
-  textResponses?: string[];
-  // For date: { [date]: count }
-  dateCounts?: Record<string, number>;
-  // For time: { [time]: count }
-  timeCounts?: Record<string, number>;
-}
+import type {
+  Question,
+  QuestionResult,
+  CreateQuestionInput,
+  UpdateQuestionInput,
+  QuestionResponse,
+  QuestionsResponse,
+  QuestionMutationResponse,
+} from "@/lib/types/question";
+import type { SurveyAnswer } from "@/lib/types/survey-answer";
 
 /**
  * Fetches all responses for a specific question
@@ -113,7 +95,7 @@ export async function getQuestionResults(
       // Count choices
       const choiceCounts: Record<string, number> = {};
 
-      responses?.forEach((response: any) => {
+      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
         if (answer?.array) {
           // Multiple choice - array of selected options
@@ -143,7 +125,7 @@ export async function getQuestionResults(
       let yesCount = 0;
       let noCount = 0;
 
-      responses?.forEach((response: any) => {
+      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
         if (answer?.boolean === true) yesCount++;
         else if (answer?.boolean === false) noCount++;
@@ -173,7 +155,7 @@ export async function getQuestionResults(
       const numbers: number[] = [];
       const distribution: Record<number, number> = {};
 
-      responses?.forEach((response: any) => {
+      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
         if (answer?.number !== undefined && answer?.number !== null) {
           const num = Number(answer.number);
@@ -230,7 +212,7 @@ export async function getQuestionResults(
       // Text responses
       const textResponses: string[] = [];
 
-      responses?.forEach((response: any) => {
+      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
         if (answer?.text && answer.text.trim()) {
           textResponses.push(answer.text);
@@ -252,7 +234,7 @@ export async function getQuestionResults(
       // Date counts
       const dateCounts: Record<string, number> = {};
 
-      responses?.forEach((response: any) => {
+      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
         if (answer?.text) {
           const date = answer.text.split("T")[0]; // Get date part only
@@ -275,7 +257,7 @@ export async function getQuestionResults(
       // Time counts
       const timeCounts: Record<string, number> = {};
 
-      responses?.forEach((response: any) => {
+      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
         const answer = response.answer;
         if (answer?.text) {
           timeCounts[answer.text] = (timeCounts[answer.text] || 0) + 1;
@@ -316,7 +298,7 @@ export async function getQuestionResults(
 export async function getQuestionById(
   tenantSlug: string,
   questionId: string
-): Promise<{ question: any | null; error: string | null }> {
+): Promise<QuestionResponse> {
   try {
     const supabase = await createClient();
 
@@ -410,7 +392,14 @@ export async function createQuestion(
       questions && questions.length > 0 ? questions[0].order_index : 0;
     const newOrderIndex = maxOrder + 1;
 
-    const insertData: any = {
+    const insertData: {
+      tenant_id: string;
+      question: string;
+      type: QuestionType;
+      options: string[] | null;
+      order_index: number;
+      is_active: boolean;
+    } = {
       tenant_id: tenantId,
       question: question.question,
       type: question.type,
@@ -479,7 +468,13 @@ export async function updateQuestion(
     const tenantSupabase = await createTenantClient(tenantId);
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: {
+      question?: string;
+      type?: QuestionType;
+      options?: string[] | null;
+      order_index?: number;
+      is_active?: boolean;
+    } = {};
     if (updates.question !== undefined) updateData.question = updates.question;
     if (updates.type !== undefined) updateData.type = updates.type;
     if (updates.options !== undefined) {

@@ -1,7 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
-import { createTenantClient } from "@/lib/supabase/tenant-client";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type {
   EventType,
   AnalyticsEventMetadata,
@@ -16,6 +15,11 @@ import type {
  * whenever a user action needs to be tracked for analytics purposes.
  *
  * All tracking is non-blocking - errors are logged but don't break user flow.
+ *
+ * Uses admin client to bypass RLS, which is safe because:
+ * - This is server-side only (server action)
+ * - Tenant ID is validated before insert
+ * - Analytics events are not sensitive data
  */
 export async function trackEvent(
   tenantSlug: string,
@@ -50,11 +54,25 @@ export async function trackEvent(
       };
     }
 
-    // Create tenant-scoped client for RLS compliance
-    const tenantSupabase = await createTenantClient(tenantId);
+    // Use admin client to bypass RLS for analytics inserts
+    // This is safe because we validate tenant_id and this is server-side only
+    let adminClient;
+    try {
+      adminClient = createAdminClient();
+    } catch (err) {
+      // If service role key is not configured, fall back to regular client
+      // This allows the app to work in development without service role key
+      console.warn(
+        "SUPABASE_SERVICE_ROLE_KEY not configured, using regular client for analytics (may fail due to RLS)"
+      );
+      const { createTenantClient } = await import(
+        "@/lib/supabase/tenant-client"
+      );
+      adminClient = await createTenantClient(tenantId);
+    }
 
     // Insert analytics event
-    const { data: event, error: insertError } = await tenantSupabase
+    const { data: event, error: insertError } = await adminClient
       .from("analytics_events")
       .insert({
         tenant_id: tenantId,

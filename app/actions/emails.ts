@@ -230,7 +230,7 @@ export async function sendMassEmail(
     }
 
     const recipients = (emails || [])
-      .map((e: any) => (e.email || "").trim())
+      .map((e: { email?: string | null }) => (e.email || "").trim())
       .filter((e: string) => e.length > 0);
 
     // TODO: Integrate with your email provider here

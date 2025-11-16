@@ -81,7 +81,10 @@ export { generateGoogleWalletPass } from "./actions/wallet";
 export { submitFeedback } from "./actions/feedback";
 
 // Analytics actions
-export { getAnalyticsSummary } from "./actions/analytics";
+export {
+  getAnalyticsSummary,
+  getAnalyticsTimeSeries,
+} from "./actions/analytics";
 
 // Auth actions
 export { updatePassword } from "./actions/auth";

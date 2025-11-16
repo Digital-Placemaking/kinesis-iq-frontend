@@ -3,6 +3,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import type { BusinessOwner, BusinessOwnerRole } from "@/lib/auth/server";
+import type {
+  Staff,
+  StaffResponse,
+  AddStaffInput,
+  AddStaffResponse,
+} from "@/lib/types/staff";
 
 /**
  * Staff Actions
@@ -17,10 +23,7 @@ import type { BusinessOwner, BusinessOwnerRole } from "@/lib/auth/server";
 export async function getStaffForTenant(
   tenantSlug: string,
   tenantId?: string
-): Promise<{
-  staff: BusinessOwner[] | null;
-  error: string | null;
-}> {
+): Promise<StaffResponse> {
   try {
     let resolvedTenantId = tenantId;
 

@@ -11,7 +11,9 @@ import type {
   SurveySubmissionResponse,
   SurveySubmission,
   Survey,
+  SurveyQuestion,
 } from "@/lib/types/survey";
+import type { SurveyAnswer } from "@/lib/types/survey-answer";
 
 /**
  * Survey Actions
@@ -77,7 +79,7 @@ export async function getSurveyForTenant(
     const survey: Survey = {
       tenant_id: tenantId,
       coupon_id: null,
-      questions: questions.map((q: any) => ({
+      questions: questions.map((q: SurveyQuestion) => ({
         id: q.id,
         tenant_id: q.tenant_id,
         question: q.question,
@@ -159,7 +161,7 @@ export async function getSurveyForCoupon(
     const survey: Survey = {
       tenant_id: tenantId,
       coupon_id: couponId,
-      questions: questions.map((q: any) => ({
+      questions: questions.map((q: SurveyQuestion) => ({
         id: q.id,
         tenant_id: q.tenant_id,
         question: q.question,
@@ -236,7 +238,7 @@ export async function submitSurveyAnswers(
     // Insert one row per question answer
     const responsesToInsert = submission.answers.map((answer) => {
       // Convert answer to JSONB format
-      let answerJsonb: any = null;
+      let answerJsonb: SurveyAnswer | null = null;
 
       // Handle answer_text (for text, date, time, single_choice, ranked_choice, or JSON array for multiple_choice)
       if (answer.answer_text !== null && answer.answer_text !== undefined) {

@@ -2,6 +2,14 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
+import type {
+  Coupon,
+  CreateCouponInput,
+  UpdateCouponInput,
+  CouponResponse,
+  CouponsResponse,
+  CouponMutationResponse,
+} from "@/lib/types/coupon";
 
 /**
  * Coupon Actions
@@ -14,7 +22,7 @@ import { createTenantClient } from "@/lib/supabase/tenant-client";
 export async function getCouponById(
   tenantSlug: string,
   couponId: string
-): Promise<{ coupon: any | null; error: string | null }> {
+): Promise<CouponResponse> {
   try {
     const supabase = await createClient();
 
@@ -65,7 +73,9 @@ export async function getCouponById(
 /**
  * Fetches all coupons for a tenant
  */
-export async function getCouponsForTenant(tenantSlug: string) {
+export async function getCouponsForTenant(
+  tenantSlug: string
+): Promise<CouponsResponse> {
   try {
     const supabase = await createClient();
 
@@ -117,14 +127,8 @@ export async function getCouponsForTenant(tenantSlug: string) {
  */
 export async function createCoupon(
   tenantSlug: string,
-  coupon: {
-    title: string;
-    description?: string;
-    discount?: string | null;
-    expires_at?: string | null;
-    active?: boolean;
-  }
-): Promise<{ success: boolean; error: string | null }> {
+  coupon: CreateCouponInput
+): Promise<CouponMutationResponse> {
   try {
     const supabase = await createClient();
 
@@ -148,7 +152,14 @@ export async function createCoupon(
 
     const tenantSupabase = await createTenantClient(tenantId);
 
-    const insertData: any = {
+    const insertData: {
+      tenant_id: string;
+      title: string;
+      description: string | null;
+      discount: string | null;
+      expires_at: string | null;
+      active: boolean;
+    } = {
       tenant_id: tenantId,
       title: coupon.title,
       discount: coupon.discount ?? null,
@@ -182,14 +193,8 @@ export async function createCoupon(
 export async function updateCoupon(
   tenantSlug: string,
   couponId: string,
-  updates: {
-    title?: string;
-    description?: string;
-    discount?: string | null;
-    expires_at?: string | null;
-    active?: boolean;
-  }
-): Promise<{ success: boolean; error: string | null }> {
+  updates: UpdateCouponInput
+): Promise<CouponMutationResponse> {
   try {
     const supabase = await createClient();
 
@@ -214,7 +219,7 @@ export async function updateCoupon(
     const tenantSupabase = await createTenantClient(tenantId);
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: UpdateCouponInput = {};
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.description !== undefined)
       updateData.description = updates.description;

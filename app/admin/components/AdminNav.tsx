@@ -33,8 +33,8 @@ const allNavTabs: NavTab[] = [
     roles: ["owner", "admin"],
   },
   {
-    href: "/admin/visitors",
-    label: "Visitors",
+    href: "/admin/analytics",
+    label: "Analytics",
     icon: Eye,
     roles: ["owner", "admin"],
   },

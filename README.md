@@ -1,16 +1,59 @@
-# Digital Placemaking – Frontend
+# KinesisIQ Frontend
 
-Multi-tenant web application built with Next.js and Supabase for managing tenant-specific coupons, surveys, and customer engagement.
+Multi-tenant web application built with Next.js and Supabase for managing tenant-specific coupons, surveys, and customer engagement analytics.
 
 ## Overview
 
-This application enables businesses to create and manage digital coupons, collect customer feedback through surveys, and track visitor engagement. The system supports multiple routing strategies: path-based routes (`yourdomain.com/company1`) and subdomain routes (`company1.yourdomain.com`).
+KinesisIQ is a Conversational Intelligence and Predictive Insight Platform that transforms real-world interactions into foresight. This application enables businesses to create and manage digital coupons, collect customer feedback through surveys, and track visitor engagement with comprehensive analytics. The system supports multiple routing strategies: path-based routes (`yourdomain.com/company1`) and subdomain routes (`company1.yourdomain.com`).
+
+## Technologies Used
+
+### Core Framework
+
+- **Next.js 16** - React framework with App Router for server-side rendering and routing
+- **TypeScript** - Type-safe JavaScript for better developer experience and code reliability
+- **React 19** - UI library for building interactive user interfaces
+
+### Styling & UI
+
+- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
+- **shadcn/ui** - High-quality React component library
+- **Lucide React** - Icon library for consistent iconography
+- **Framer Motion** - Animation library for smooth transitions and interactions
+- **Recharts** - Charting library for data visualization
+
+### Backend & Database
+
+- **Supabase** - Backend-as-a-Service platform providing:
+  - PostgreSQL database with Row Level Security (RLS)
+  - Authentication and user management
+  - Real-time subscriptions
+  - Storage for file uploads
+
+### Infrastructure & Services
+
+- **Upstash Redis** - Serverless Redis for rate limiting and caching
+- **Resend** - Email delivery service for transactional emails
+- **Google Wallet API** - Integration for digital coupon passes
+
+### Development Tools
+
+- **class-variance-authority** - For component variant management
+- **clsx** - Utility for constructing className strings conditionally
+- **tailwind-merge** - Merge Tailwind CSS classes without conflicts
 
 ## System Architecture
 
 ### Request Flow
 
 When a user visits the application, requests flow through the Next.js middleware layer first. The middleware handles authentication, tenant resolution, and routing logic before requests reach the application routes.
+
+1. **Request arrives** → Middleware intercepts
+2. **Subdomain extraction** (if applicable) → Resolved to tenant slug
+3. **Tenant resolution** → Database lookup via `resolve_tenant` RPC
+4. **Authentication check** → Session validation for protected routes
+5. **URL rewriting** → Subdomain routes rewritten to path-based format
+6. **Request forwarded** → To appropriate route handler
 
 For path-based routing, users access tenant pages directly via `yourdomain.com/{slug}` where the slug matches the tenant identifier. The application uses dynamic route parameters to extract the tenant context.
 
@@ -20,13 +63,40 @@ For subdomain routing, users access tenant pages via `{subdomain}.yourdomain.com
 
 Authentication is handled by Supabase Auth, integrated via Next.js middleware and server components. When a user accesses protected routes, the middleware checks for an active session and redirects unauthenticated users to the login page.
 
-The application uses role-based access control with three roles: owner, admin, and staff. Roles are stored in the staff table and associated with users via the user_id foreign key. Server actions and page components use the tenant-scoped Supabase client to enforce role-based permissions.
+The application uses role-based access control (RBAC) with three roles:
+
+- **Owner** - Full access to all tenant features, can manage staff and settings
+- **Admin** - Administrative access, can manage most tenant settings (currently same as owner)
+- **Staff** - Limited access, can only view issued coupons
+
+Roles are stored in the `staff` table and associated with users via the `user_id` foreign key. Server actions and page components use the tenant-scoped Supabase client to enforce role-based permissions.
 
 ### Data Isolation with RLS
 
 Row Level Security (RLS) policies in Supabase PostgreSQL enforce tenant data isolation. Each database request includes the tenant context via the `x-tenant-id` HTTP header. The `createTenantClient` function automatically adds this header to all Supabase requests, allowing RLS policies to filter data based on the current tenant context.
 
-RLS policies check the tenant_id column against the current_tenant_id() function, which reads the header value. This ensures that queries only return data belonging to the authenticated user's tenant, preventing cross-tenant data access.
+RLS policies check the `tenant_id` column against the `current_tenant_id()` function, which reads the header value. This ensures that queries only return data belonging to the authenticated user's tenant, preventing cross-tenant data access.
+
+**Key RLS Features:**
+
+- Automatic tenant isolation for all queries
+- Role-based permissions (staff vs owner/admin)
+- Server-side enforcement (cannot be bypassed client-side)
+- Transparent to application code (handled by Supabase client)
+
+### Analytics Tracking
+
+Visitor analytics are tracked through server-side event logging. The system uses a Supabase admin client (with service role key) to bypass RLS for analytics inserts, ensuring reliable tracking even when users are not authenticated.
+
+**Analytics Event Types:**
+
+- `page_visit` - Visitor lands on tenant page
+- `survey_completion` - Visitor completes a survey
+- `code_copy` - Visitor copies coupon code
+- `coupon_download` - Visitor downloads coupon image
+- `wallet_add` - Visitor adds coupon to digital wallet
+
+Events are stored in the `analytics_events` table with session identifiers to group related activities, enabling funnel analysis and visitor journey tracking.
 
 ### Rate Limiting
 
@@ -34,11 +104,27 @@ Rate limiting uses Upstash Redis to prevent abuse and manage API usage. The syst
 
 The rate limiting system uses a fixed-window algorithm where each time window has a maximum request count. When a user exceeds the limit, the system returns an error response indicating when they can retry. Redis keys automatically expire when the time window ends, eliminating the need for manual cleanup.
 
+**Rate Limit Strategy:**
+
+- Fails open if Redis is unavailable (logs warning, allows request)
+- Per-endpoint configuration via constants
+- Automatic key expiration
+- Clear error messages for rate limit violations
+
 ### Server Actions and Data Flow
 
 Server actions handle all data mutations and sensitive operations. They execute on the server and communicate with Supabase using the tenant-scoped client. Server actions implement rate limiting, validation, and error handling before interacting with the database.
 
 The application uses Next.js Server Actions with the `use server` directive, allowing client components to call server-side functions directly without creating API routes. Server actions return structured responses indicating success or failure, along with error messages when appropriate.
+
+**Server Action Pattern:**
+
+1. Authentication check
+2. Tenant resolution
+3. Rate limit check
+4. Input validation
+5. Database operation (with tenant-scoped client)
+6. Structured response return
 
 ### Client-Server Communication
 
@@ -46,30 +132,104 @@ Client components interact with the server through server actions and fetch requ
 
 For read operations, server components fetch data directly from Supabase using the tenant-scoped client. Data is passed to client components as props, enabling a clear separation between server-side data fetching and client-side interactivity.
 
-### Routing and Navigation
+## Important Data Types
 
-The application supports two routing strategies simultaneously. Path-based routing uses dynamic segments in the URL path, while subdomain routing uses the hostname subdomain. The middleware handles the translation between these approaches, ensuring consistent internal routing regardless of access method.
+The application uses comprehensive TypeScript type definitions to ensure type safety across all database operations. All types are defined in `lib/types/` and exported from `lib/types/index.ts`.
 
-Client-side navigation uses Next.js Link components and router methods. The application includes a utility function that generates correct paths based on the current routing context, ensuring links work correctly whether accessed via path or subdomain.
+### Core Entity Types
 
-### Analytics and Tracking
+#### Tenant Types (`lib/types/tenant.ts`)
 
-Visitor analytics are tracked through server-side event logging. When users visit tenant pages, the system records page views, survey completions, and coupon issuances. Analytics data is stored in the database and aggregated for display in the admin dashboard.
+- **`Tenant`** - Full tenant record from database (id, slug, subdomain, name, logo_url, website_url, theme, active, created_at)
+- **`TenantTheme`** - Theme configuration (primary, secondary colors)
+- **`TenantDisplay`** - Simplified tenant data for frontend display
+- **`TenantResponse`** - Response wrapper for tenant operations
 
-The analytics system uses server actions to record events, ensuring reliable tracking even with JavaScript disabled. Events include session identifiers to group related activities, enabling funnel analysis and visitor journey tracking.
+#### Coupon Types (`lib/types/coupon.ts`)
 
-## Tech Stack
+- **`Coupon`** - Coupon record (id, tenant_id, title, description, discount, expires_at, active, created_at)
+- **`CreateCouponInput`** - Input for creating new coupons
+- **`UpdateCouponInput`** - Input for updating existing coupons
+- **`CouponResponse`** - Response wrapper for coupon fetch operations
+- **`CouponsResponse`** - Response wrapper for multiple coupons
+- **`CouponMutationResponse`** - Response wrapper for create/update operations
 
-- **Framework:** Next.js 16 with App Router
-- **Language:** TypeScript
-- **UI Library:** React 19
-- **Styling:** Tailwind CSS
-- **Components:** shadcn/ui components, Lucide React (icons)
-- **Database & Auth:** Supabase (PostgreSQL with RLS, Authentication)
-- **Rate Limiting:** Upstash Redis
-- **Email Service:** Resend
-- **APIs:** Google Wallet API (Coupon passes)
-- **Utilities:** class-variance-authority, clsx, tailwind-merge
+#### Issued Coupon Types (`lib/types/issued-coupon.ts`)
+
+- **`IssuedCoupon`** - Issued coupon record (id, tenant_id, coupon_id, code, status, max_redemptions, redemptions_count, issued_to, email, expires_at, issued_at, redeemed_at, revoked_at, metadata)
+- **`IssuedCouponStatus`** - Enum: "issued" | "redeemed" | "revoked" | "expired"
+- **`IssueCouponResponse`** - Response wrapper for coupon issuance
+- **`ValidateCouponResponse`** - Response wrapper for coupon validation
+
+#### Survey Types (`lib/types/survey.ts`)
+
+- **`QuestionType`** - Enum of all question types (ranked_choice, sentiment, single_choice, multiple_choice, likert_5, likert_7, nps, rating_5, yes_no, open_text, numeric, slider, date, time)
+- **`SurveyQuestion`** - Question record (id, tenant_id, question, type, options, order_index)
+- **`Survey`** - Survey structure (tenant_id, coupon_id, title, description, questions)
+- **`QuestionAnswer`** - Answer for a single question (question_id, answer_text, answer_number, answer_boolean)
+- **`SurveySubmission`** - Complete survey submission (survey_id, coupon_id, email, answers)
+- **`SurveyResponse`** - Response wrapper for survey operations
+- **`SurveySubmissionResponse`** - Response wrapper for submission operations
+
+#### Question Types (`lib/types/question.ts`)
+
+- **`Question`** - Question record with is_active flag
+- **`CreateQuestionInput`** - Input for creating new questions
+- **`UpdateQuestionInput`** - Input for updating existing questions
+- **`QuestionResult`** - Statistics for question results (totalResponses, choiceCounts, numericStats, booleanCounts, textResponses, dateCounts, timeCounts)
+- **`NumericStats`** - Statistics for numeric questions (min, max, mean, median, distribution)
+- **`BooleanCounts`** - Counts for yes/no questions (yes, no)
+- **`DateCounts`** - Count by date (Record<string, number>)
+- **`TimeCounts`** - Count by time (Record<string, number>)
+
+#### Survey Answer Types (`lib/types/survey-answer.ts`)
+
+- **`MultipleChoiceAnswer`** - Array of selected options
+- **`SingleChoiceAnswer`** - Single selected option as text
+- **`RankedChoiceAnswer`** - Array of options in ranked order
+- **`NumericAnswer`** - Numeric value
+- **`BooleanAnswer`** - Boolean value
+- **`TextAnswer`** - Text response
+- **`DateAnswer`** - Date string (ISO 8601)
+- **`TimeAnswer`** - Time string (HH:mm)
+- **`SurveyAnswer`** - Union type of all answer structures
+
+#### Analytics Types (`lib/types/analytics.ts`)
+
+- **`EventType`** - Enum: "page_visit" | "code_copy" | "coupon_download" | "wallet_add" | "survey_completion"
+- **`AnalyticsEvent`** - Event record (id, tenant_id, event_type, session_id, email, metadata, created_at)
+- **`AnalyticsEventMetadata`** - Optional metadata (coupon_id, survey_id, issued_coupon_id)
+- **`TrackEventResponse`** - Response wrapper for tracking operations
+
+#### Staff Types (`lib/types/staff.ts`)
+
+- **`Staff`** - Staff record (id, tenant_id, user_id, role, email, created_at, updated_at)
+- **`StaffRole`** - Enum: "owner" | "admin" | "staff"
+- **`AddStaffInput`** - Input for adding staff (email, role)
+- **`StaffResponse`** - Response wrapper for staff operations
+- **`AddStaffResponse`** - Response wrapper for add staff operations
+
+#### Email Types (`lib/types/email.ts`)
+
+- **`EmailOptIn`** - Email opt-in record (id, tenant_id, email, consent_at)
+- **`EmailOptInResponse`** - Response wrapper for opt-in operations
+- **`VerifyEmailOptInResponse`** - Response wrapper for verification
+- **`EmailOptInsResponse`** - Response wrapper for fetching opt-ins
+- **`MassEmailResponse`** - Response wrapper for mass email operations
+
+#### Auth Types (`lib/auth/server.ts`)
+
+- **`BusinessOwner`** - Business owner/staff record (id, tenant_id, user_id, role, email, created_at)
+- **`BusinessOwnerRole`** - Enum: "owner" | "admin" | "staff"
+
+### Type Safety Principles
+
+1. **No `any` types** - All database operations use explicit types
+2. **Separate type files** - Each domain has its own type definition file
+3. **Comprehensive comments** - All types include JSDoc comments explaining their purpose
+4. **Response wrappers** - All server actions return typed response objects
+5. **Input validation** - Separate input types for create/update operations
+6. **Central exports** - All types exported from `lib/types/index.ts` for easy imports
 
 ## Environment Setup
 
@@ -80,6 +240,8 @@ The analytics system uses server actions to record events, ensuring reliable tra
 - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous/public key
 - `SUPABASE_SERVICE_ROLE_KEY` - Service role key (server-side only, never exposed client-side)
+  - Required for analytics tracking and user invitations
+  - Must be kept secret and never committed to version control
 
 **Upstash Redis Configuration (for rate limiting):**
 
@@ -108,12 +270,61 @@ To set up Resend:
 
 1. Create an account at https://resend.com
 2. Generate an API key from the dashboard
-3. Verify your sending domain (the from email is set to `noreply@yourdomain.com` in the code)
+3. Verify your sending domain (the from email is set to `Contact Form <onboarding@resend.dev>` in the code)
 4. Add `RESEND_API_KEY` to your `.env.local` file (or Vercel project settings)
+
+**Site Configuration:**
+
+- `NEXT_PUBLIC_SITE_URL` - Public URL of your application (e.g., `https://yourdomain.com`)
+  - Used for OAuth redirects and email links
 
 ### Local Development
 
-Create a `.env.local` file in the project root with all required variables. Restart the development server after adding environment variables.
+1. **Clone the repository:**
+
+   ```bash
+   git clone <repository-url>
+   cd kinesis-iq-frontend
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables:**
+   Create a `.env.local` file in the project root with all required variables (see above).
+
+4. **Start the development server:**
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the application:**
+   - Path-based: `http://localhost:3000/{slug}`
+   - Subdomain: `http://{subdomain}.localhost:3000` (requires local DNS configuration)
+
+### Production Deployment
+
+1. **Build the application:**
+
+   ```bash
+   npm run build
+   ```
+
+2. **Start the production server:**
+
+   ```bash
+   npm start
+   ```
+
+3. **For Vercel deployment:**
+   - Connect your repository to Vercel
+   - Add all environment variables in Vercel project settings
+   - Configure custom domain with wildcard DNS for subdomain support
+   - Deploy automatically on push to main branch
 
 ## Multi-Tenant Architecture
 
@@ -125,7 +336,7 @@ The tenant context is maintained throughout the request lifecycle. Server compon
 
 ### RLS Policy Enforcement
 
-Row Level Security policies enforce data isolation at the database level. Every table with tenant-specific data includes a tenant_id column and corresponding RLS policies. Policies check that the current_tenant_id() matches the row's tenant_id, preventing unauthorized data access.
+Row Level Security policies enforce data isolation at the database level. Every table with tenant-specific data includes a `tenant_id` column and corresponding RLS policies. Policies check that the `current_tenant_id()` matches the row's `tenant_id`, preventing unauthorized data access.
 
 RLS policies also consider user roles. Staff members have limited permissions, while owners and admins have full access to their tenant's data. Policies are defined in SQL and enforced by Supabase PostgreSQL automatically.
 
@@ -134,6 +345,12 @@ RLS policies also consider user roles. Staff members have limited permissions, w
 Subdomain routing allows tenants to use custom subdomains for their pages. When a request arrives with a subdomain, the middleware extracts the subdomain value, queries the database to find the matching tenant, and rewrites the URL internally to the path-based format.
 
 This approach maintains a single routing structure while supporting both access methods. Clients use utility functions to generate correct paths based on the current routing context, ensuring navigation works correctly in both scenarios.
+
+**Subdomain Setup:**
+
+1. Configure wildcard DNS: `*.yourdomain.com` → Your server IP
+2. Add subdomain to tenant record in database
+3. Middleware automatically handles routing
 
 ## Project Structure
 
@@ -148,16 +365,19 @@ This approach maintains a single routing structure while supporting both access 
 - `app/[slug]/page.tsx` - Tenant landing page (email collection)
 - `app/[slug]/coupons/page.tsx` - Coupons listing page
 - `app/[slug]/coupons/[couponId]/survey/page.tsx` - Coupon-specific survey
+- `app/[slug]/coupons/[couponId]/completed/page.tsx` - Coupon completion page
 - `app/[slug]/survey/page.tsx` - Anonymous feedback survey
+- `app/[slug]/survey/completed/page.tsx` - Survey completion page
 
 ### Admin Pages
 
 - `app/admin/page.tsx` - Admin dashboard with statistics
 - `app/admin/coupons/` - Coupon management (list, create, edit, delete)
 - `app/admin/questions/` - Survey question management
-- `app/admin/visitors/page.tsx` - Visitor analytics and funnel analysis
-- `app/admin/emails/page.tsx` - Email list management
-- `app/admin/settings/page.tsx` - Tenant settings and configuration
+- `app/admin/analytics/` - Analytics dashboard with charts and metrics
+- `app/admin/emails/` - Email list management
+- `app/admin/settings/` - Tenant settings and configuration
+- `app/admin/login/` - Admin login page
 
 ### Server Actions
 
@@ -168,50 +388,81 @@ This approach maintains a single routing structure while supporting both access 
 - `app/actions/emails.ts` - Email opt-in management
 - `app/actions/questions.ts` - Survey question management
 - `app/actions/wallet.ts` - Google Wallet integration
+- `app/actions/staff.ts` - Staff management operations
+- `app/actions/analytics.ts` - Analytics data fetching
+- `app/actions/contact.ts` - Contact form submission
 - `app/actions.ts` - Central export point for all server actions
+
+### Type Definitions
+
+- `lib/types/` - All TypeScript type definitions
+  - `index.ts` - Central export point
+  - `tenant.ts` - Tenant-related types
+  - `coupon.ts` - Coupon-related types
+  - `issued-coupon.ts` - Issued coupon types
+  - `survey.ts` - Survey and question types
+  - `survey-answer.ts` - Survey answer structures
+  - `question.ts` - Question result types
+  - `analytics.ts` - Analytics event types
+  - `staff.ts` - Staff and role types
+  - `email.ts` - Email opt-in types
 
 ### Utilities and Libraries
 
-- `lib/supabase/server.ts` - Server-side Supabase client factory
+- `lib/supabase/server.ts` - Server-side Supabase client factory (includes admin client)
 - `lib/supabase/tenant-client.ts` - Tenant-scoped Supabase client with RLS headers
 - `lib/supabase/client.ts` - Client-side Supabase client
 - `lib/auth/server.ts` - Authentication utilities and role helpers
+- `lib/auth/client.ts` - Client-side authentication utilities
 - `lib/utils/rate-limit.ts` - Rate limiting with Upstash Redis
 - `lib/utils/subdomain.ts` - Subdomain detection and path generation utilities
+- `lib/utils/tenant.ts` - Tenant utility functions
 - `lib/constants/subdomains.ts` - Reserved subdomain list
 - `lib/constants/rate-limits.ts` - Rate limit configuration constants
+- `lib/analytics/track.ts` - Analytics event tracking
+- `lib/analytics/events.ts` - Analytics event helpers
 
 ### Shared Components
 
-- `app/components/Footer.tsx` - Global footer with theme toggle
+- `app/components/Footer.tsx` - Global footer with navigation
 - `app/components/ui/TenantLogo.tsx` - Tenant logo display component
 - `app/components/ui/Modal.tsx` - Reusable modal component
 - `app/components/ui/Spinner.tsx` - Loading spinner component
+- `app/components/ui/Card.tsx` - Card component
+- `app/components/ui/ActionButton.tsx` - Action button component
+- `app/components/survey/` - Survey-related components
 
 ## Running Locally
 
-1. Install dependencies:
+1. **Install dependencies:**
 
    ```bash
    npm install
    ```
 
-2. Set up environment variables in `.env.local` (see Environment Setup above)
+2. **Set up environment variables in `.env.local`** (see Environment Setup above)
 
-3. Start the development server:
+3. **Start the development server:**
 
    ```bash
    npm run dev
    ```
 
-4. Access the application:
-   - Path-based: `http://localhost:3000/{slug}`
-   - Subdomain: `http://{subdomain}.localhost:3000`
+4. **Access the application:**
+   - Homepage: `http://localhost:3000`
+   - Path-based tenant: `http://localhost:3000/{slug}`
+   - Subdomain tenant: `http://{subdomain}.localhost:3000` (requires local DNS configuration)
 
 ## Additional Notes
 
-- Social authentication (Apple/Google) is currently disabled with TODO markers until OAuth is fully configured
-- Coupon display codes are derived from UUIDs for readability; no separate coupon code column is stored
-- Rate limiting fails open if Redis is unavailable, allowing requests but logging warnings
-- All server actions include rate limiting to prevent abuse
-- The application uses server components by default for optimal performance and SEO
+- **Type Safety**: All database operations use explicit TypeScript types. No `any` types are used in production code.
+- **Social Authentication**: Apple/Google OAuth is configured but may require additional setup for production.
+- **Coupon Codes**: Display codes are derived from UUIDs for readability; no separate coupon code column is stored.
+- **Rate Limiting**: Fails open if Redis is unavailable, allowing requests but logging warnings.
+- **Server Components**: The application uses server components by default for optimal performance and SEO.
+- **Analytics**: Uses admin client to bypass RLS for reliable tracking of unauthenticated visitors.
+- **Dark Mode**: Application is configured for dark mode by default.
+
+## License
+
+Copyright © 2024 KinesisIQ by Digital Placemaking. All rights reserved.
