@@ -92,6 +92,11 @@ export default function CouponCompletion({
     }
   };
 
+  /**
+   * Handles coupon download
+   * Currently only tracks analytics event
+   * Future: Could generate PDF or image download
+   */
   const handleDownload = () => {
     // Track coupon download event
     trackCouponDownload(tenantSlug, {
@@ -101,7 +106,8 @@ export default function CouponCompletion({
       issuedCouponId: issuedCouponId || undefined,
     });
 
-    // TODO: Implement actual download functionality if needed
+    // Note: Actual download functionality not yet implemented
+    // Could generate PDF/image in future iterations
   };
 
   const handleAddToWallet = async () => {
@@ -145,59 +151,70 @@ export default function CouponCompletion({
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-8 py-12">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-6">
         {/* Main Content Card */}
-        <Card className="mb-6 p-6" variant="elevated">
+        <Card className="mb-4 p-4" variant="elevated">
           {/* Congratulations Header */}
-          <div className="mb-6 text-center">
-            <h1 className="mb-2 text-2xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-3xl">
+          <div className="mb-3 text-center">
+            <h1 className="mb-1 text-xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-2xl">
               Congratulations! 🎉
             </h1>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 sm:text-sm">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">
               Thanks for completing our survey
             </p>
           </div>
           {/* Logo */}
-          <div className="mb-4 flex justify-center">
-            <TenantLogo tenant={tenant} size="md" />
+          <div className="mb-3 flex justify-center">
+            <div className="w-40">
+              {tenant.logo_url ? (
+                <img
+                  src={tenant.logo_url}
+                  alt={tenant.name}
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <div className="flex aspect-square items-center justify-center">
+                  <span className="text-4xl font-bold text-zinc-600 dark:text-zinc-400">
+                    {tenant.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Coupon Title */}
-          <h2 className="mb-2 text-center text-lg font-bold text-blue-600 dark:text-blue-400 sm:text-xl">
+          <h2 className="mb-1 text-center text-base font-bold text-blue-600 dark:text-blue-400 sm:text-lg">
             {coupon.title}
           </h2>
 
           {/* Coupon Description */}
           {coupon.description && (
-            <p className="mb-4 text-center text-xs text-zinc-600 dark:text-zinc-400 sm:text-sm">
+            <p className="mb-3 text-center text-xs text-zinc-600 dark:text-zinc-400">
               {coupon.description}
             </p>
           )}
 
           {/* Error Display */}
           {error && (
-            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+            <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
               <p className="font-semibold">Error issuing coupon:</p>
               <p className="mt-1">{error}</p>
-              <p className="mt-2 text-xs">
-                Please check the server console for more details.
-              </p>
             </div>
           )}
 
           {/* Coupon Code Display */}
           {couponCode && (
-            <div className="mb-4">
+            <div className="mb-3">
               <CouponCodeDisplay code={couponCode} />
               {/* Show message if this is an existing redeemed coupon */}
               {isAlreadyRedeemed && (
-                <div className="mt-3 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-                  <Info className="h-4 w-4 shrink-0 mt-0.5" />
+                <div className="mt-2 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-2 text-xs text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                  <Info className="h-3 w-3 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold">
                       This is your existing coupon code.
                     </p>
-                    <p className="mt-1">
+                    <p className="mt-0.5 text-[10px]">
                       This coupon has already been redeemed. You'll keep the
                       same code every time you complete a survey.
                     </p>
@@ -208,18 +225,18 @@ export default function CouponCompletion({
           )}
 
           {/* Share Section */}
-          <InfoBox title="Share" variant="success" className="mb-4">
-            <p className="text-center text-xs font-semibold text-green-700 dark:text-green-300 sm:text-sm">
+          <InfoBox title="Share" variant="success" className="mb-3 py-2">
+            <p className="text-center text-xs font-semibold text-green-700 dark:text-green-300">
               Send to family, friends and colleagues.
             </p>
           </InfoBox>
 
           {/* Important Information */}
-          <InfoBox variant="info" className="mb-4">
-            <p className="mb-2 text-xs font-semibold text-zinc-900 dark:text-zinc-50 sm:text-sm">
+          <InfoBox variant="info" className="mb-0 py-2">
+            <p className="mb-1 text-xs font-semibold text-zinc-900 dark:text-zinc-50">
               IMPORTANT:
             </p>
-            <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300">
+            <ul className="space-y-0.5 text-[11px] text-zinc-700 dark:text-zinc-300">
               <li>• Save this code! Take a screenshot or write it down.</li>
               <li>• Use before expiry date.</li>
               <li>• One-time use only.</li>
@@ -229,33 +246,41 @@ export default function CouponCompletion({
 
         {/* Wallet Error Display */}
         {walletError && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+          <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
             {walletError}
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="mb-6 flex flex-col gap-2">
-          <ActionButton icon={Copy} onClick={handleCopyCode} className="w-full">
+        <div className="mb-4 flex flex-col gap-1.5">
+          <ActionButton
+            icon={Copy}
+            onClick={handleCopyCode}
+            className="w-full py-2 text-sm"
+          >
             {copied ? "Copied!" : "Copy Code"}
           </ActionButton>
           <ActionButton
             icon={Download}
             onClick={handleAddToWallet}
             disabled={!issuedCouponId || walletLoading}
-            className="w-full"
+            className="w-full py-2 text-sm"
           >
             {walletLoading ? "Generating..." : "Add to Google Wallet"}
           </ActionButton>
-          <ActionButton icon={Share2} onClick={handleShare} className="w-full">
+          <ActionButton
+            icon={Share2}
+            onClick={handleShare}
+            className="w-full py-2 text-sm"
+          >
             Share with Friends
           </ActionButton>
         </div>
 
         {/* Footer Options */}
-        <div className="space-y-3 text-center">
-          <div className="flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 sm:text-sm">
-            <Bell className="h-4 w-4" />
+        <div className="space-y-2 text-center">
+          <div className="flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+            <Bell className="h-3 w-3" />
             <span>Want to hear about more offers?</span>
           </div>
 

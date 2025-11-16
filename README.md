@@ -255,6 +255,26 @@ To set up Upstash Redis:
 3. Copy your REST API credentials from the dashboard
 4. Add both variables to your `.env.local` file (or Vercel project settings)
 
+**Google OAuth Configuration (for tenant email collection):**
+
+- `GOOGLE_OAUTH_CLIENT_ID` - Google OAuth client ID from Google Cloud Console
+- `GOOGLE_OAUTH_CLIENT_SECRET` - Google OAuth client secret from Google Cloud Console
+
+To set up Google OAuth:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable **Google+ API** (or **People API**)
+4. Go to **Credentials → Create Credentials → OAuth 2.0 Client ID**
+5. Configure OAuth consent screen (Application type: Web application)
+6. Add **Authorized redirect URIs**:
+   - `https://yourdomain.com/auth/oauth-callback`
+   - `https://*.yourdomain.com/auth/oauth-callback` (for subdomains)
+   - `http://localhost:3000/auth/oauth-callback` (for local development)
+7. Copy **Client ID** and **Client Secret** to your `.env.local` file
+
+**Note**: This is separate from Supabase OAuth. This direct OAuth implementation does NOT create Supabase Auth users - it only collects email addresses for the `email_opt_ins` table.
+
 **Google Wallet Configuration (optional):**
 
 - `NEXT_GOOGLE_WALLET_ISSUER_ID` - Google Wallet issuer ID
@@ -456,7 +476,7 @@ This approach maintains a single routing structure while supporting both access 
 ## Additional Notes
 
 - **Type Safety**: All database operations use explicit TypeScript types. No `any` types are used in production code.
-- **Social Authentication**: Apple/Google OAuth is configured but may require additional setup for production.
+- **Direct OAuth Email Collection**: Google OAuth is implemented for tenant email collection. This does NOT create Supabase Auth users - it only collects email addresses.
 - **Coupon Codes**: Display codes are derived from UUIDs for readability; no separate coupon code column is stored.
 - **Rate Limiting**: Fails open if Redis is unavailable, allowing requests but logging warnings.
 - **Server Components**: The application uses server components by default for optimal performance and SEO.

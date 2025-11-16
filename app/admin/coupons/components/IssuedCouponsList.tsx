@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getIssuedCouponsPaginated, updateIssuedCoupon } from "@/app/actions";
 import Pagination, { PAGINATION } from "@/app/components/ui/Pagination";
@@ -61,40 +61,43 @@ export default function IssuedCouponsList({
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const router = useRouter();
 
-  const fetchIssuedCoupons = async (page: number) => {
-    setLoading(true);
-    setError(null);
+  const fetchIssuedCoupons = useCallback(
+    async (page: number) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const result = await getIssuedCouponsPaginated(
-        tenantSlug,
-        page,
-        PAGINATION.ITEMS_PER_PAGE
-      );
+      try {
+        const result = await getIssuedCouponsPaginated(
+          tenantSlug,
+          page,
+          PAGINATION.ITEMS_PER_PAGE
+        );
 
-      if (result.error) {
-        setError(result.error);
+        if (result.error) {
+          setError(result.error);
+          setIssuedCoupons([]);
+          setTotalPages(0);
+          setTotalItems(0);
+        } else {
+          setIssuedCoupons(result.issuedCoupons || []);
+          setTotalPages(result.totalPages);
+          setTotalItems(result.totalCount);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
         setIssuedCoupons([]);
         setTotalPages(0);
         setTotalItems(0);
-      } else {
-        setIssuedCoupons(result.issuedCoupons || []);
-        setTotalPages(result.totalPages);
-        setTotalItems(result.totalCount);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-      setIssuedCoupons([]);
-      setTotalPages(0);
-      setTotalItems(0);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [tenantSlug]
+  );
 
   useEffect(() => {
     fetchIssuedCoupons(currentPage);
-  }, [currentPage, tenantSlug]);
+  }, [currentPage, fetchIssuedCoupons]);
 
   const handleStatusChange = async (
     issuedCouponId: string,

@@ -8,9 +8,8 @@ import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { submitEmail } from "@/app/actions";
+import { getGoogleOAuthUrl } from "@/app/actions/google/oauth-url";
 import { trackPageVisit } from "@/lib/analytics/events";
-import { createClient } from "@/lib/supabase/client";
-import { buildOAuthRedirectUrl } from "@/lib/google/oauth";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
 import Spinner from "@/app/components/ui/Spinner";
@@ -93,15 +92,19 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
   };
 
   /**
-   * Handles social login (Google OAuth)
+   * Handles social login (Google/Apple OAuth)
    *
-   * Initiates the Google OAuth flow via Supabase Auth.
-   * The flow works as follows:
-   * 1. User clicks "Continue with Google"
-   * 2. Redirects to Google OAuth consent screen
-   * 3. User authorizes → Google redirects back to /auth/callback?tenant={slug}
-   * 4. AuthCallbackHandler processes tokens and redirects to tenant coupons page
-   * 5. Post-auth actions (email opt-in, analytics) happen server-side
+   * Initiates direct OAuth flow (not through Supabase Auth).
+   * Only collects email addresses for email_opt_ins table.
+   * No Supabase Auth users are created.
+   *
+   * Flow:
+   * 1. User clicks "Continue with Google/Apple"
+   * 2. Redirects to Google/Apple OAuth consent screen
+   * 3. User authorizes → Provider redirects back to /auth/oauth-callback with code
+   * 4. Callback route exchanges code for email
+   * 5. Email stored in email_opt_ins table
+   * 6. User redirected to tenant coupons page
    *
    * @param provider - The OAuth provider ("google" or "apple")
    */
@@ -116,48 +119,26 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
     setError(null);
 
     try {
-      const supabase = createClient();
       const tenantSlug = tenant.slug;
 
-      // Build the redirect URL that includes tenant context
-      // This ensures we know which tenant to redirect to after OAuth completes
-      const redirectUrl = buildOAuthRedirectUrl(
+      // Generate Google OAuth authorization URL via server action
+      // This ensures environment variables are accessed server-side
+      const result = await getGoogleOAuthUrl(
         tenantSlug,
         window.location.origin
       );
 
-      // Initiate Google OAuth flow
-      // Supabase handles the OAuth handshake with Google
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: redirectUrl,
-          // Store tenant slug in query params for post-auth processing
-          queryParams: {
-            tenant_slug: tenantSlug,
-          },
-        },
-      });
-
-      if (error) {
+      if (result.error || !result.url) {
         setError(
-          error.message || "Failed to initiate Google login. Please try again."
+          result.error || "Failed to initiate Google login. Please try again."
         );
         setLoading(false);
         return;
       }
 
-      // If we have a URL, Supabase will redirect the user to Google
-      // The loading state will persist until the redirect happens
+      // Redirect to Google OAuth
+      window.location.href = result.url;
       // No need to set loading to false - user is being redirected
-      if (data?.url) {
-        // Redirect to Google OAuth
-        window.location.href = data.url;
-      } else {
-        // This shouldn't happen, but handle it gracefully
-        setError("OAuth initialization failed. Please try again.");
-        setLoading(false);
-      }
     } catch (err) {
       console.error("Error initiating Google OAuth:", err);
       setError(

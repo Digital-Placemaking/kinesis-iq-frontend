@@ -410,6 +410,27 @@ export async function createQuestion(
 
     const tenantSupabase = await createTenantClient(tenantId);
 
+    // Input validation: trim question text and validate required fields
+    const trimmedQuestion = question.question?.trim();
+    if (!trimmedQuestion || trimmedQuestion.length === 0) {
+      return { success: false, error: "Question text is required" };
+    }
+    if (trimmedQuestion.length > 1000) {
+      return {
+        success: false,
+        error: "Question text must be less than 1000 characters",
+      };
+    }
+
+    // Input validation: validate options array if provided
+    let validatedOptions: string[] | null = null;
+    if (question.options && Array.isArray(question.options)) {
+      validatedOptions = question.options
+        .map((opt) => opt?.trim())
+        .filter((opt) => opt && opt.length > 0)
+        .slice(0, 20); // Limit to 20 options max
+    }
+
     // Get max order_index to append to end
     const { data: questions, error: orderError } = await tenantSupabase
       .from("survey_questions")
@@ -430,12 +451,9 @@ export async function createQuestion(
       is_active: boolean;
     } = {
       tenant_id: tenantId,
-      question: question.question,
+      question: trimmedQuestion,
       type: question.type,
-      options:
-        question.options && question.options.length > 0
-          ? question.options
-          : null,
+      options: validatedOptions,
       order_index: newOrderIndex,
       is_active: question.is_active ?? true,
     };

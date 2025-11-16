@@ -38,15 +38,6 @@ export default function QuestionResultsModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen && questionId) {
-      fetchResults();
-    } else {
-      setResults(null);
-      setError(null);
-    }
-  }, [isOpen, questionId]);
-
   const fetchResults = async () => {
     setLoading(true);
     setError(null);
@@ -66,6 +57,16 @@ export default function QuestionResultsModal({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen && questionId) {
+      fetchResults();
+    } else {
+      setResults(null);
+      setError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, questionId, tenantSlug]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Question Results">
@@ -140,6 +141,7 @@ export default function QuestionResultsModal({
 
 /**
  * Choice-based results (multiple/single/ranked choice)
+ * Displays bar chart visualization of choice distribution
  */
 function ChoiceResults({ results }: { results: QuestionResult }) {
   if (!results.choiceCounts || !results.options) return null;
@@ -187,6 +189,7 @@ function ChoiceResults({ results }: { results: QuestionResult }) {
 
 /**
  * Boolean results (yes/no)
+ * Displays percentage breakdown of yes/no responses
  */
 function BooleanResults({ results }: { results: QuestionResult }) {
   if (!results.booleanCounts) return null;
@@ -350,6 +353,8 @@ function NumericResults({
 
 /**
  * Text results (open text)
+ * Displays all text responses in a scrollable list
+ * Note: Text is rendered as-is (no sanitization needed as it's from database)
  */
 function TextResults({ results }: { results: QuestionResult }) {
   if (!results.textResponses) return null;

@@ -1,19 +1,20 @@
 /**
  * AuthCallbackHandler Component
  *
- * Handles Supabase Auth OAuth callbacks from URL hash fragments.
- * Processes authentication tokens, establishes user sessions, and redirects appropriately.
+ * Handles Supabase Auth OAuth callbacks for admin authentication flows only.
+ * This includes password reset, email confirmation, and other admin auth flows.
+ *
+ * Note: Tenant OAuth (for email collection) is handled by /auth/oauth-callback route
  *
  * Flow:
- * 1. Extracts tokens from URL hash (#access_token=...&refresh_token=...)
- * 2. Establishes Supabase session with tokens
- * 3. Cleans up URL by removing hash
+ * 1. Detects OAuth callback (hash fragments or code parameter)
+ * 2. For code parameter: redirects to /auth/callback route for server-side processing
+ * 3. For hash fragments: establishes session client-side
  * 4. Redirects based on auth type:
  *    - invite/recovery/signup → password reset page
- *    - Tenant OAuth (has tenant param) → tenant coupons page
  *    - Default → admin dashboard
  *
- * Used in: app/page.tsx (homepage) to handle OAuth redirects
+ * Used in: app/page.tsx (homepage) to handle admin OAuth redirects
  *
  * @component
  */
@@ -23,7 +24,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { getTenantPath } from "@/lib/utils/subdomain";
 
 export default function AuthCallbackHandler() {
   const router = useRouter();
@@ -31,6 +31,24 @@ export default function AuthCallbackHandler() {
   useEffect(() => {
     // Only run on client side
     if (typeof window === "undefined") {
+      return;
+    }
+
+    // Check for code parameter (PKCE flow) - redirect to callback route
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+
+    if (code) {
+      // PKCE flow: redirect to server-side callback route for admin auth
+      const callbackUrl = new URL("/auth/callback", window.location.origin);
+      callbackUrl.searchParams.set("code", code);
+      // Preserve any other query params (like type, next, etc.)
+      urlParams.forEach((value, key) => {
+        if (key !== "code") {
+          callbackUrl.searchParams.set(key, value);
+        }
+      });
+      router.replace(callbackUrl.toString());
       return;
     }
 
@@ -44,25 +62,10 @@ export default function AuthCallbackHandler() {
       const error = params.get("error");
       const errorDescription = params.get("error_description");
 
-      // Extract tenant slug from URL query params (set during OAuth initiation)
-      // Read directly from window.location.search to avoid Suspense requirement
-      const urlParams = new URLSearchParams(window.location.search);
-      const tenantSlug = urlParams.get("tenant");
-
       // Handle authentication errors
       if (error) {
         console.error("Auth error:", error, errorDescription);
-        // If we have a tenant, redirect back to tenant landing page with error
-        if (tenantSlug) {
-          router.push(
-            `${getTenantPath(tenantSlug, "/")}?error=${encodeURIComponent(
-              error
-            )}`
-          );
-        } else {
-          // Otherwise redirect to home
-          router.push(`/?error=${encodeURIComponent(error)}`);
-        }
+        router.push(`/?error=${encodeURIComponent(error)}`);
         return;
       }
 
@@ -75,16 +78,10 @@ export default function AuthCallbackHandler() {
             access_token: accessToken,
             refresh_token: refreshToken,
           })
-          .then(async ({ data, error: sessionError }) => {
+          .then(async ({ error: sessionError }) => {
             if (sessionError) {
               console.error("Failed to set session:", sessionError);
-              if (tenantSlug) {
-                router.push(
-                  `${getTenantPath(tenantSlug, "/")}?error=session_failed`
-                );
-              } else {
-                router.push(`/?error=session_failed`);
-              }
+              router.push(`/?error=session_failed`);
               return;
             }
 
@@ -95,22 +92,10 @@ export default function AuthCallbackHandler() {
               window.location.pathname + window.location.search
             );
 
-            // Get user email for redirect
-            const userEmail = data?.user?.email;
-
-            // Redirect based on authentication type and context
+            // Redirect based on authentication type
             if (type === "invite" || type === "recovery" || type === "signup") {
               // New users or password reset flows → password reset page
               router.push(`/auth/reset-password?type=${type}`);
-            } else if (tenantSlug) {
-              // Tenant OAuth flow → redirect to tenant coupons page
-              // Post-auth actions (email opt-in, analytics) will happen server-side
-              // via the callback route
-              const couponsPath = getTenantPath(tenantSlug, "/coupons");
-              const redirectUrl = userEmail
-                ? `${couponsPath}?email=${encodeURIComponent(userEmail)}`
-                : couponsPath;
-              router.push(redirectUrl);
             } else {
               // Default redirect to admin dashboard
               router.push("/admin");
@@ -118,13 +103,7 @@ export default function AuthCallbackHandler() {
           })
           .catch((err) => {
             console.error("Failed to set session:", err);
-            if (tenantSlug) {
-              router.push(
-                `${getTenantPath(tenantSlug, "/")}?error=auth_failed`
-              );
-            } else {
-              router.push(`/?error=auth_failed`);
-            }
+            router.push(`/?error=auth_failed`);
           });
       }
     }

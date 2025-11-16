@@ -43,6 +43,12 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        {/* 
+          Safe use of dangerouslySetInnerHTML: 
+          - Static, hardcoded script (no user input)
+          - Only adds dark mode class to document element
+          - No XSS risk as content is not user-generated
+        */}
         <script
           dangerouslySetInnerHTML={{
             __html: `

@@ -152,6 +152,35 @@ export async function createCoupon(
 
     const tenantSupabase = await createTenantClient(tenantId);
 
+    // Input validation: trim and validate required fields
+    const trimmedTitle = coupon.title?.trim();
+    if (!trimmedTitle || trimmedTitle.length === 0) {
+      return { success: false, error: "Coupon title is required" };
+    }
+    if (trimmedTitle.length > 200) {
+      return {
+        success: false,
+        error: "Coupon title must be less than 200 characters",
+      };
+    }
+
+    // Input validation: validate description and discount lengths
+    const trimmedDescription = coupon.description?.trim();
+    if (trimmedDescription && trimmedDescription.length > 1000) {
+      return {
+        success: false,
+        error: "Description must be less than 1000 characters",
+      };
+    }
+
+    const trimmedDiscount = coupon.discount?.trim();
+    if (trimmedDiscount && trimmedDiscount.length > 100) {
+      return {
+        success: false,
+        error: "Discount must be less than 100 characters",
+      };
+    }
+
     const insertData: {
       tenant_id: string;
       title: string;
@@ -161,9 +190,9 @@ export async function createCoupon(
       active: boolean;
     } = {
       tenant_id: tenantId,
-      title: coupon.title,
-      description: coupon.description ?? null,
-      discount: coupon.discount ?? null,
+      title: trimmedTitle,
+      description: trimmedDescription || null,
+      discount: trimmedDiscount || null,
       expires_at: coupon.expires_at ?? null,
       active: coupon.active ?? true,
     };

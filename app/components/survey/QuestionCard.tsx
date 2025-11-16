@@ -4,6 +4,7 @@
 
 "use client";
 
+import { useMemo, useCallback } from "react";
 import type { SurveyQuestion, QuestionAnswer } from "@/lib/types/survey";
 import Card from "@/app/components/ui/Card";
 import QuestionInput from "@/app/components/survey/questions/QuestionInput";
@@ -29,56 +30,67 @@ export default function QuestionCard({
   answer,
   onChange,
 }: QuestionCardProps) {
-  // Helper to parse options from JSONB format
-  const parseOptions = (): string[] => {
+  // Memoize parsed options to avoid re-parsing on every render
+  const options = useMemo(() => {
     if (!question.options || !Array.isArray(question.options)) {
       return [];
     }
     return question.options.map((opt: any) =>
       typeof opt === "string" ? opt : opt.label || opt.value || String(opt)
     );
-  };
+  }, [question.options]);
 
-  const handleTextChange = (text: string) => {
-    onChange({
-      question_id: question.id,
-      answer_text: text || null,
-      answer_number: null,
-      answer_boolean: null,
-    });
-  };
+  // Memoize callbacks to prevent unnecessary re-renders of child components
+  const handleTextChange = useCallback(
+    (text: string) => {
+      onChange({
+        question_id: question.id,
+        answer_text: text || null,
+        answer_number: null,
+        answer_boolean: null,
+      });
+    },
+    [question.id, onChange]
+  );
 
-  const handleNumberChange = (num: number) => {
-    onChange({
-      question_id: question.id,
-      answer_text: null,
-      answer_number: num,
-      answer_boolean: null,
-    });
-  };
+  const handleNumberChange = useCallback(
+    (num: number) => {
+      onChange({
+        question_id: question.id,
+        answer_text: null,
+        answer_number: num,
+        answer_boolean: null,
+      });
+    },
+    [question.id, onChange]
+  );
 
-  const handleBooleanChange = (bool: boolean) => {
-    onChange({
-      question_id: question.id,
-      answer_text: null,
-      answer_number: null,
-      answer_boolean: bool,
-    });
-  };
+  const handleBooleanChange = useCallback(
+    (bool: boolean) => {
+      onChange({
+        question_id: question.id,
+        answer_text: null,
+        answer_number: null,
+        answer_boolean: bool,
+      });
+    },
+    [question.id, onChange]
+  );
 
   // Handle multiple choice - store as JSON string array
-  const handleMultipleChoiceChange = (values: string[]) => {
-    onChange({
-      question_id: question.id,
-      answer_text: JSON.stringify(values),
-      answer_number: null,
-      answer_boolean: null,
-    });
-  };
+  const handleMultipleChoiceChange = useCallback(
+    (values: string[]) => {
+      onChange({
+        question_id: question.id,
+        answer_text: JSON.stringify(values),
+        answer_number: null,
+        answer_boolean: null,
+      });
+    },
+    [question.id, onChange]
+  );
 
   const renderQuestionInput = () => {
-    const options = parseOptions();
-
     switch (question.type) {
       // Text-based questions
       case "open_text":

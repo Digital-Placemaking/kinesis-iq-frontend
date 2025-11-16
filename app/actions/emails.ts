@@ -13,9 +13,24 @@ import { checkRateLimit, getClientIdentifier } from "@/lib/utils/rate-limit";
 
 /**
  * Submits email for a tenant (stores in email_opt_ins table)
+ *
+ * Security:
+ * - Rate limited to prevent abuse
+ * - Email is trimmed and validated client-side before submission
+ * - RLS policies enforce tenant isolation
+ * - Unique constraint prevents duplicate emails per tenant
  */
 export async function submitEmail(tenantSlug: string, email: string) {
   try {
+    // Input validation: trim and validate email format
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
+      return {
+        error: "Invalid email address",
+        success: false,
+      };
+    }
+
     // Rate limiting: use email as identifier
     const headersList = await headers();
     const identifier = getClientIdentifier(email, headersList);
@@ -57,10 +72,11 @@ export async function submitEmail(tenantSlug: string, email: string) {
     // Insert email into email_opt_ins table
     // RLS policy eoi_insert_current_tenant ensures tenant_id = current_tenant_id()
     // Unique constraint prevents duplicate emails per tenant
+    // Note: Supabase handles SQL injection prevention via parameterized queries
     const { error: insertError } = await tenantSupabase
       .from("email_opt_ins")
       .insert({
-        email,
+        email: trimmedEmail,
         tenant_id: tenantId,
         consent_at: new Date().toISOString(),
       });

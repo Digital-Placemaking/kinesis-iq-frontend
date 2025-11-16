@@ -1,7 +1,10 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
+import { RATE_LIMITS } from "@/lib/constants/rate-limits";
+import { checkRateLimit, getClientIdentifier } from "@/lib/utils/rate-limit";
 
 /**
  * Feedback Actions
@@ -11,9 +14,23 @@ import { createTenantClient } from "@/lib/supabase/tenant-client";
 /**
  * Submits anonymous feedback for a tenant
  * NOTE: This is a placeholder implementation
+ * Rate limited to prevent abuse
  */
 export async function submitFeedback(tenantSlug: string) {
   try {
+    // Rate limiting: use IP address as identifier (anonymous feedback)
+    const headersList = await headers();
+    const identifier = getClientIdentifier(null, headersList);
+    const rateLimit = await checkRateLimit(identifier, RATE_LIMITS.GENERAL);
+
+    if (!rateLimit.allowed) {
+      return {
+        error: `Too many requests. Please try again in ${Math.ceil(
+          (rateLimit.resetAt - Date.now()) / 1000
+        )} seconds.`,
+        success: false,
+      };
+    }
     const supabase = await createClient();
 
     // Resolve tenant slug to UUID
