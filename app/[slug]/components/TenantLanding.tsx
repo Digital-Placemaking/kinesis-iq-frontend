@@ -7,8 +7,10 @@
 import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { submitEmail, submitEmailOptIn } from "@/app/actions";
+import { submitEmail } from "@/app/actions";
 import { trackPageVisit } from "@/lib/analytics/events";
+import { createClient } from "@/lib/supabase/client";
+import { buildOAuthRedirectUrl } from "@/lib/google/oauth";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
 import Spinner from "@/app/components/ui/Spinner";
@@ -90,30 +92,79 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
     }
   };
 
+  /**
+   * Handles social login (Google OAuth)
+   *
+   * Initiates the Google OAuth flow via Supabase Auth.
+   * The flow works as follows:
+   * 1. User clicks "Continue with Google"
+   * 2. Redirects to Google OAuth consent screen
+   * 3. User authorizes → Google redirects back to /auth/callback?tenant={slug}
+   * 4. AuthCallbackHandler processes tokens and redirects to tenant coupons page
+   * 5. Post-auth actions (email opt-in, analytics) happen server-side
+   *
+   * @param provider - The OAuth provider ("google" or "apple")
+   */
   const handleSocialLogin = async (provider: "apple" | "google") => {
+    // Only Google is currently implemented
+    if (provider !== "google") {
+      setError("Apple login is not yet available. Please use Google or email.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      // TODO: Implement actual social login with Supabase Auth
-      // For now, we'll need the email from the auth response
-      // Once authenticated, call submitEmailOptIn with the email
+      const supabase = createClient();
+      const tenantSlug = tenant.slug;
 
-      // Example flow (to be implemented):
-      // 1. Authenticate with provider via Supabase Auth
-      // 2. Get user email from auth response
-      // 3. Call submitEmailOptIn(tenant.slug, email)
-      // 4. Then redirect to coupons
+      // Build the redirect URL that includes tenant context
+      // This ensures we know which tenant to redirect to after OAuth completes
+      const redirectUrl = buildOAuthRedirectUrl(
+        tenantSlug,
+        window.location.origin
+      );
 
-      // For now, redirect to coupons page
-      // In production, this will be:
-      // const { data: { user } } = await supabase.auth.signInWithOAuth({ provider })
-      // if (user?.email) {
-      //   await submitEmailOptIn(tenant.slug, user.email);
-      // }
-      router.push(getTenantPath(tenant.slug, "/coupons"));
+      // Initiate Google OAuth flow
+      // Supabase handles the OAuth handshake with Google
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectUrl,
+          // Store tenant slug in query params for post-auth processing
+          queryParams: {
+            tenant_slug: tenantSlug,
+          },
+        },
+      });
+
+      if (error) {
+        setError(
+          error.message || "Failed to initiate Google login. Please try again."
+        );
+        setLoading(false);
+        return;
+      }
+
+      // If we have a URL, Supabase will redirect the user to Google
+      // The loading state will persist until the redirect happens
+      // No need to set loading to false - user is being redirected
+      if (data?.url) {
+        // Redirect to Google OAuth
+        window.location.href = data.url;
+      } else {
+        // This shouldn't happen, but handle it gracefully
+        setError("OAuth initialization failed. Please try again.");
+        setLoading(false);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error("Error initiating Google OAuth:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again."
+      );
       setLoading(false);
     }
   };
@@ -152,9 +203,18 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
 
           {/* Social Login Buttons */}
           <div className="grid grid-cols-2 gap-3">
-            {/* TODO: Implement Apple/Google OAuth with Supabase Auth and re-enable these buttons */}
-            <SocialLoginButton provider="apple" onClick={() => {}} disabled />
-            <SocialLoginButton provider="google" onClick={() => {}} disabled />
+            {/* Apple login - Coming soon */}
+            <SocialLoginButton
+              provider="apple"
+              onClick={() => handleSocialLogin("apple")}
+              disabled
+            />
+            {/* Google OAuth - Active */}
+            <SocialLoginButton
+              provider="google"
+              onClick={() => handleSocialLogin("google")}
+              disabled={loading}
+            />
           </div>
 
           {/* Separator */}
