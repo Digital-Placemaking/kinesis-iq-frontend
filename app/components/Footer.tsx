@@ -19,12 +19,12 @@ import { Settings } from "lucide-react";
 export default function Footer() {
   return (
     <footer className="border-t border-zinc-800 bg-zinc-950 py-8">
-      <div className="mx-auto max-w-7xl px-8">
-        <div className="relative flex min-h-12 flex-col gap-6 sm:flex-row sm:items-center">
+      <div className="mx-auto max-w-7xl px-4 sm:px-8">
+        <div className="flex flex-col items-center gap-6 sm:relative sm:flex-row sm:items-center">
           {/* Logo Section */}
           <Link
             href="/"
-            className="z-10 flex items-center transition-opacity hover:opacity-80 sm:shrink-0"
+            className="flex items-center transition-opacity hover:opacity-80 sm:shrink-0"
           >
             <img
               src="/dp-logo.png"
@@ -33,8 +33,8 @@ export default function Footer() {
             />
           </Link>
 
-          {/* Navigation Links - Absolutely Centered */}
-          <nav className="absolute left-1/2 top-1/2 z-0 flex -translate-x-1/2 -translate-y-1/2 flex-wrap items-center justify-center gap-6 text-sm sm:top-1/2">
+          {/* Navigation Links - Centered on mobile, absolutely centered on desktop */}
+          <nav className="flex flex-wrap items-center justify-center gap-4 text-sm sm:absolute sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:gap-6">
             <Link
               href="/about-us"
               className="text-zinc-400 transition-colors hover:text-zinc-100"
@@ -62,7 +62,7 @@ export default function Footer() {
           </nav>
 
           {/* Right Side Actions */}
-          <div className="z-10 ml-auto flex items-center gap-4 sm:shrink-0">
+          <div className="flex items-center gap-4 sm:ml-auto sm:shrink-0">
             <Link
               href="/admin"
               className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
