@@ -57,7 +57,6 @@ export default function QuestionActions({
     startTransition(async () => {
       try {
         const result = await reorderQuestion(tenantSlug, questionId, "up");
-        console.log("reorderQuestion result:", result);
         if (result.success) {
           router.refresh();
         } else {
@@ -79,7 +78,6 @@ export default function QuestionActions({
     startTransition(async () => {
       try {
         const result = await reorderQuestion(tenantSlug, questionId, "down");
-        console.log("reorderQuestion result:", result);
         if (result.success) {
           router.refresh();
         } else {

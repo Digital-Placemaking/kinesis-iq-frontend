@@ -171,11 +171,7 @@ export async function updateTenantSettings(
     // If tenantId is provided, use it directly (bypasses slug resolution)
     // This is the preferred method for admin operations on inactive tenants
     if (tenantId) {
-      console.log("Using provided tenantId, skipping slug resolution:", {
-        tenantId,
-        tenantSlug,
-        updates,
-      });
+      // Using provided tenantId, skipping slug resolution
     }
 
     let resolvedTenantId = tenantId;
@@ -225,11 +221,7 @@ export async function updateTenantSettings(
       };
     }
 
-    console.log("Updating tenant with resolvedTenantId:", {
-      resolvedTenantId,
-      tenantSlug,
-      updates,
-    });
+    // Updating tenant with resolvedTenantId
 
     // Create tenant-scoped client for update
     const tenantSupabase = await createTenantClient(resolvedTenantId);
@@ -379,10 +371,7 @@ export async function updateTenantSettings(
       };
     }
 
-    console.log("Successfully updated tenant settings:", {
-      tenantId: resolvedTenantId,
-      updates: updateData,
-    });
+    // Successfully updated tenant settings
 
     return {
       success: true,
@@ -517,11 +506,7 @@ export async function updateTenantWebsiteUrl(
       };
     }
 
-    console.log("Successfully updated tenant website URL:", {
-      tenantId: resolvedTenantId,
-      websiteUrl: updateValue,
-      updatedData: data[0],
-    });
+    // Successfully updated tenant website URL
 
     return {
       success: true,

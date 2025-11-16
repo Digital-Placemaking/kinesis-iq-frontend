@@ -54,9 +54,7 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
     setError(null);
 
     try {
-      console.log("Submitting email:", email, "for tenant:", tenant.slug);
       const result = await submitEmail(tenant.slug, email.trim());
-      console.log("Email submission result:", JSON.stringify(result, null, 2));
 
       // Check if result has success property
       if (result && typeof result.success === "boolean") {
@@ -67,7 +65,6 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
           const redirectUrl = `${couponsPath}?email=${encodeURIComponent(
             email.trim()
           )}`;
-          console.log("Redirecting to:", redirectUrl);
 
           // Force immediate redirect - use multiple methods to ensure it works
           // This ensures React doesn't interfere with navigation
@@ -76,25 +73,18 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
           }
           return; // Don't set loading to false since we're redirecting
         } else if (result.error) {
-          console.error("Email submission error:", result.error);
           setError(result.error);
           setLoading(false);
         } else {
-          console.error(
-            "Unexpected result - success is false but no error:",
-            result
-          );
           setError("Failed to submit email. Please try again.");
           setLoading(false);
         }
       } else {
         // Result doesn't have expected structure
-        console.error("Unexpected result structure:", result);
         setError("An unexpected error occurred");
         setLoading(false);
       }
     } catch (err) {
-      console.error("Exception in handleEmailSubmit:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }

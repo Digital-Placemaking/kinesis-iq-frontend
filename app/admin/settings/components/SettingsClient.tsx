@@ -226,12 +226,6 @@ export default function SettingsClient({
       // Update tenant settings (name, active)
       // Note: logo_url is updated automatically when uploading, so we only update if it's a URL change
       // Pass tenantId to bypass resolve_tenant RPC (which may filter by active=true)
-      console.log("Calling updateTenantSettings with:", {
-        slug: tenant.slug,
-        tenantId,
-        active,
-        name: name.trim(),
-      });
 
       const settingsResult = await updateTenantSettings(
         tenant.slug,

@@ -29,9 +29,12 @@ export default function CouponCard({
   tenantSlug,
   email,
 }: CouponCardProps) {
+  /**
+   * Handles coupon claim button click
+   * Navigates to the survey page for the selected coupon
+   */
   const handleClaimClick = () => {
     if (!email) {
-      console.error("No email provided");
       return;
     }
 
@@ -42,11 +45,14 @@ export default function CouponCard({
       `/coupons/${coupon.id}/survey`
     );
     const surveyUrl = `${surveyPath}?email=${encodeURIComponent(email)}`;
-    console.log("Navigating to survey:", surveyUrl);
 
     // Use window.location for a hard redirect to ensure it works
     window.location.href = surveyUrl;
   };
+  /**
+   * Calculates and returns human-readable expiration text
+   * @returns {string | null} Formatted expiration text or null if no expiration
+   */
   const getExpirationText = () => {
     if (!coupon.expires_at) return null;
 

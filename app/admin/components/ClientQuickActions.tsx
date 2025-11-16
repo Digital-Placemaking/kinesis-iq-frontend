@@ -1,6 +1,15 @@
+/**
+ * ClientQuickActions Component
+ *
+ * Client-side wrapper for quick action buttons with modal management.
+ * Handles opening/closing modals for creating coupons and survey questions.
+ *
+ * @component
+ */
+
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import QuickActionsGrid from "./QuickActions";
 import AddCouponModal from "../coupons/components/AddCouponModal";
@@ -19,31 +28,41 @@ export default function ClientQuickActions({
   const [openCoupon, setOpenCoupon] = useState(false);
   const [openQuestion, setOpenQuestion] = useState(false);
 
-  const bound = actions.map((a) => {
-    if (a.label === "Create Coupon") {
-      return { label: a.label, onClick: () => setOpenCoupon(true) };
-    }
-    if (a.label === "Add Survey Question") {
-      return { label: a.label, onClick: () => setOpenQuestion(true) };
-    }
-    return a;
-  });
+  // Memoize bound actions to prevent unnecessary re-renders
+  const bound = useMemo(
+    () =>
+      actions.map((a) => {
+        if (a.label === "Create Coupon") {
+          return { label: a.label, onClick: () => setOpenCoupon(true) };
+        }
+        if (a.label === "Add Survey Question") {
+          return { label: a.label, onClick: () => setOpenQuestion(true) };
+        }
+        return a;
+      }),
+    [actions]
+  );
+
+  // Memoize callbacks to prevent unnecessary re-renders of child components
+  const handleCouponClose = useCallback(() => setOpenCoupon(false), []);
+  const handleQuestionClose = useCallback(() => setOpenQuestion(false), []);
+  const handleCouponCreated = useCallback(() => {
+    setOpenCoupon(false);
+    router.refresh();
+  }, [router]);
 
   return (
     <>
       <QuickActionsGrid actions={bound} />
       <AddCouponModal
         isOpen={openCoupon}
-        onClose={() => setOpenCoupon(false)}
+        onClose={handleCouponClose}
         tenantSlug={tenantSlug}
-        onCreated={() => {
-          setOpenCoupon(false);
-          router.refresh();
-        }}
+        onCreated={handleCouponCreated}
       />
       <AddQuestionModal
         isOpen={openQuestion}
-        onClose={() => setOpenQuestion(false)}
+        onClose={handleQuestionClose}
         tenantSlug={tenantSlug}
       />
     </>

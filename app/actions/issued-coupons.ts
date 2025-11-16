@@ -129,24 +129,12 @@ export async function issueCoupon(
 
         // Always return the existing coupon - same code, same coupon
         // Redemption status doesn't matter - they keep their original coupon
-        console.log("Returning existing coupon:", {
-          couponId: existing.id,
-          code: existing.code,
-          email,
-          status: existing.status,
-          redemptions_count: existing.redemptions_count,
-          max_redemptions: existing.max_redemptions,
-        });
         return {
           issuedCoupon: existing as any,
           error: null,
         };
       } else {
-        console.log("No existing coupon found:", {
-          checkError: checkError?.message,
-          existingCouponsCount: existingCoupons?.length || 0,
-          email,
-        });
+        // No existing coupon found, proceeding to create new one
       }
     }
 
@@ -473,7 +461,6 @@ export async function checkExistingCoupon(
       identifier,
       RATE_LIMITS.COUPON_CHECK
     );
-    console.log("CHECKING IF COUPON EXISTS");
     if (!rateLimit.allowed) {
       return {
         exists: false,

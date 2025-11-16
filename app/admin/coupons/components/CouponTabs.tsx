@@ -1,6 +1,20 @@
+/**
+ * CouponTabs Component
+ *
+ * Tab-based interface for managing coupons and issued coupons.
+ * Provides SPA-like behavior without route changes.
+ *
+ * Features:
+ * - Switch between "Coupons" (manage) and "Issued Coupons" (track) tabs
+ * - QR code scanner for redeeming coupons
+ * - Role-based access (staff can only see issued coupons)
+ *
+ * @component
+ */
+
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Ticket, Gift, Scan } from "lucide-react";
 import CouponsList from "./CouponsList";
 import IssuedCouponsList from "./IssuedCouponsList";
@@ -15,10 +29,6 @@ interface CouponTabsProps {
   canEditCoupons?: boolean;
 }
 
-/**
- * Tab component for switching between Coupons and Issued Coupons
- * SPA-like behavior - no route changes
- */
 export default function CouponTabs({
   coupons,
   tenantSlug,
@@ -30,13 +40,27 @@ export default function CouponTabs({
   );
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
 
+  // Memoize callbacks to prevent unnecessary re-renders
+  const handleRedeemModalOpen = useCallback(
+    () => setIsRedeemModalOpen(true),
+    []
+  );
+  const handleRedeemModalClose = useCallback(
+    () => setIsRedeemModalOpen(false),
+    []
+  );
+  const handleRedeemed = useCallback(() => {
+    // Refresh the page to show updated coupon status
+    window.location.reload();
+  }, []);
+
   return (
     <div className="mx-auto max-w-7xl">
       {/* Redeem Coupon Button - Always visible */}
       <div className="mb-6 flex justify-end">
         <ActionButton
           icon={Scan}
-          onClick={() => setIsRedeemModalOpen(true)}
+          onClick={handleRedeemModalOpen}
           variant="primary"
           className="w-auto sm:w-auto"
         >
@@ -47,12 +71,9 @@ export default function CouponTabs({
       {/* Redeem Coupon Modal */}
       <RedeemCouponModal
         isOpen={isRedeemModalOpen}
-        onClose={() => setIsRedeemModalOpen(false)}
+        onClose={handleRedeemModalClose}
         tenantSlug={tenantSlug}
-        onRedeemed={() => {
-          // Refresh the page to show updated coupon status
-          window.location.reload();
-        }}
+        onRedeemed={handleRedeemed}
       />
       {/* Tab Navigation - Hide "Coupons" tab for staff */}
       {canEditCoupons && (
