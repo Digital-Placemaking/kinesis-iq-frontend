@@ -1,32 +1,34 @@
 import Footer from "../components/Footer";
+import { Mail } from "lucide-react";
+import Link from "next/link";
 
 export default function AboutUsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+    <div className="min-h-screen bg-zinc-950">
       <div className="mx-auto max-w-4xl px-6 py-16 sm:py-24">
         <div className="space-y-12">
           {/* Header */}
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-5xl">
+            <h1 className="text-4xl font-bold tracking-tight text-zinc-50 sm:text-5xl">
               Get Started with KinesisIQ
             </h1>
-            <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
+            <p className="mt-4 text-lg text-zinc-400">
               Transform your physical spaces into AI-powered smart hubs
             </p>
           </div>
 
-          {/* KinesisIQ Platform Information */}
-          <div className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900">
+          {/* KinesisIQ Platform Information - Rich Text Format */}
+          <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-black dark:text-zinc-50">
+              <h2 className="text-2xl font-bold text-zinc-50">
                 KinesisIQ Platform
               </h2>
-              <p className="mt-2 text-sm font-medium text-blue-600 dark:text-blue-400">
+              <p className="mt-2 text-base font-medium text-blue-400">
                 A Next-Gen AI Platform
               </p>
             </div>
 
-            <div className="space-y-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+            <div className="space-y-4 text-base leading-relaxed text-zinc-300">
               <p>
                 Our system uses natural language processing (NLP) and advanced
                 machine learning to transform short survey responses into
@@ -48,58 +50,53 @@ export default function AboutUsPage() {
             </div>
           </div>
 
-          {/* Key Points */}
-          <div className="space-y-4">
-            <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                <strong className="font-semibold text-black dark:text-zinc-50">
-                  KinesisIQ is the brain of the space
-                </strong>{" "}
-                — delivered as a scalable SaaS platform.
-              </p>
-            </div>
+          {/* Key Points - Rich Text Format */}
+          <div className="space-y-6 text-base leading-relaxed text-zinc-300">
+            <p>
+              <strong className="font-semibold text-zinc-50">
+                KinesisIQ is the brain of the space
+              </strong>{" "}
+              — delivered as a scalable SaaS platform.
+            </p>
 
-            <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                We're transforming physical spaces into AI-powered smart hubs
-                that connect with people in real time—creating interactive
-                feedback zones that evolve each environment into a living
-                entity, revealing behaviors and sentiments in the very context
-                where they happen.
-              </p>
-            </div>
+            <p>
+              We're transforming physical spaces into AI-powered smart hubs that
+              connect with people in real time—creating interactive feedback
+              zones that evolve each environment into a living entity, revealing
+              behaviors and sentiments in the very context where they happen.
+            </p>
 
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-6 dark:border-blue-800 dark:bg-blue-900/20">
-              <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                <strong className="font-semibold text-black dark:text-zinc-50">
-                  KinesisIQ is an ethical, trust-first AI
-                </strong>{" "}
-                architected to empower smarter, engaged, and connected
-                communities through location-aware insights grounded in moral
-                integrity.
-              </p>
-            </div>
+            <p>
+              <strong className="font-semibold text-zinc-50">
+                KinesisIQ is an ethical, trust-first AI
+              </strong>{" "}
+              architected to empower smarter, engaged, and connected communities
+              through location-aware insights grounded in moral integrity.
+            </p>
           </div>
 
-          {/* Contact CTA */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          {/* Contact Email */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-zinc-400">
               Email Us For a Free Trial:
             </p>
             <a
               href="mailto:sales@digitalplacemaking.ca"
-              className="mt-2 inline-flex items-center gap-2 text-lg font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              className="inline-flex items-center gap-2 text-lg font-semibold text-blue-400 transition-colors hover:text-blue-300"
             >
+              <Mail className="h-5 w-5" />
               sales@digitalplacemaking.ca
             </a>
-            <div className="mt-4">
-              <a
-                href="/contact"
-                className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-              >
-                Contact Us
-              </a>
-            </div>
+          </div>
+
+          {/* Contact Us Button */}
+          <div className="pt-4">
+            <Link
+              href="/contact"
+              className="inline-flex items-center rounded-lg bg-blue-500 px-8 py-4 text-lg font-medium text-white transition-colors hover:bg-blue-600"
+            >
+              Contact Us
+            </Link>
           </div>
         </div>
       </div>
