@@ -49,6 +49,12 @@ function extractSubdomain(hostname: string): string | null {
 
   const subdomain = parts[0].toLowerCase();
 
+  // "www" is not a tenant subdomain - it's the main domain
+  // On www.domain.com, routes must include slug: /{slug}/coupons
+  if (subdomain === "www") {
+    return null;
+  }
+
   // Check if it's a reserved subdomain
   if (isReservedSubdomain(subdomain)) {
     return null;
@@ -98,7 +104,8 @@ export async function proxy(request: NextRequest) {
   if (
     pathname === "/admin/login" ||
     pathname.startsWith("/auth/callback") ||
-    pathname.startsWith("/auth/reset-password")
+    pathname.startsWith("/auth/reset-password") ||
+    pathname.startsWith("/auth/oauth-callback")
   ) {
     return response;
   }
@@ -107,11 +114,15 @@ export async function proxy(request: NextRequest) {
   const isAdminRoute =
     pathname.startsWith("/admin") && !pathname.match(/\/[^/]+\/admin/);
 
-  // Handle subdomain routing (but skip for admin routes on main domain)
+  // ============================================================================
+  // SUBDOMAIN ROUTING
+  // ============================================================================
+  // Extract subdomain from hostname and rewrite URLs to slug-based routes
+  // This allows subdomain.domain.com/coupons to work with [slug]/coupons route
   const hostname = request.headers.get("host") || "";
   const subdomain = extractSubdomain(hostname);
 
-  // If we have a subdomain, try to resolve it to a tenant
+  // If we have a valid subdomain (not www, not main domain), resolve to tenant
   // Skip subdomain routing for admin routes on main domain
   if (subdomain && !isAdminRoute) {
     const { tenant, error } = await getTenantBySubdomain(subdomain);
@@ -121,28 +132,34 @@ export async function proxy(request: NextRequest) {
       // This allows us to keep the existing [slug] route structure
       const url = request.nextUrl.clone();
 
-      // If the pathname is just "/", redirect to tenant landing page
+      // Rewrite logic:
+      // - subdomain.domain.com/ → /{slug}/
+      // - subdomain.domain.com/coupons → /{slug}/coupons
+      // - subdomain.domain.com/coupons?email=... → /{slug}/coupons?email=...
       if (url.pathname === "/") {
+        // Root path on subdomain → rewrite to tenant landing page
         url.pathname = `/${tenant.slug}`;
-      } else {
-        // Check if pathname already starts with the tenant slug
-        // This prevents double prepending when links already include the slug
-        if (url.pathname.startsWith(`/${tenant.slug}/`)) {
-          // Already has slug, don't prepend again
-          // Pathname is already correct (e.g., /company1/coupons)
-        } else if (url.pathname === `/${tenant.slug}`) {
-          // Pathname is exactly /{slug}, already correct
-        } else {
-          // Prepend the tenant slug to the pathname
-          url.pathname = `/${tenant.slug}${url.pathname}`;
-        }
+      } else if (!url.pathname.startsWith(`/${tenant.slug}`)) {
+        // Path doesn't start with slug → prepend it
+        // Preserve query parameters (e.g., ?email=user@example.com)
+        url.pathname = `/${tenant.slug}${url.pathname}`;
       }
+      // If pathname already starts with slug, leave it as-is (already correct)
 
       // Rewrite the request to the slug-based path
+      // This is an internal rewrite - the URL in the browser stays the same
       return NextResponse.rewrite(url);
     }
-    // If subdomain not found, fall through to normal routing (will show 404 or main page)
+    // If subdomain not found, fall through to normal routing (will show 404)
   }
+
+  // ============================================================================
+  // MAIN DOMAIN ROUTING (no subdomain)
+  // ============================================================================
+  // On main domain (domain.com or www.domain.com), routes must include slug:
+  // - domain.com/{slug}/coupons → Works (served by [slug]/coupons route)
+  // - domain.com/coupons → 404 (no route exists, slug is required)
+  // This is expected behavior - users must use subdomain or include slug in path
 
   // Redirect any {slug}/admin routes to /admin
   if (pathname.match(/\/[^/]+\/admin/)) {
