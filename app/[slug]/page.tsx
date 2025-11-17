@@ -6,10 +6,15 @@ import { toTenantDisplay } from "@/lib/utils/tenant";
 
 interface TenantPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ error?: string }>;
 }
 
-export default async function TenantPage({ params }: TenantPageProps) {
+export default async function TenantPage({
+  params,
+  searchParams,
+}: TenantPageProps) {
   const { slug } = await params;
+  const { error: errorParam } = await searchParams;
   const { tenant, error } = await getTenantBySlug(slug);
 
   if (error || !tenant) {
@@ -21,7 +26,16 @@ export default async function TenantPage({ params }: TenantPageProps) {
     return <DeactivatedMessage tenantName={tenant.name} />;
   }
 
-  return <TenantLanding tenant={toTenantDisplay(tenant)} />;
+  return (
+    <TenantLanding
+      tenant={toTenantDisplay(tenant)}
+      initialError={
+        errorParam === "email_not_verified"
+          ? "Please submit your email to access coupons and surveys."
+          : null
+      }
+    />
+  );
 }
 
 export async function generateMetadata({ params }: TenantPageProps) {

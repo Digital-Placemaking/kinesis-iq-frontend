@@ -4,13 +4,22 @@
  * Handles OAuth callbacks from Google and Apple for tenant email collection.
  * This route is separate from admin authentication flows.
  *
- * Flow:
- * 1. User authorizes with Google/Apple → redirects here with code
- * 2. Exchange code for access token
- * 3. Fetch user email from provider
- * 4. Store email in email_opt_ins table
- * 5. Track analytics event
- * 6. Redirect to tenant coupons page
+ * OAuth Flow (Different from email flow):
+ * 1. User clicks "Continue with Google" on landing page
+ * 2. Redirects to Google OAuth consent screen
+ * 3. User authorizes → Google redirects here with authorization code
+ * 4. Exchange code for access token
+ * 5. Fetch user email from Google API
+ * 6. Store email in email_opt_ins table IMMEDIATELY
+ * 7. Track analytics event
+ * 8. Redirect to tenant coupons page
+ *
+ * IMPORTANT: OAuth users have their email stored immediately (unlike email users).
+ * This means when they click a coupon, the survey page will detect their email
+ * is already in the table and skip the survey, going directly to coupon completion.
+ *
+ * This is intentional - OAuth users have already authenticated, so we trust
+ * their email and skip the survey requirement.
  */
 
 import { NextResponse, type NextRequest } from "next/server";
@@ -83,12 +92,18 @@ export async function GET(request: NextRequest) {
       throw new Error(`Unsupported OAuth provider: ${provider}`);
     }
 
-    // Store email in email_opt_ins table and track analytics
+    // ============================================================================
+    // STORE EMAIL IN email_opt_ins TABLE
+    // ============================================================================
+    // OAuth users have their email stored immediately (unlike email users who
+    // must complete survey first). This means they'll skip surveys on future
+    // coupon claims since their email is already in the opt-in table.
     const storeResult = await storeOAuthEmail(tenantSlug, email);
 
     if (!storeResult.success && storeResult.error) {
       console.error("Failed to store OAuth email:", storeResult.error);
-      // Continue anyway - we'll still redirect to coupons
+      // Continue anyway - redirect to coupons even if storage fails
+      // User can still browse coupons, but may need to complete survey
     }
 
     // Build redirect URL to tenant's coupons page

@@ -112,11 +112,23 @@ export default function SurveyContainer({
     }
   };
 
+  /**
+   * Handles survey form submission
+   *
+   * Flow:
+   * 1. Validates all questions have answers
+   * 2. Submits answers to survey_responses table
+   * 3. submitSurveyAnswers stores email in email_opt_ins table (if provided)
+   * 4. Redirects to coupon completion page
+   *
+   * Note: After submission, the user's email is stored in email_opt_ins,
+   * making them a "returning user" for future coupon claims.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate all questions have answers
-    // Since schema doesn't have required field, we'll require all questions
+    // All questions are required (schema doesn't enforce this, so we do it here)
     const missingAnswers = survey.questions.filter((q) => {
       const answer = answers[q.id];
       if (!answer) return true;

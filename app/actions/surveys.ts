@@ -184,8 +184,25 @@ export async function getSurveyForCoupon(
 }
 
 /**
- * Submits survey answers
- * Creates one row per question in survey_responses table with answer as JSONB
+ * Submits survey answers and stores email in email_opt_ins
+ *
+ * This function is called after a user completes a survey.
+ *
+ * Flow:
+ * 1. User completes survey questions
+ * 2. This function is called with survey answers and email
+ * 3. Survey responses are saved to survey_responses table
+ * 4. Email is stored in email_opt_ins table (if provided)
+ * 5. Analytics event is tracked
+ * 6. User is redirected to coupon completion page
+ *
+ * IMPORTANT: This is where first-time users' emails are stored.
+ * After this, they become "returning users" and will skip surveys
+ * on future coupon claims (see survey page logic).
+ *
+ * @param tenantSlug - The tenant slug
+ * @param submission - Survey submission data including answers and email
+ * @returns Success/error response
  */
 export async function submitSurveyAnswers(
   tenantSlug: string,
@@ -284,6 +301,26 @@ export async function submitSurveyAnswers(
         success: false,
         error: `Failed to save survey responses: ${insertError.message}`,
       };
+    }
+
+    // ============================================================================
+    // STORE EMAIL IN email_opt_ins TABLE
+    // ============================================================================
+    // This is the critical step that converts a first-time user to a returning user.
+    // After this, when they click a coupon in the future, the survey page will
+    // detect their email is in the table and skip the survey.
+    //
+    // Note: This only happens for email-based users. OAuth users have their email
+    // stored immediately on OAuth callback (see app/auth/oauth-callback/route.ts)
+    if (submission.email) {
+      const { submitEmail } = await import("./emails");
+      // Store email in email_opt_ins table
+      // Handles duplicates gracefully (won't error if email already exists)
+      await submitEmail(tenantSlug, submission.email).catch((err) => {
+        // Log error but don't fail survey submission
+        // Email storage failure shouldn't prevent user from getting their coupon
+        console.warn("Failed to store email opt-in after survey:", err);
+      });
     }
 
     // Track survey completion event

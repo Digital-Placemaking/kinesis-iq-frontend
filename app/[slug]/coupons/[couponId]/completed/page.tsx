@@ -14,6 +14,19 @@ interface CompletedPageProps {
   searchParams: Promise<{ email?: string }>;
 }
 
+/**
+ * Coupon Completion Page
+ *
+ * Displays the coupon code and allows user to download/add to wallet.
+ *
+ * Users can reach this page via two paths:
+ * 1. After completing survey → Email was just stored in email_opt_ins
+ * 2. Returning user → Email already in email_opt_ins, skipped survey
+ * 3. OAuth user → Email stored on OAuth, skipped survey
+ *
+ * This page issues a new coupon code if one doesn't exist, or reuses
+ * an existing coupon code if the user already has one for this coupon.
+ */
 export default async function CompletedPage({
   params,
   searchParams,
@@ -21,16 +34,9 @@ export default async function CompletedPage({
   const { slug, couponId } = await params;
   const { email } = await searchParams;
 
-  // Verify email opt-in before allowing access
+  // Require email parameter
   if (!email) {
     redirect(`/${slug}/coupons`);
-  }
-
-  // Verify email opt-in - if verification fails, still allow access
-  const optInCheck = await verifyEmailOptIn(slug, email);
-
-  if (!optInCheck.valid) {
-    console.warn("Email opt-in verification warning:", optInCheck.error);
   }
 
   // Get tenant data

@@ -2,7 +2,6 @@ import { redirect, notFound } from "next/navigation";
 import {
   getSurveyForCoupon,
   verifyEmailOptIn,
-  hasCompletedSurveyForTenant,
   getTenantBySlug,
 } from "@/app/actions";
 import SurveyContainer from "@/app/components/survey/SurveyContainer";
@@ -17,6 +16,26 @@ interface SurveyPageProps {
   searchParams: Promise<{ email?: string }>;
 }
 
+/**
+ * Survey Page for Coupon
+ *
+ * This is the critical decision point in the user flow.
+ *
+ * Flow Logic:
+ * 1. User arrives here after clicking a coupon from the coupons list
+ * 2. Check if email exists in email_opt_ins table:
+ *    - If email IS in table → User is a returning user
+ *      → Skip survey, redirect to coupon completion page
+ *    - If email NOT in table → User is a first-time user
+ *      → Show survey questions
+ * 3. After survey completion → Email is stored in email_opt_ins table
+ *    (see submitSurveyAnswers in app/actions/surveys.ts)
+ *
+ * Why this flow?
+ * - First-time users: Must complete survey before getting coupon
+ * - Returning users: Skip survey (already provided feedback before)
+ * - OAuth users: Email stored immediately on OAuth, so they skip survey
+ */
 export default async function SurveyPage({
   params,
   searchParams,
@@ -24,12 +43,12 @@ export default async function SurveyPage({
   const { slug, couponId } = await params;
   const { email } = await searchParams;
 
-  // Verify email opt-in before allowing access
+  // Require email parameter
   if (!email) {
     redirect(`/${slug}/coupons`);
   }
 
-  // Check if tenant is active
+  // Validate tenant exists and is active
   const { tenant: tenantData, error: tenantError } = await getTenantBySlug(
     slug
   );
@@ -38,33 +57,32 @@ export default async function SurveyPage({
     notFound();
   }
 
-  // If tenant is inactive, show deactivated message
   if (!tenantData.active) {
     return <DeactivatedMessage tenantName={tenantData.name} />;
   }
 
-  // Verify email opt-in - if verification fails, still allow access
-  // The email in the URL is sufficient - it means they successfully submitted it
+  // ============================================================================
+  // CORE FLOW LOGIC: Check if email is in email_opt_ins table
+  // ============================================================================
   const optInCheck = await verifyEmailOptIn(slug, email);
 
-  if (!optInCheck.valid) {
-    // Log warning but don't block - email in URL means submission succeeded
-    console.warn("Email opt-in verification warning:", optInCheck.error);
-  }
-
-  // Check if user has completed any survey for this tenant - if so, skip survey
-  // They can claim all coupons without retaking the survey
-  const { completed } = await hasCompletedSurveyForTenant(slug, email);
-
-  if (completed) {
-    // User already completed a survey for this tenant - skip survey and go to completion
-    // They'll get a new coupon code for this specific coupon
+  // CASE 1: Email IS in email_opt_ins table → Returning user
+  // Skip survey and go directly to coupon completion
+  // This happens for:
+  // - Users who completed a survey before
+  // - OAuth users (email stored immediately on OAuth callback)
+  if (optInCheck.valid) {
     redirect(
       `/${slug}/coupons/${couponId}/completed?email=${encodeURIComponent(
         email
       )}`
     );
   }
+
+  // CASE 2: Email NOT in email_opt_ins table → First-time user
+  // Show survey questions
+  // After survey completion, email will be stored in email_opt_ins
+  // (see submitSurveyAnswers function in app/actions/surveys.ts)
 
   // Fetch survey for this coupon
   const { survey, error } = await getSurveyForCoupon(slug, couponId);

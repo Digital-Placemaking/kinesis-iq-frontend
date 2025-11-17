@@ -145,8 +145,19 @@ export async function submitEmailOptIn(tenantSlug: string, email: string) {
 }
 
 /**
- * Verifies if an email has opted in for a tenant
- * Used to check access permissions for coupon pages
+ * Verifies if an email exists in email_opt_ins table for a tenant
+ *
+ * This is the core check used by the survey page to determine user flow:
+ * - If email IS in table → Returning user → Skip survey
+ * - If email NOT in table → First-time user → Show survey
+ *
+ * Used by:
+ * - Survey page: Decides whether to show survey or skip to coupon completion
+ * - Coupons page: Can verify email opt-in status (currently not enforced)
+ *
+ * @param tenantSlug - The tenant slug
+ * @param email - The email address to check
+ * @returns Object with valid boolean and error message (if any)
  */
 export async function verifyEmailOptIn(
   tenantSlug: string,
@@ -183,19 +194,24 @@ export async function verifyEmailOptIn(
       .eq("tenant_id", tenantId)
       .maybeSingle();
 
-    // If RLS blocks the read, log a warning but assume valid
-    // (since the email being in the URL implies successful submission)
-    if (checkError && !emailOptIn) {
-      console.warn("Email opt-in verification failed:", checkError.message);
+    // If RLS blocks the read, we can't verify - this is a security concern
+    // For non-admin users, RLS should allow reading their own email opt-in
+    // If RLS blocks, it might indicate a policy issue or the email truly doesn't exist
+    if (checkError) {
+      // Log the error for debugging
+      console.warn("Email opt-in verification error:", checkError.message);
+      // Don't assume valid - require explicit verification
+      // This prevents bypassing the opt-in requirement
       return {
-        valid: true, // Trust the email in URL
-        error: null,
+        valid: false,
+        error: checkError.message || "Failed to verify email opt-in",
       };
     }
 
+    // Email must exist in email_opt_ins table to be valid
     return {
       valid: !!emailOptIn,
-      error: null,
+      error: emailOptIn ? null : "Email not found in opt-in list",
     };
   } catch (err) {
     return {

@@ -13,6 +13,23 @@ interface CouponsPageProps {
   searchParams: Promise<{ email?: string }>;
 }
 
+/**
+ * Coupons List Page
+ *
+ * Displays all available coupons for a tenant.
+ *
+ * Flow:
+ * 1. User arrives here from landing page with email in query parameter
+ * 2. Email is validated (must be present)
+ * 3. Coupons are displayed
+ * 4. When user clicks a coupon → goes to survey page
+ * 5. Survey page checks if email is in email_opt_ins table:
+ *    - If NOT → show survey (first-time user)
+ *    - If IS → skip survey, go to coupon completion (returning user)
+ *
+ * Note: Email is NOT required to be in email_opt_ins table to view this page.
+ * The survey page will handle the opt-in check when user clicks a coupon.
+ */
 export default async function CouponsPage({
   params,
   searchParams,
@@ -20,19 +37,9 @@ export default async function CouponsPage({
   const { slug } = await params;
   const { email } = await searchParams;
 
-  // Verify email opt-in before allowing access
+  // Require email parameter - redirect to landing if missing
   if (!email) {
     redirect(`/${slug}`);
-  }
-
-  // Verify email opt-in - if verification fails, still allow access
-  // The email in the URL is sufficient - it means they successfully submitted it
-  // RLS on email_opt_ins might block reads for non-staff users
-  const optInCheck = await verifyEmailOptIn(slug, email);
-
-  if (!optInCheck.valid) {
-    // Log warning but don't block - email in URL means submission succeeded
-    console.warn("Email opt-in verification warning:", optInCheck.error);
   }
 
   // Get tenant data for display

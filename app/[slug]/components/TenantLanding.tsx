@@ -20,13 +20,17 @@ import type { TenantDisplay } from "@/lib/types/tenant";
 
 interface TenantLandingProps {
   tenant: TenantDisplay;
+  initialError?: string | null;
 }
 
-export default function TenantLanding({ tenant }: TenantLandingProps) {
+export default function TenantLanding({
+  tenant,
+  initialError,
+}: TenantLandingProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError || null);
 
   // Track page visit on mount
   useEffect(() => {
@@ -42,10 +46,25 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
     });
   }, [tenant.slug]);
 
+  /**
+   * Handles email form submission
+   *
+   * Flow:
+   * 1. User enters email and submits
+   * 2. Email is validated (format check)
+   * 3. Email is passed as query parameter to coupons page (NOT stored yet)
+   * 4. When user clicks a coupon, survey page checks if email exists in email_opt_ins
+   * 5. If email NOT in table → show survey (first-time user)
+   * 6. If email IS in table → skip survey, go to coupon (returning user)
+   * 7. After survey completion → email is stored in email_opt_ins
+   *
+   * Note: Email is NOT stored here to ensure first-time users see the survey.
+   * Only after completing the survey will their email be added to email_opt_ins.
+   */
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate email before submission
+    // Validate email format
     if (!email || !email.trim()) {
       setError("Please enter a valid email address");
       return;
@@ -55,36 +74,28 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
     setError(null);
 
     try {
-      const result = await submitEmail(tenant.slug, email.trim());
+      const trimmedEmail = email.trim();
 
-      // Check if result has success property
-      if (result && typeof result.success === "boolean") {
-        if (result.success === true) {
-          // Redirect to coupons page with email as query parameter
-          // Use getTenantPath to handle subdomain routing correctly
-          const couponsPath = getTenantPath(tenant.slug, "/coupons");
-          const redirectUrl = `${couponsPath}?email=${encodeURIComponent(
-            email.trim()
-          )}`;
-
-          // Force immediate redirect - use multiple methods to ensure it works
-          // This ensures React doesn't interfere with navigation
-          if (typeof window !== "undefined") {
-            window.location.replace(redirectUrl);
-          }
-          return; // Don't set loading to false since we're redirecting
-        } else if (result.error) {
-          setError(result.error);
-          setLoading(false);
-        } else {
-          setError("Failed to submit email. Please try again.");
-          setLoading(false);
-        }
-      } else {
-        // Result doesn't have expected structure
-        setError("An unexpected error occurred");
+      // Basic email format validation
+      if (!trimmedEmail.includes("@")) {
+        setError("Please enter a valid email address");
         setLoading(false);
+        return;
       }
+
+      // Redirect to coupons page with email as query parameter
+      // IMPORTANT: Email is NOT stored in email_opt_ins at this point
+      // It will be stored after survey completion (see submitSurveyAnswers)
+      const couponsPath = getTenantPath(tenant.slug, "/coupons");
+      const redirectUrl = `${couponsPath}?email=${encodeURIComponent(
+        trimmedEmail
+      )}`;
+
+      // Force full page redirect to ensure clean navigation
+      if (typeof window !== "undefined") {
+        window.location.replace(redirectUrl);
+      }
+      return; // Don't set loading to false since we're redirecting
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
@@ -94,17 +105,17 @@ export default function TenantLanding({ tenant }: TenantLandingProps) {
   /**
    * Handles social login (Google/Apple OAuth)
    *
-   * Initiates direct OAuth flow (not through Supabase Auth).
-   * Only collects email addresses for email_opt_ins table.
-   * No Supabase Auth users are created.
-   *
-   * Flow:
+   * OAuth Flow (Different from email flow):
    * 1. User clicks "Continue with Google/Apple"
-   * 2. Redirects to Google/Apple OAuth consent screen
-   * 3. User authorizes → Provider redirects back to /auth/oauth-callback with code
+   * 2. Redirects to OAuth provider consent screen
+   * 3. User authorizes → Provider redirects to /auth/oauth-callback with code
    * 4. Callback route exchanges code for email
-   * 5. Email stored in email_opt_ins table
+   * 5. Email is stored in email_opt_ins table IMMEDIATELY (OAuth users skip survey)
    * 6. User redirected to tenant coupons page
+   *
+   * Note: OAuth users have their email stored immediately because they've already
+   * authenticated with the provider. When they click a coupon, they'll skip the
+   * survey and go directly to coupon completion (since email is already in table).
    *
    * @param provider - The OAuth provider ("google" or "apple")
    */
