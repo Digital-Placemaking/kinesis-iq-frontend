@@ -166,3 +166,123 @@ export async function uploadLogoImage(
     };
   }
 }
+
+/**
+ * Uploads a coupon image file to Supabase Storage
+ * Returns the public URL of the uploaded file
+ */
+export async function uploadCouponImage(
+  tenantSlug: string,
+  file: File,
+  tenantId?: string
+): Promise<{ url: string | null; error: string | null }> {
+  try {
+    // Validate file type (only JPEG, PNG, WEBP)
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      return {
+        url: null,
+        error: "Invalid file type. Please upload a JPEG, PNG, or WebP image.",
+      };
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      return {
+        url: null,
+        error: "File size too large. Maximum size is 5MB.",
+      };
+    }
+
+    let resolvedTenantId = tenantId;
+
+    // If tenantId is provided, use it directly (bypasses slug resolution)
+    if (!resolvedTenantId) {
+      const supabase = await createClient();
+
+      const { data: resolvedId, error: resolveError } = await supabase.rpc(
+        "resolve_tenant",
+        {
+          slug_input: tenantSlug,
+        }
+      );
+
+      if (resolveError || !resolvedId) {
+        const { data: tenant, error: tenantError } = await supabase
+          .from("tenants")
+          .select("id")
+          .eq("slug", tenantSlug)
+          .maybeSingle();
+
+        if (tenantError || !tenant || !tenant.id) {
+          return {
+            url: null,
+            error: `Tenant not found: ${tenantSlug}`,
+          };
+        }
+        resolvedTenantId = tenant.id;
+      } else {
+        resolvedTenantId = resolvedId;
+      }
+    }
+
+    if (!resolvedTenantId) {
+      return {
+        url: null,
+        error: `Tenant not found: ${tenantSlug}`,
+      };
+    }
+
+    // Create tenant-scoped client
+    const tenantSupabase = await createTenantClient(resolvedTenantId);
+
+    // Generate unique filename: tenant-id_timestamp_random.ext
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 8);
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${resolvedTenantId}/${timestamp}_${random}.${fileExt}`;
+
+    // Convert File to ArrayBuffer (for Node.js Buffer)
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Upload to Supabase Storage bucket "coupon_assets"
+    const { data, error: uploadError } = await tenantSupabase.storage
+      .from("coupon_assets")
+      .upload(fileName, buffer, {
+        contentType: file.type,
+        upsert: false,
+        cacheControl: "3600",
+      });
+
+    if (uploadError) {
+      console.error("Failed to upload coupon image:", {
+        error: uploadError,
+        message: uploadError.message,
+        fileName,
+        tenantId: resolvedTenantId,
+      });
+      return {
+        url: null,
+        error: `Failed to upload image: ${uploadError.message}`,
+      };
+    }
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = tenantSupabase.storage.from("coupon_assets").getPublicUrl(fileName);
+
+    return {
+      url: publicUrl,
+      error: null,
+    };
+  } catch (err) {
+    console.error("Unexpected error uploading coupon image:", err);
+    return {
+      url: null,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}

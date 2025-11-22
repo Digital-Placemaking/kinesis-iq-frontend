@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSurveyForTenant, getTenantBySlug } from "@/app/actions";
 import { toTenantDisplay } from "@/lib/utils/tenant";
 import SurveyContainer from "@/app/components/survey/SurveyContainer";
+import NoSurveyMessage from "./components/NoSurveyMessage";
 
 // Force dynamic rendering to ensure fresh data on each request
 export const dynamic = "force-dynamic";
@@ -34,13 +35,12 @@ export default async function SurveyPage({ params }: SurveyPageProps) {
   // Fetch survey for this tenant
   const { survey, error } = await getSurveyForTenant(slug);
 
-  // If no survey questions exist, skip the survey and redirect directly to completion
-  if (error || !survey || survey.questions.length === 0) {
-    // Redirect to completion page if no questions
-    redirect(`/${slug}/survey/completed`);
-  }
-
   const tenant = toTenantDisplay(tenantData);
+
+  // If no survey questions exist, show "coming soon" message instead of redirecting
+  if (error || !survey || survey.questions.length === 0) {
+    return <NoSurveyMessage tenant={tenant} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">

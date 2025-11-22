@@ -14,6 +14,7 @@
  * @property title - Display name/title of the coupon (required)
  * @property description - Optional detailed description of the coupon offer
  * @property discount - Optional discount text (e.g., "20% OFF", "$10 OFF")
+ * @property image_url - Optional URL of the coupon image stored in Supabase Storage
  * @property expires_at - Optional expiration date/time (ISO 8601 string)
  * @property active - Whether the coupon is currently active and visible (default: true)
  * @property created_at - Timestamp when the coupon was created (ISO 8601 string)
@@ -24,6 +25,7 @@ export interface Coupon {
   title: string;
   description: string | null;
   discount: string | null;
+  image_url: string | null;
   expires_at: string | null;
   active: boolean;
   created_at: string;
@@ -36,6 +38,7 @@ export interface Coupon {
  * @property title - Display name/title of the coupon (required)
  * @property description - Optional detailed description
  * @property discount - Optional discount text
+ * @property image_url - Optional URL of the coupon image
  * @property expires_at - Optional expiration date/time (ISO 8601 string)
  * @property active - Whether the coupon should be active (default: true)
  */
@@ -43,6 +46,7 @@ export interface CreateCouponInput {
   title: string;
   description?: string | null;
   discount?: string | null;
+  image_url?: string | null;
   expires_at?: string | null;
   active?: boolean;
 }
@@ -55,6 +59,7 @@ export interface UpdateCouponInput {
   title?: string;
   description?: string | null;
   discount?: string | null;
+  image_url?: string | null;
   expires_at?: string | null;
   active?: boolean;
 }

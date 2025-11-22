@@ -135,6 +135,7 @@ export async function proxy(request: NextRequest) {
       // Rewrite logic:
       // - subdomain.domain.com/ → /{slug}/
       // - subdomain.domain.com/coupons → /{slug}/coupons
+      // - subdomain.domain.com/survey → /{slug}/survey
       // - subdomain.domain.com/coupons?email=... → /{slug}/coupons?email=...
       if (url.pathname === "/") {
         // Root path on subdomain → rewrite to tenant landing page

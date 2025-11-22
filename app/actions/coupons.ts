@@ -186,6 +186,7 @@ export async function createCoupon(
       title: string;
       description: string | null;
       discount: string | null;
+      image_url: string | null;
       expires_at: string | null;
       active: boolean;
     } = {
@@ -193,6 +194,7 @@ export async function createCoupon(
       title: trimmedTitle,
       description: trimmedDescription || null,
       discount: trimmedDiscount || null,
+      image_url: coupon.image_url || null,
       expires_at: coupon.expires_at ?? null,
       active: coupon.active ?? true,
     };
@@ -254,6 +256,8 @@ export async function updateCoupon(
     if (updates.description !== undefined)
       updateData.description = updates.description;
     if (updates.discount !== undefined) updateData.discount = updates.discount;
+    if (updates.image_url !== undefined)
+      updateData.image_url = updates.image_url;
     if (updates.expires_at !== undefined)
       updateData.expires_at = updates.expires_at;
     if (updates.active !== undefined) updateData.active = updates.active;

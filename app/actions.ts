@@ -93,7 +93,7 @@ export { updatePassword } from "./actions/auth";
 export { getStaffForTenant } from "./actions/staff";
 
 // Storage actions
-export { uploadLogoImage } from "./actions/storage";
+export { uploadLogoImage, uploadCouponImage } from "./actions/storage";
 
 // Contact actions
 export { submitContactForm } from "./actions/contact";

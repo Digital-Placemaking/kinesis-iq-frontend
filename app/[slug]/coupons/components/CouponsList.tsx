@@ -9,6 +9,7 @@ import Card from "@/app/components/ui/Card";
 import { getTenantPath } from "@/lib/utils/subdomain";
 import type { TenantDisplay } from "@/lib/types/tenant";
 import CouponCard from "./CouponCard";
+import { Gift } from "lucide-react";
 
 interface Coupon {
   id: string;
@@ -18,6 +19,7 @@ interface Coupon {
   expires_at?: string | null;
   active?: boolean;
   created_at?: string;
+  image_url?: string | null;
 }
 
 interface CouponsListProps {
@@ -70,13 +72,33 @@ export default function CouponsList({
 
         {/* Coupons List */}
         {coupons.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Card className="w-full p-8 text-center">
-              <p className="text-zinc-600 dark:text-zinc-400">
-                No coupons available at this time. Check back soon!
+          <Card
+            className="mb-4 w-full p-4 text-center sm:mb-6 sm:p-6"
+            variant="elevated"
+          >
+            {/* Gift Icon */}
+            <div className="mb-4 flex justify-center sm:mb-6">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 sm:h-20 sm:w-20">
+                <Gift className="h-8 w-8 text-orange-600 dark:text-orange-400 sm:h-10 sm:w-10" />
+              </div>
+            </div>
+
+            <h2 className="mb-2 text-xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-2xl md:text-3xl">
+              No Coupons Available
+            </h2>
+
+            <p className="mb-4 text-xs text-zinc-600 dark:text-zinc-400 sm:mb-6 sm:text-sm">
+              We're currently setting up our exclusive offers. Please check back
+              soon!
+            </p>
+
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50 sm:p-4">
+              <p className="text-xs text-zinc-700 dark:text-zinc-300 sm:text-sm">
+                Thank you for your interest. We'll have exciting offers
+                available shortly.
               </p>
-            </Card>
-          </div>
+            </div>
+          </Card>
         ) : (
           <div className="flex w-full flex-col items-center gap-3">
             {coupons.map((coupon) => (
