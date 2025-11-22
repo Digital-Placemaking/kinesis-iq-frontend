@@ -64,7 +64,7 @@ export default function Footer() {
           {/* Right Side Actions */}
           <div className="flex items-center gap-4 sm:ml-auto sm:shrink-0">
             <Link
-              href="/admin"
+              href="/admin/login"
               className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
             >
               <Settings className="h-4 w-4" />

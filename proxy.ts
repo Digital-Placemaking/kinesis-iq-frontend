@@ -166,14 +166,11 @@ export async function proxy(request: NextRequest) {
   // On main domain (domain.com or www.domain.com), routes must include slug:
   // - domain.com/{slug}/coupons → Works (served by [slug]/coupons route)
   // - domain.com/coupons → 404 (no route exists, slug is required)
+  // - domain.com/{slug}/admin → Works (served by [slug]/admin route)
   // This is expected behavior - users must use subdomain or include slug in path
 
-  // Redirect any {slug}/admin routes to /admin
-  if (pathname.match(/\/[^/]+\/admin/)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin";
-    return NextResponse.redirect(url);
-  }
+  // Note: {slug}/admin routes are now tenant-specific and should not be redirected
+  // They are handled by the [slug]/admin route structure
 
   if (isAdminRoute) {
     const {

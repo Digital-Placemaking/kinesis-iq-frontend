@@ -97,8 +97,8 @@ export default function AuthCallbackHandler() {
               // New users or password reset flows → password reset page
               router.push(`/auth/reset-password?type=${type}`);
             } else {
-              // Default redirect to admin dashboard
-              router.push("/admin");
+              // Default redirect to admin login (tenant selection)
+              router.push("/admin/login");
             }
           })
           .catch((err) => {

@@ -414,6 +414,21 @@ export async function createQuestion(
       return { success: false, error: `Tenant not found: ${tenantSlug}` };
     }
 
+    // SECURITY: Verify user has staff access to this tenant
+    const { data: staff, error: staffError } = await supabase
+      .from("staff")
+      .select("tenant_id, role")
+      .eq("user_id", user.id)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
+    if (staffError || !staff) {
+      return {
+        success: false,
+        error: "You don't have access to this tenant",
+      };
+    }
+
     const tenantSupabase = await createTenantClient(tenantId);
 
     // Input validation: trim question text and validate required fields
@@ -518,6 +533,21 @@ export async function updateQuestion(
       return { success: false, error: `Tenant not found: ${tenantSlug}` };
     }
 
+    // SECURITY: Verify user has staff access to this tenant
+    const { data: staff, error: staffError } = await supabase
+      .from("staff")
+      .select("tenant_id, role")
+      .eq("user_id", user.id)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
+    if (staffError || !staff) {
+      return {
+        success: false,
+        error: "You don't have access to this tenant",
+      };
+    }
+
     const tenantSupabase = await createTenantClient(tenantId);
 
     // Prepare update data
@@ -592,6 +622,21 @@ export async function deleteQuestion(
     );
     if (resolveError || !tenantId) {
       return { success: false, error: `Tenant not found: ${tenantSlug}` };
+    }
+
+    // SECURITY: Verify user has staff access to this tenant
+    const { data: staff, error: staffError } = await supabase
+      .from("staff")
+      .select("tenant_id, role")
+      .eq("user_id", user.id)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
+    if (staffError || !staff) {
+      return {
+        success: false,
+        error: "You don't have access to this tenant",
+      };
     }
 
     const tenantSupabase = await createTenantClient(tenantId);
@@ -680,6 +725,21 @@ export async function toggleQuestionStatus(
     );
     if (resolveError || !tenantId) {
       return { success: false, error: `Tenant not found: ${tenantSlug}` };
+    }
+
+    // SECURITY: Verify user has staff access to this tenant
+    const { data: staff, error: staffError } = await supabase
+      .from("staff")
+      .select("tenant_id, role")
+      .eq("user_id", user.id)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
+    if (staffError || !staff) {
+      return {
+        success: false,
+        error: "You don't have access to this tenant",
+      };
     }
 
     const tenantSupabase = await createTenantClient(tenantId);

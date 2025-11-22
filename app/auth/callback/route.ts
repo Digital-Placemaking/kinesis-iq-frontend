@@ -56,8 +56,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(redirectUrl);
       }
 
-      // Default: redirect to the intended destination or admin dashboard
-      const redirectedURL = new URL(next === "/" ? "/admin" : next, origin);
+      // Default: redirect to the intended destination or admin login (tenant selection)
+      const redirectedURL = new URL(
+        next === "/" ? "/admin/login" : next,
+        origin
+      );
       return NextResponse.redirect(redirectedURL);
     }
   }

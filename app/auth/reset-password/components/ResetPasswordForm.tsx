@@ -66,9 +66,9 @@ export default function ResetPasswordForm({
 
       if (result.success) {
         setSuccess(true);
-        // Redirect to admin dashboard after 2 seconds
+        // Redirect to admin login (tenant selection) after 2 seconds
         setTimeout(() => {
-          router.push("/admin");
+          router.push("/admin/login");
         }, 2000);
       } else {
         setError(

@@ -68,28 +68,11 @@ export default function AdminLoginForm({
       }
 
       if (data.user) {
-        // Redirect to the redirect path or default admin
-        if (redirectPath) {
-          window.location.href = redirectPath;
-          return;
-        }
-
-        // Verify staff record exists, then redirect to /admin
-        // The /admin page will handle tenant lookup properly
-        const { data: staff, error: staffError } = await supabase
-          .from("staff")
-          .select("tenant_id")
-          .eq("user_id", data.user.id)
-          .limit(1);
-
-        if (staffError) {
-          setError(`Failed to find tenant: ${staffError.message}`);
-          setLoading(false);
-          return;
-        }
-
-        // Redirect to admin dashboard (will handle tenant lookup server-side)
-        window.location.href = "/admin";
+        // Always redirect to tenant selection page after login
+        // This allows users to choose which tenant to access
+        window.location.href = redirectPath
+          ? `/admin/login?redirect=${encodeURIComponent(redirectPath)}`
+          : "/admin/login";
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");

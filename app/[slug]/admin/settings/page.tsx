@@ -1,41 +1,44 @@
 /**
- * app/admin/settings/page.tsx
+ * app/[slug]/admin/settings/page.tsx
  * Admin settings page.
  * Allows owner/admin users to manage tenant settings including name, logo, subdomain, and website URL.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireAuth, isOwnerOrAdmin } from "@/lib/auth/server";
+import { requireBusinessOwnerAccess, isOwnerOrAdmin } from "@/lib/auth/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import type { Staff } from "@/lib/types/staff";
-import { toTenantDisplay } from "@/lib/utils/tenant";
-import AdminLayout from "../components/AdminLayout";
 import SettingsClient from "./components/SettingsClient";
 
-export default async function SettingsPage() {
-  // Require authentication
-  const user = await requireAuth();
+interface SettingsPageProps {
+  params: Promise<{ slug: string }>;
+}
 
-  const supabase = await createClient();
+export default async function SettingsPage({ params }: SettingsPageProps) {
+  const { slug } = await params;
 
-  // Find user's tenant(s) and use first one
-  const { data: staff, error: staffError } = await supabase
-    .from("staff")
-    .select("tenant_id, role, email")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true })
-    .limit(1);
+  // Require business owner access
+  const { user, owner } = await requireBusinessOwnerAccess(
+    slug,
+    `/${slug}/admin/login?error=unauthorized`
+  );
 
-  if (staffError || !staff || staff.length === 0) {
-    redirect("/admin/login?error=no_tenant");
-  }
-
-  const tenantId = staff[0].tenant_id;
-  const userRole = staff[0].role;
+  const userRole = owner.role;
 
   // Only owner and admin can access settings
   if (!isOwnerOrAdmin({ role: userRole } as any)) {
-    redirect("/admin?error=unauthorized");
+    redirect(`/${slug}/admin?error=unauthorized`);
+  }
+
+  const supabase = await createClient();
+
+  // Resolve tenant slug to UUID
+  const { data: tenantId } = await supabase.rpc("resolve_tenant", {
+    slug_input: slug,
+  });
+
+  if (!tenantId) {
+    redirect(`/${slug}/admin/login?error=tenant_not_found`);
   }
 
   // Create tenant-scoped client
@@ -52,7 +55,7 @@ export default async function SettingsPage() {
     .maybeSingle();
 
   if (tenantError || !tenant) {
-    redirect("/admin/login?error=tenant_not_found");
+    redirect(`/${slug}/admin/login?error=tenant_not_found`);
   }
 
   // Get staff list directly using tenant-scoped client (bypasses resolve_tenant RPC)
@@ -72,27 +75,23 @@ export default async function SettingsPage() {
     });
   }
 
-  const tenantDisplay = toTenantDisplay(tenant);
-
   return (
-    <AdminLayout userRole={userRole}>
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 sm:text-3xl">
-            Tenant Settings
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
-            Manage your business pilot settings and team members.
-          </p>
-        </div>
-
-        <SettingsClient
-          tenant={tenant}
-          staffList={(staffList as Staff[]) || []}
-          userRole={userRole}
-          tenantId={tenantId}
-        />
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 sm:text-3xl">
+          Tenant Settings
+        </h1>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
+          Manage your business pilot settings and team members.
+        </p>
       </div>
-    </AdminLayout>
+
+      <SettingsClient
+        tenant={tenant}
+        staffList={(staffList as Staff[]) || []}
+        userRole={userRole}
+        tenantId={tenantId}
+      />
+    </div>
   );
 }

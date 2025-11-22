@@ -1,27 +1,80 @@
 /**
  * app/[slug]/admin/page.tsx
  * Tenant-specific admin dashboard page.
- * Displays statistics and quick actions for tenant administrators (redirects to /admin).
+ * Shows login form if not authenticated, otherwise shows dashboard.
  */
-
 import { redirect } from "next/navigation";
-import { requireBusinessOwnerAccess } from "@/lib/auth/server";
+import { getCurrentUser } from "@/lib/auth/server";
+import { getBusinessOwnerForTenantSlug } from "@/lib/auth/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import { createClient } from "@/lib/supabase/server";
-import Card from "@/app/components/ui/Card";
+import { getTenantBySlug } from "@/app/actions/tenant";
+import DashboardHeader from "@/app/[slug]/admin/components/DashboardHeader";
+import StatCards from "@/app/[slug]/admin/components/StatCards";
+import ClientQuickActions from "@/app/[slug]/admin/components/ClientQuickActions";
+import TenantAdminLoginForm from "./login/components/TenantAdminLoginForm";
+import Footer from "@/app/components/Footer";
 
 interface AdminDashboardProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ error?: string }>;
 }
 
-export default async function AdminDashboard({ params }: AdminDashboardProps) {
+export default async function AdminDashboard({
+  params,
+  searchParams,
+}: AdminDashboardProps) {
   const { slug } = await params;
+  const { error } = await searchParams;
 
-  // Require business owner access
-  const { user, owner } = await requireBusinessOwnerAccess(
-    slug,
-    `/admin/login?redirect=/${slug}/admin&error=unauthorized`
-  );
+  // Fetch tenant data for login form display (name and logo)
+  const { tenant: tenantData } = await getTenantBySlug(slug);
+  const tenantName = tenantData?.name || slug.toUpperCase();
+  const tenantLogo = tenantData?.logo_url || null;
+
+  // Check if user is authenticated
+  const user = await getCurrentUser();
+
+  // If not authenticated, show login form on this page
+  if (!user) {
+    return (
+      <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
+        <div className="flex flex-1 items-center justify-center px-4">
+          <div className="w-full max-w-md">
+            <TenantAdminLoginForm
+              tenantSlug={slug}
+              tenantName={tenantName}
+              tenantLogo={tenantLogo}
+              error={error}
+            />
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Check if user has access to this tenant
+  const owner = await getBusinessOwnerForTenantSlug(slug);
+
+  // If no access, show login form with error
+  if (!owner) {
+    return (
+      <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
+        <div className="flex flex-1 items-center justify-center px-4">
+          <div className="w-full max-w-md">
+            <TenantAdminLoginForm
+              tenantSlug={slug}
+              tenantName={tenantName}
+              tenantLogo={tenantLogo}
+              error="unauthorized"
+            />
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const supabase = await createClient();
 
@@ -31,13 +84,24 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
   });
 
   if (!tenantId) {
-    redirect("/admin/login");
+    redirect(`/${slug}/admin/login?error=tenant_not_found`);
   }
 
   // Create tenant-scoped client
   const tenantSupabase = await createTenantClient(tenantId);
 
-  // Fetch statistics
+  // Get tenant info for display
+  const { data: tenant, error: tenantError } = await tenantSupabase
+    .from("tenants")
+    .select("id, slug, name, logo_url, website_url")
+    .eq("id", tenantId)
+    .maybeSingle();
+
+  if (tenantError || !tenant) {
+    redirect(`/${slug}/admin/login?error=tenant_not_found`);
+  }
+
+  // Fetch statistics for dashboard
   const [couponsResult, surveysResult, issuedCouponsResult] = await Promise.all(
     [
       tenantSupabase
@@ -56,144 +120,40 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
   const surveyCount = surveysResult.count || 0;
   const issuedCouponCount = issuedCouponsResult.count || 0;
 
+  /**
+   * Quick actions for the dashboard
+   * Only shown for owner/admin roles, not for staff members
+   */
+  const quickActions =
+    owner.role === "owner" || owner.role === "admin"
+      ? [
+          { label: "Create Coupon" },
+          { label: "Add Survey Question" },
+          { href: `/${slug}/admin/coupons`, label: "View All Coupons" },
+          { href: `/${slug}/admin/settings`, label: "Tenant Settings" },
+        ]
+      : [];
+
   return (
     <div className="mx-auto max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
-          Dashboard
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Welcome back, {owner.email || user.email}
-        </p>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="p-6" variant="elevated">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                Total Coupons
-              </p>
-              <p className="mt-2 text-3xl font-bold text-black dark:text-zinc-50">
-                {couponCount}
-              </p>
-            </div>
-            <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/20">
-              <svg
-                className="h-6 w-6 text-blue-600 dark:text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
-                />
-              </svg>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6" variant="elevated">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                Survey Questions
-              </p>
-              <p className="mt-2 text-3xl font-bold text-black dark:text-zinc-50">
-                {surveyCount}
-              </p>
-            </div>
-            <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900/20">
-              <svg
-                className="h-6 w-6 text-green-600 dark:text-green-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6" variant="elevated">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                Issued Coupons
-              </p>
-              <p className="mt-2 text-3xl font-bold text-black dark:text-zinc-50">
-                {issuedCouponCount}
-              </p>
-            </div>
-            <div className="rounded-lg bg-orange-100 p-3 dark:bg-orange-900/20">
-              <svg
-                className="h-6 w-6 text-orange-600 dark:text-orange-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-8">
-        <h2 className="mb-4 text-xl font-semibold text-black dark:text-zinc-50">
-          Quick Actions
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="p-4" variant="elevated">
-            <a
-              href={`/${slug}/admin/coupons/new`}
-              className="block text-center text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Create Coupon
-            </a>
-          </Card>
-          <Card className="p-4" variant="elevated">
-            <a
-              href={`/${slug}/admin/surveys/new`}
-              className="block text-center text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Add Survey Question
-            </a>
-          </Card>
-          <Card className="p-4" variant="elevated">
-            <a
-              href={`/${slug}/admin/coupons`}
-              className="block text-center text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              View All Coupons
-            </a>
-          </Card>
-          <Card className="p-4" variant="elevated">
-            <a
-              href={`/${slug}/admin/settings`}
-              className="block text-center text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Tenant Settings
-            </a>
-          </Card>
-        </div>
-      </div>
+      <DashboardHeader
+        userEmail={owner.email || user.email || ""}
+        tenant={{
+          id: tenantId,
+          name: tenant.name,
+          slug: tenant.slug,
+          logo_url: tenant.logo_url,
+        }}
+      />
+      <StatCards
+        couponCount={couponCount}
+        surveyCount={surveyCount}
+        issuedCouponCount={issuedCouponCount}
+      />
+      {/* Interactive Quick Actions (client) - only show for owner/admin */}
+      {quickActions.length > 0 && (
+        <ClientQuickActions tenantSlug={tenant.slug} actions={quickActions} />
+      )}
     </div>
   );
 }

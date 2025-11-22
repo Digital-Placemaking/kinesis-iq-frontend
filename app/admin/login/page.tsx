@@ -1,11 +1,13 @@
 /**
  * app/admin/login/page.tsx
- * Admin login page.
- * Handles authentication flow for tenant administrators with email/password login.
+ * Admin login and tenant selection page.
+ * Handles authentication flow and allows users to select which tenant to access.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createTenantClient } from "@/lib/supabase/tenant-client";
 import AdminLoginForm from "./components/AdminLoginForm";
+import TenantSelection from "./components/TenantSelection";
 import Footer from "@/app/components/Footer";
 
 interface AdminLoginPageProps {
@@ -23,43 +25,80 @@ export default async function AdminLoginPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // If already logged in and there's no error, redirect to dashboard
-  // But if there's an error (like no_tenant), show the error instead of redirecting
+  // If user is logged in, show tenant selection
   if (user && !error) {
-    // Try to find their tenant(s) and redirect to first one's admin
-    const { data: staff } = await supabase
+    // Fetch all tenants the user has access to
+    const { data: staffRecords, error: staffError } = await supabase
       .from("staff")
-      .select("tenant_id")
+      .select("tenant_id, role, email")
       .eq("user_id", user.id)
-      .limit(1);
+      .order("created_at", { ascending: true });
 
-    if (staff && staff.length > 0) {
-      // Use tenant-scoped client to query tenant (RLS may block regular client)
-      const { createTenantClient } = await import(
-        "@/lib/supabase/tenant-client"
-      );
-      const tenantSupabase = await createTenantClient(staff[0].tenant_id);
-
-      const { data: tenant, error: tenantError } = await tenantSupabase
-        .from("tenants")
-        .select("slug")
-        .eq("id", staff[0].tenant_id)
-        .maybeSingle();
-
-      if (tenantError) {
-        console.error("Error fetching tenant in login page:", tenantError);
-        // Don't redirect, show error on page
-      } else if (tenant) {
-        redirect("/admin");
-      }
+    if (staffError) {
+      console.error("Error fetching staff records:", staffError);
+      // Show error on page
     }
 
-    // If no tenant found but user is logged in, show error on login page
-    // Don't redirect - that would create a loop
+    if (staffRecords && staffRecords.length > 0) {
+      // Fetch tenant details for each staff record
+      const tenants = await Promise.all(
+        staffRecords.map(async (staff) => {
+          const tenantSupabase = await createTenantClient(staff.tenant_id);
+          const { data: tenant } = await tenantSupabase
+            .from("tenants")
+            .select("id, slug, name, logo_url")
+            .eq("id", staff.tenant_id)
+            .maybeSingle();
+
+          return tenant
+            ? {
+                ...tenant,
+                role: staff.role,
+                staffEmail: staff.email,
+              }
+            : null;
+        })
+      );
+
+      const validTenants = tenants.filter((t) => t !== null);
+
+      // If only one tenant and no specific redirect path, redirect directly
+      if (validTenants.length === 1 && !redirectPath) {
+        redirect(`/${validTenants[0].slug}/admin`);
+      }
+
+      // If redirectPath is for a specific tenant and user has access, redirect directly
+      if (redirectPath) {
+        const redirectMatch = redirectPath.match(/^\/([^/]+)\/admin/);
+        if (redirectMatch) {
+          const redirectSlug = redirectMatch[1];
+          const hasAccess = validTenants.some((t) => t.slug === redirectSlug);
+          if (hasAccess) {
+            redirect(redirectPath);
+          }
+        }
+      }
+
+      // Show tenant selection
+      return (
+        <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
+          <div className="flex flex-1 items-center justify-center px-4">
+            <div className="w-full max-w-md">
+              <TenantSelection
+                tenants={validTenants}
+                redirectPath={redirectPath}
+              />
+            </div>
+          </div>
+          <Footer />
+        </div>
+      );
+    }
   }
 
+  // Show login form if not authenticated or no tenants found
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+    <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
       <div className="flex flex-1 items-center justify-center px-4">
         <div className="w-full max-w-md">
           <AdminLoginForm redirectPath={redirectPath} error={error} />
