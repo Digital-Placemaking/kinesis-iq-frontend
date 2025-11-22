@@ -7,6 +7,7 @@
 import { redirect } from "next/navigation";
 import { getSurveyForTenant, getTenantBySlug } from "@/app/actions";
 import { toTenantDisplay } from "@/lib/utils/tenant";
+import { isSurveyCompleted } from "@/lib/utils/rate-limit";
 import SurveyContainer from "@/app/components/survey/SurveyContainer";
 import NoSurveyMessage from "./components/NoSurveyMessage";
 
@@ -16,10 +17,15 @@ export const revalidate = 0;
 
 interface SurveyPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ email?: string }>;
 }
 
-export default async function SurveyPage({ params }: SurveyPageProps) {
+export default async function SurveyPage({
+  params,
+  searchParams,
+}: SurveyPageProps) {
   const { slug } = await params;
+  const { email } = await searchParams;
 
   // Get tenant data
   const { tenant: tenantData, error: tenantError } = await getTenantBySlug(
@@ -36,6 +42,15 @@ export default async function SurveyPage({ params }: SurveyPageProps) {
       "../components/DeactivatedMessage"
     );
     return <DeactivatedMessage tenantName={tenantData.name} />;
+  }
+
+  // SECURITY: Check if user has already completed this survey
+  // If they have, redirect to completion page to prevent re-access
+  if (email) {
+    const completed = await isSurveyCompleted(slug, email, null);
+    if (completed) {
+      redirect(`/${slug}/survey/completed`);
+    }
   }
 
   // Fetch survey for this tenant

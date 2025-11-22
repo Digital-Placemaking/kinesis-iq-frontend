@@ -10,7 +10,12 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import { RATE_LIMITS } from "@/lib/constants/rate-limits";
-import { checkRateLimit, getClientIdentifier } from "@/lib/utils/rate-limit";
+import {
+  checkCouponRateLimit,
+  incrementCouponRateLimit,
+  checkRateLimit,
+  getClientIdentifier,
+} from "@/lib/utils/rate-limit";
 import type {
   IssueCouponResponse,
   ValidateCouponResponse,
@@ -63,23 +68,6 @@ export async function issueCoupon(
   expiresAt?: string | null
 ): Promise<IssueCouponResponse> {
   try {
-    // Rate limiting: use email as identifier if available, otherwise use IP
-    const headersList = await headers();
-    const identifier = getClientIdentifier(email, headersList);
-    const rateLimit = await checkRateLimit(
-      identifier,
-      RATE_LIMITS.COUPON_ISSUE
-    );
-
-    if (!rateLimit.allowed) {
-      return {
-        issuedCoupon: null,
-        error: `Too many coupon requests. Please try again in ${Math.ceil(
-          (rateLimit.resetAt - Date.now()) / 1000
-        )} seconds.`,
-      };
-    }
-
     const supabase = await createClient();
 
     // Resolve tenant slug to UUID
@@ -141,6 +129,7 @@ export async function issueCoupon(
 
         // Always return the existing coupon - same code, same coupon
         // Redemption status doesn't matter - they keep their original coupon
+        // No rate limiting needed for returning existing coupons
         return {
           issuedCoupon: existing as IssuedCoupon,
           error: null,
@@ -148,6 +137,26 @@ export async function issueCoupon(
       } else {
         // No existing coupon found, proceeding to create new one
       }
+    }
+
+    // Rate limiting: Check BEFORE issuing to prevent spam
+    // This is IP-based and coupon-specific, so users can get different coupons
+    // Only applies to NEW coupon issuances (not returning existing ones)
+    // Note: Counter is incremented AFTER successful generation (see below)
+    const headersList = await headers();
+    const rateLimit = await checkCouponRateLimit(
+      headersList,
+      couponId,
+      RATE_LIMITS.COUPON_ISSUE
+    );
+
+    if (!rateLimit.allowed) {
+      return {
+        issuedCoupon: null,
+        error: `Too many coupon requests for this coupon. Please try again in ${Math.ceil(
+          (rateLimit.resetAt - Date.now()) / 1000
+        )} seconds.`,
+      };
     }
 
     // Generate unique code (retry if unique constraint fails)
@@ -173,8 +182,21 @@ export async function issueCoupon(
         .select()
         .single();
 
-      // If insert succeeded, we're done
+      // If insert succeeded, apply rate limiting AFTER successful coupon generation
+      // This ensures only successful generations count against the rate limit
+      // Failed attempts (e.g., duplicate code generation) don't count
       if (!insertError && issuedCoupon) {
+        // Increment rate limit counter AFTER successful generation
+        // This is coupon-specific, so users can get different coupons
+        await incrementCouponRateLimit(
+          headersList,
+          couponId,
+          RATE_LIMITS.COUPON_ISSUE
+        ).catch((err) => {
+          // Log error but don't fail coupon issuance
+          console.warn("Failed to increment coupon rate limit:", err);
+        });
+
         return {
           issuedCoupon: issuedCoupon as IssuedCoupon,
           error: null,

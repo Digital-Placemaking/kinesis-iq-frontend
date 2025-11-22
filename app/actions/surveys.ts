@@ -10,7 +10,11 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import { RATE_LIMITS } from "@/lib/constants/rate-limits";
-import { checkRateLimit, getClientIdentifier } from "@/lib/utils/rate-limit";
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  markSurveyCompleted,
+} from "@/lib/utils/rate-limit";
 import { trackSurveyCompletion } from "@/lib/analytics/events";
 import type {
   SurveyResponse,
@@ -215,22 +219,9 @@ export async function submitSurveyAnswers(
   submission: SurveySubmission
 ): Promise<SurveySubmissionResponse> {
   try {
-    // Rate limiting: use email if available, otherwise use IP
-    const headersList = await headers();
-    const identifier = getClientIdentifier(submission.email, headersList);
-    const rateLimit = await checkRateLimit(
-      identifier,
-      RATE_LIMITS.SURVEY_SUBMIT
-    );
-
-    if (!rateLimit.allowed) {
-      return {
-        success: false,
-        error: `Too many survey submissions. Please try again in ${Math.ceil(
-          (rateLimit.resetAt - Date.now()) / 1000
-        )} seconds.`,
-      };
-    }
+    // Note: Rate limiting for surveys is now handled at coupon issuance
+    // This prevents spam more effectively (IP-based, coupon-specific)
+    // Survey submission itself is not rate limited to allow legitimate retries
 
     const supabase = await createClient();
 
@@ -336,6 +327,19 @@ export async function submitSurveyAnswers(
       surveyId: submission.survey_id || undefined,
       couponId: submission.coupon_id || undefined,
     });
+
+    // Mark survey as completed in Redis to prevent re-access
+    // This prevents users from going back to the survey after completion
+    if (submission.email) {
+      await markSurveyCompleted(
+        tenantSlug,
+        submission.email,
+        submission.coupon_id || null
+      ).catch((err) => {
+        // Log error but don't fail survey submission
+        console.warn("Failed to mark survey as completed in Redis:", err);
+      });
+    }
 
     return {
       success: true,

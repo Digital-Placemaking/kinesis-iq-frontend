@@ -10,6 +10,7 @@ import {
   verifyEmailOptIn,
   getTenantBySlug,
 } from "@/app/actions";
+import { isSurveyCompleted } from "@/lib/utils/rate-limit";
 import SurveyContainer from "@/app/components/survey/SurveyContainer";
 import DeactivatedMessage from "../../../components/DeactivatedMessage";
 
@@ -89,6 +90,18 @@ export default async function SurveyPage({
   // Show survey questions
   // After survey completion, email will be stored in email_opt_ins
   // (see submitSurveyAnswers function in app/actions/surveys.ts)
+
+  // SECURITY: Check if user has already completed this specific coupon's survey
+  // This prevents users from going back to the survey after completion
+  const surveyCompleted = await isSurveyCompleted(slug, email, couponId);
+  if (surveyCompleted) {
+    // User already completed this survey - redirect to coupon completion
+    redirect(
+      `/${slug}/coupons/${couponId}/completed?email=${encodeURIComponent(
+        email
+      )}`
+    );
+  }
 
   // Fetch survey for this coupon
   const { survey, error } = await getSurveyForCoupon(slug, couponId);
