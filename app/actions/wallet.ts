@@ -41,7 +41,30 @@ export async function generateGoogleWalletPass(
     }
 
     // Format private key (replace escape sequences with actual newlines)
-    const formattedPrivateKey = privateKey.replace(/\\n/g, "\n");
+    // Ensure the key has proper PEM headers if missing
+    let formattedPrivateKey = privateKey.replace(/\\n/g, "\n");
+
+    // If the key doesn't have headers, it might be stored as a single line
+    // Check if it starts with BEGIN - if not, it might need formatting
+    if (!formattedPrivateKey.includes("BEGIN")) {
+      // If it's a base64 string without headers, we need to add them
+      // But first, let's try to detect if it's already formatted
+      formattedPrivateKey = formattedPrivateKey.trim();
+
+      // If still no BEGIN header, the key format might be wrong
+      // Try adding standard PKCS#8 headers (most common for Google service accounts)
+      if (!formattedPrivateKey.startsWith("-----BEGIN")) {
+        // Split into 64-character lines (PEM standard)
+        const keyContent = formattedPrivateKey.replace(/\s/g, "");
+        const keyLines = keyContent.match(/.{1,64}/g) || [];
+        formattedPrivateKey = `-----BEGIN PRIVATE KEY-----\n${keyLines.join(
+          "\n"
+        )}\n-----END PRIVATE KEY-----`;
+      }
+    } else {
+      // Key has headers, just ensure proper formatting
+      formattedPrivateKey = formattedPrivateKey.trim();
+    }
 
     // Resolve tenant and fetch coupon data
     const supabase = await createClient();
@@ -186,7 +209,36 @@ export async function generateGoogleWalletPass(
     };
 
     // Sign JWT for Save-to-Wallet flow
-    const keyObject = crypto.createPrivateKey(formattedPrivateKey);
+    // Validate and create private key object
+    let keyObject;
+    try {
+      keyObject = crypto.createPrivateKey({
+        key: formattedPrivateKey,
+        format: "pem",
+      });
+    } catch (keyError) {
+      // If PEM format fails, try different formats
+      console.error("Failed to create private key with PEM format:", keyError);
+
+      // Try as DER format (base64 decoded)
+      try {
+        const keyBuffer = Buffer.from(
+          formattedPrivateKey.replace(/\s/g, ""),
+          "base64"
+        );
+        keyObject = crypto.createPrivateKey({
+          key: keyBuffer,
+          format: "der",
+          type: "pkcs8",
+        });
+      } catch (derError) {
+        throw new Error(
+          `Invalid private key format. Please ensure your NEXT_GOOGLE_PRIVATE_KEY is a valid PEM or DER formatted key. Original error: ${
+            keyError instanceof Error ? keyError.message : String(keyError)
+          }`
+        );
+      }
+    }
     const token = await new SignJWT({
       iss: serviceAccountEmail,
       aud: "google",

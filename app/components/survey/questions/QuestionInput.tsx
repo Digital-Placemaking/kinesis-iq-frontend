@@ -4,6 +4,8 @@
  * Renders a text input or textarea field for open-text survey questions.
  */
 
+"use client";
+
 interface QuestionInputProps {
   value: string;
   onChange: (value: string) => void;

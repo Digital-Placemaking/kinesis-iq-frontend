@@ -57,13 +57,6 @@ export default function QuestionNPS({ value, onChange }: QuestionNPSProps) {
           </button>
         ))}
       </div>
-      {value !== null && (
-        <div className="flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
-          <span>Not at all likely</span>
-          <span className="font-medium">Selected: {value}</span>
-          <span>Extremely likely</span>
-        </div>
-      )}
     </div>
   );
 }

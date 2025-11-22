@@ -6,12 +6,24 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { X, Eye } from "lucide-react";
 import Modal from "@/app/components/ui/Modal";
 import ActionButton from "@/app/components/ui/ActionButton";
 import Spinner from "@/app/components/ui/Spinner";
 import { createQuestion } from "@/app/actions";
 import type { QuestionType } from "@/lib/types/survey";
+import QuestionNPS from "@/app/components/survey/questions/QuestionNPS";
+import QuestionYesNo from "@/app/components/survey/questions/QuestionYesNo";
+import QuestionInput from "@/app/components/survey/questions/QuestionInput";
+import QuestionRadio from "@/app/components/survey/questions/QuestionRadio";
+import QuestionCheckbox from "@/app/components/survey/questions/QuestionCheckbox";
+import QuestionRating from "@/app/components/survey/questions/QuestionRating";
+import QuestionLikert from "@/app/components/survey/questions/QuestionLikert";
+import QuestionNumeric from "@/app/components/survey/questions/QuestionNumeric";
+import QuestionSlider from "@/app/components/survey/questions/QuestionSlider";
+import QuestionDate from "@/app/components/survey/questions/QuestionDate";
+import QuestionTime from "@/app/components/survey/questions/QuestionTime";
+import Card from "@/app/components/ui/Card";
 
 interface AddQuestionModalProps {
   isOpen: boolean;
@@ -53,6 +65,9 @@ export default function AddQuestionModal({
   const [isActive, setIsActive] = useState(true);
   const [newOption, setNewOption] = useState("");
 
+  // Preview state
+  const [previewValue, setPreviewValue] = useState<any>(null);
+
   // Reset form when modal closes
   const handleClose = () => {
     setQuestionText("");
@@ -61,6 +76,7 @@ export default function AddQuestionModal({
     setIsActive(true);
     setNewOption("");
     setError(null);
+    setPreviewValue(null);
     onClose();
   };
 
@@ -89,6 +105,164 @@ export default function AddQuestionModal({
     const updated = [...options];
     updated[index] = value;
     setOptions(updated);
+  };
+
+  // Render preview based on question type
+  const renderPreview = () => {
+    if (!questionText.trim()) {
+      return (
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">
+          Enter question text to see preview
+        </p>
+      );
+    }
+
+    switch (questionType) {
+      case "nps":
+        return (
+          <QuestionNPS
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+          />
+        );
+      case "yes_no":
+        return (
+          <QuestionYesNo
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+          />
+        );
+      case "open_text":
+        return (
+          <QuestionInput
+            value={previewValue || ""}
+            onChange={(val) => setPreviewValue(val)}
+            placeholder="Your answer..."
+            multiline
+          />
+        );
+      case "single_choice":
+        return (
+          <QuestionRadio
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+            options={options.length > 0 ? options : ["Option 1", "Option 2"]}
+          />
+        );
+      case "multiple_choice":
+        return (
+          <QuestionCheckbox
+            value={previewValue || []}
+            onChange={(val) => setPreviewValue(val)}
+            options={options.length > 0 ? options : ["Option 1", "Option 2"]}
+          />
+        );
+      case "rating_5":
+        return (
+          <QuestionRating
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+            min={1}
+            max={5}
+          />
+        );
+      case "likert_5":
+        return (
+          <QuestionLikert
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+            scale={5}
+          />
+        );
+      case "likert_7":
+        return (
+          <QuestionLikert
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+            scale={7}
+          />
+        );
+      case "numeric":
+        return (
+          <QuestionNumeric
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+            placeholder="Enter a number"
+          />
+        );
+      case "slider":
+        return (
+          <QuestionSlider
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+            min={0}
+            max={100}
+            step={1}
+          />
+        );
+      case "date":
+        return (
+          <QuestionDate
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+          />
+        );
+      case "time":
+        return (
+          <QuestionTime
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+          />
+        );
+      case "sentiment":
+        return (
+          <QuestionRadio
+            value={previewValue}
+            onChange={(val) => setPreviewValue(val)}
+            options={
+              options.length > 0
+                ? options
+                : [
+                    "Very Negative",
+                    "Negative",
+                    "Neutral",
+                    "Positive",
+                    "Very Positive",
+                  ]
+            }
+          />
+        );
+      case "ranked_choice":
+        return (
+          <div className="space-y-2">
+            {options.length > 0 ? (
+              options.map((opt, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                  <span className="text-sm font-medium text-zinc-500">
+                    {idx + 1}
+                  </span>
+                  <span className="text-sm text-black dark:text-zinc-50">
+                    {opt}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                Add options to see preview
+              </p>
+            )}
+          </div>
+        );
+      default:
+        return (
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">
+            Preview not available for this question type
+          </p>
+        );
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -166,6 +340,8 @@ export default function AddQuestionModal({
               if (!requiresOptions(e.target.value as QuestionType)) {
                 setOptions([]);
               }
+              // Reset preview value when type changes
+              setPreviewValue(null);
             }}
             className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-black focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50"
             required
@@ -245,6 +421,22 @@ export default function AddQuestionModal({
           >
             Active (show in surveys)
           </label>
+        </div>
+
+        {/* Preview Section */}
+        <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+          <div className="mb-3 flex items-center gap-2">
+            <Eye className="h-4 w-4 text-zinc-500" />
+            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              Preview
+            </h3>
+          </div>
+          <Card className="p-4" variant="elevated">
+            <p className="mb-4 text-sm font-medium text-black dark:text-zinc-50">
+              {questionText || "Your question will appear here"}
+            </p>
+            <div className="min-h-[60px]">{renderPreview()}</div>
+          </Card>
         </div>
 
         {/* Error Message */}
