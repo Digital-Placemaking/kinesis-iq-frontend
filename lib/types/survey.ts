@@ -2,6 +2,7 @@
  * lib/types/survey.ts
  * Survey type definitions.
  * Defines TypeScript types for surveys, survey questions, and survey submissions.
+ */
 export type QuestionType =
   | "ranked_choice"
   | "sentiment"

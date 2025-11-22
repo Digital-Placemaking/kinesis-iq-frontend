@@ -72,7 +72,7 @@ export default function TenantSelection({
                     tenant={{
                       id: tenant.id,
                       slug: tenant.slug,
-                      name: tenant.name,
+                      name: tenant.name || tenant.slug.toUpperCase(),
                       logo_url: tenant.logo_url,
                     }}
                     size="sm"
