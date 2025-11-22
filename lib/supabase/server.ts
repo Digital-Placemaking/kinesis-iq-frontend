@@ -1,3 +1,9 @@
+/**
+ * lib/supabase/server.ts
+ * Server-side Supabase client creation utilities.
+ * Provides authenticated client and admin client for server-side operations.
+ */
+
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";

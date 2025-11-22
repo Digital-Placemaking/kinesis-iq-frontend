@@ -1,6 +1,7 @@
 /**
- * Admin settings page
- * Allows owner/admin to manage tenant settings
+ * app/admin/settings/page.tsx
+ * Admin settings page.
+ * Allows owner/admin users to manage tenant settings including name, logo, subdomain, and website URL.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

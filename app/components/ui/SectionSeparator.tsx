@@ -1,7 +1,7 @@
 /**
- * SectionSeparator Component
- * Modern separator using shadcn Separator component
- * Displays a horizontal separator line with centered text label
+ * app/components/ui/SectionSeparator.tsx
+ * Section separator component.
+ * Displays a horizontal separator line with centered text label using shadcn Separator.
  */
 
 import { Separator } from "@/components/ui/separator";

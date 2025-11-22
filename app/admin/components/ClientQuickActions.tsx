@@ -1,8 +1,7 @@
 /**
- * ClientQuickActions Component
- *
- * Client-side wrapper for quick action buttons with modal management.
- * Handles opening/closing modals for creating coupons and survey questions.
+ * app/admin/components/ClientQuickActions.tsx
+ * Client-side quick actions component.
+ * Client-side wrapper for quick action buttons with modal management for creating coupons and questions.
  *
  * @component
  */

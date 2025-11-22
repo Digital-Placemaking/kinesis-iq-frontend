@@ -1,6 +1,8 @@
-// QuestionCheckbox
-// Renders checkboxes for multiple-choice survey questions allowing users to select multiple options.
-// Used in: app/components/survey/QuestionCard.tsx
+/**
+ * app/components/survey/questions/QuestionCheckbox.tsx
+ * Checkbox question component.
+ * Renders checkboxes for multiple-choice questions allowing multiple selections.
+ */
 
 "use client";
 

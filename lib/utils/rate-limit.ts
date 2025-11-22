@@ -1,6 +1,7 @@
 /**
- * Rate limiting utility
- * Uses Upstash Redis for distributed rate limiting across all server instances
+ * lib/utils/rate-limit.ts
+ * Rate limiting utility using Upstash Redis.
+ * Provides distributed rate limiting across all server instances.
  *
  * Benefits over database solutions:
  * - Much faster lookups (in-memory Redis vs database queries)

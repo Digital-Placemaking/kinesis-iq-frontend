@@ -1,3 +1,9 @@
+/**
+ * app/actions/analytics.ts
+ * Server actions for analytics operations.
+ * Handles fetching analytics summaries and time series data for dashboards.
+ */
+
 "use server";
 
 import { createClient } from "@/lib/supabase/server";

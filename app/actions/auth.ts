@@ -1,3 +1,9 @@
+/**
+ * app/actions/auth.ts
+ * Server actions for authentication-related operations.
+ * Handles password updates and user authentication.
+ */
+
 "use server";
 
 import { createClient } from "@/lib/supabase/server";

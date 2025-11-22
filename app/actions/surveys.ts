@@ -1,3 +1,9 @@
+/**
+ * app/actions/surveys.ts
+ * Server actions for survey operations.
+ * Handles survey fetching, submission, and answer processing.
+ */
+
 "use server";
 
 import { headers } from "next/headers";

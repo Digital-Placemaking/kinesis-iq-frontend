@@ -1,6 +1,8 @@
-// SurveyContainer
-// Main container component for survey forms that manages question state, navigation, and submission.
-// Used in: app/[slug]/survey/page.tsx, app/[slug]/coupons/[couponId]/survey/page.tsx
+/**
+ * app/components/survey/SurveyContainer.tsx
+ * Survey container component.
+ * Main container for survey forms that manages question state, navigation, and submission.
+ */
 
 "use client";
 

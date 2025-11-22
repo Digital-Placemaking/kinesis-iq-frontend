@@ -1,7 +1,7 @@
 /**
- * Question Type Definitions
- *
- * Defines all types related to survey questions and question results.
+ * lib/types/question.ts
+ * Question type definitions.
+ * Defines all TypeScript interfaces and types related to survey questions and question results.
  * Questions are part of surveys that visitors complete to provide feedback.
  */
 

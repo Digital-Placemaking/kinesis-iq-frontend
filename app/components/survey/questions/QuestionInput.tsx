@@ -1,6 +1,8 @@
-// QuestionInput
-// Renders a text input or textarea field for open-text survey questions.
-// Used in: app/components/survey/QuestionCard.tsx
+/**
+ * app/components/survey/questions/QuestionInput.tsx
+ * Text input question component.
+ * Renders a text input or textarea field for open-text survey questions.
+ */
 
 interface QuestionInputProps {
   value: string;

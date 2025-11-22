@@ -1,7 +1,7 @@
 /**
- * Google OAuth Utilities
- *
- * Helper functions for Google OAuth authentication flow.
+ * lib/google/oauth.ts
+ * Google OAuth utility functions.
+ * Handles tenant context preservation and redirect URL construction for OAuth flows.
  * Handles tenant context preservation and redirect URL construction.
  *
  * @module lib/google/oauth

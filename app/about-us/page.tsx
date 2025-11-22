@@ -1,3 +1,9 @@
+/**
+ * app/about-us/page.tsx
+ * About Us page component.
+ * Displays information about the KinesisIQ platform and company.
+ */
+
 import Footer from "../components/Footer";
 import { Mail } from "lucide-react";
 import Link from "next/link";

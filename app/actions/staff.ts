@@ -1,3 +1,9 @@
+/**
+ * app/actions/staff.ts
+ * Server actions for staff management operations.
+ * Handles fetching staff members for tenant administration.
+ */
+
 "use server";
 
 import { createClient } from "@/lib/supabase/server";

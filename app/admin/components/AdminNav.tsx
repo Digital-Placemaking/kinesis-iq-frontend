@@ -1,6 +1,8 @@
-// AdminNav
-// Navigation tabs component for admin dashboard with role-based access control and active route highlighting.
-// Used in: app/admin/components/AdminLayout.tsx
+/**
+ * app/admin/components/AdminNav.tsx
+ * Admin navigation component.
+ * Navigation tabs for admin dashboard with role-based access control and active route highlighting.
+ */
 
 "use client";
 

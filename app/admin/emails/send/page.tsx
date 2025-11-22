@@ -1,6 +1,7 @@
 /**
- * Send mass email page
- * Compose subject/body and send to all opt-in emails of the tenant
+ * app/admin/emails/send/page.tsx
+ * Send mass email page.
+ * Allows administrators to compose and send mass emails to all opt-in subscribers.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

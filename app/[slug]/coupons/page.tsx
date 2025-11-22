@@ -1,3 +1,9 @@
+/**
+ * app/[slug]/coupons/page.tsx
+ * Coupons list page for a tenant.
+ * Displays all available coupons for a tenant, requires email parameter.
+ */
+
 import { redirect, notFound } from "next/navigation";
 import {
   getCouponsForTenant,

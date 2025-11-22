@@ -1,6 +1,7 @@
 /**
- * Emails admin page
- * Manage email collection and mass email campaigns
+ * app/admin/emails/page.tsx
+ * Emails admin page.
+ * Allows administrators to view email opt-ins and manage mass email campaigns.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

@@ -1,7 +1,7 @@
 /**
- * Survey Response Type Definitions
- *
- * Defines all types related to survey responses submitted by visitors.
+ * lib/types/survey-response.ts
+ * Survey response type definitions.
+ * Defines all TypeScript interfaces and types related to survey responses submitted by visitors.
  * Survey responses are stored in the survey_responses table.
  */
 

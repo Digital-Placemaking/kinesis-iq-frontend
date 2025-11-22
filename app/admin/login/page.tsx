@@ -1,7 +1,7 @@
 /**
- * Admin login page
- * Handles authentication flow for tenant administrators
- * Redirects authenticated users to dashboard if no errors present
+ * app/admin/login/page.tsx
+ * Admin login page.
+ * Handles authentication flow for tenant administrators with email/password login.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

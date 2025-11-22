@@ -1,6 +1,8 @@
-// DeactivatedMessage
-// Displays a message when a tenant pilot is deactivated, informing users they must contact the business owner.
-// Used in: app/[slug]/page.tsx, app/[slug]/coupons/[couponId]/survey/page.tsx
+/**
+ * app/[slug]/components/DeactivatedMessage.tsx
+ * Deactivated tenant message component.
+ * Displays a message when a tenant is deactivated, informing users they must contact the business owner.
+ */
 
 import Card from "@/app/components/ui/Card";
 import Footer from "@/app/components/Footer";

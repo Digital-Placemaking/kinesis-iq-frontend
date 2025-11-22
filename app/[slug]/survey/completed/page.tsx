@@ -1,3 +1,9 @@
+/**
+ * app/[slug]/survey/completed/page.tsx
+ * Survey completion page.
+ * Displays thank you message and email opt-in form after completing a survey.
+ */
+
 import { redirect } from "next/navigation";
 import { getTenantBySlug } from "@/app/actions";
 import { toTenantDisplay } from "@/lib/utils/tenant";

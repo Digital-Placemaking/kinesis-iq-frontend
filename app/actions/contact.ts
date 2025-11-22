@@ -1,3 +1,9 @@
+/**
+ * app/actions/contact.ts
+ * Server actions for contact form submissions.
+ * Handles sending contact form emails via Resend.
+ */
+
 "use server";
 
 import { Resend } from "resend";

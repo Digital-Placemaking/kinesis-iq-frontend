@@ -1,6 +1,8 @@
-// QuestionCard
-// Renders a single survey question with the appropriate input component based on question type.
-// Used in: app/components/survey/SurveyContainer.tsx
+/**
+ * app/components/survey/QuestionCard.tsx
+ * Question card component.
+ * Renders a single survey question with the appropriate input component based on question type.
+ */
 
 "use client";
 

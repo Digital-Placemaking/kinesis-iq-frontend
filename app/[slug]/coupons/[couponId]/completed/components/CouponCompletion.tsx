@@ -1,6 +1,8 @@
-// CouponCompletion
-// Completion page component displayed after completing a coupon survey, showing coupon code and redemption options.
-// Used in: app/[slug]/coupons/[couponId]/completed/page.tsx
+/**
+ * app/[slug]/coupons/[couponId]/completed/components/CouponCompletion.tsx
+ * Coupon completion component.
+ * Displays coupon code and redemption options after completing a coupon survey.
+ */
 
 "use client";
 

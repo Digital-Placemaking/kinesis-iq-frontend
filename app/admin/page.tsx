@@ -1,7 +1,7 @@
 /**
- * Admin dashboard page
- * Main entry point for tenant administrators
- * Fetches tenant context and displays statistics and quick actions
+ * app/admin/page.tsx
+ * Admin dashboard page.
+ * Main entry point for tenant administrators, displays statistics and quick actions.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

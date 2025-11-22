@@ -1,7 +1,7 @@
 /**
- * DeleteConfirmationModal Component
- * Modern confirmation modal using shadcn Dialog and Button components
- * Used for confirming destructive actions like deletions
+ * app/components/ui/DeleteConfirmationModal.tsx
+ * Delete confirmation modal component.
+ * Confirmation modal for destructive actions like deletions using shadcn Dialog.
  */
 
 "use client";

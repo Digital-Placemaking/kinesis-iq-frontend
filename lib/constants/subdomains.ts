@@ -1,7 +1,7 @@
 /**
- * Reserved Subdomains
- * List of subdomains that cannot be used for tenant routing
- * These are reserved for system use (admin, API, etc.)
+ * lib/constants/subdomains.ts
+ * Reserved subdomains configuration.
+ * Defines subdomains that cannot be used for tenant routing (reserved for system use).
  */
 
 export const RESERVED_SUBDOMAINS: readonly string[] = [

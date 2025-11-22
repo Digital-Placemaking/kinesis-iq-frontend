@@ -1,6 +1,7 @@
 /**
- * Quick action card component for admin dashboard
- * Displays a clickable action link with consistent styling
+ * app/admin/components/QuickActionCard.tsx
+ * Quick action card component.
+ * Displays a clickable action link with consistent styling for admin dashboard.
  */
 import Card from "@/app/components/ui/Card";
 

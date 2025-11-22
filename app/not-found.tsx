@@ -1,3 +1,9 @@
+/**
+ * app/not-found.tsx
+ * 404 Not Found page component.
+ * Displays when a user navigates to a non-existent route.
+ */
+
 import Link from "next/link";
 import { Home } from "lucide-react";
 import Footer from "./components/Footer";

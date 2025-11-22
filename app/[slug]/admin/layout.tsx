@@ -1,3 +1,9 @@
+/**
+ * app/[slug]/admin/layout.tsx
+ * Layout component for tenant-specific admin routes.
+ * Provides authentication and navigation for tenant admin pages.
+ */
+
 import { redirect } from "next/navigation";
 import { requireBusinessOwnerAccess } from "@/lib/auth/server";
 import AdminNav from "./components/AdminNav";

@@ -1,5 +1,7 @@
 /**
- * Client-side authentication utilities
+ * lib/auth/client.ts
+ * Client-side authentication utilities.
+ * Provides client-side auth helpers and user session management.
  */
 
 "use client";

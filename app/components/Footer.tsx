@@ -1,7 +1,7 @@
 /**
- * Footer Component
- *
- * Site-wide footer component with:
+ * app/components/Footer.tsx
+ * Site-wide footer component.
+ * Provides navigation links, theme toggle, and branding for all pages.
  * - Logo linking to homepage
  * - Centered navigation links (About Us, Contact, Privacy Policy, Terms of Service)
  * - Admin access button

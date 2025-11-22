@@ -1,6 +1,8 @@
-// ThemeToggle
-// Toggle button component for switching between light and dark themes with localStorage persistence.
-// Used in: app/components/Footer.tsx
+/**
+ * app/components/ThemeToggle.tsx
+ * Theme toggle component.
+ * Toggle button for switching between light and dark themes with localStorage persistence.
+ */
 
 "use client";
 

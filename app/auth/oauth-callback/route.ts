@@ -1,6 +1,6 @@
 /**
- * OAuth Callback Route for Tenant Email Collection
- *
+ * app/auth/oauth-callback/route.ts
+ * OAuth callback route handler for tenant email collection.
  * Handles OAuth callbacks from Google and Apple for tenant email collection.
  * This route is separate from admin authentication flows.
  *

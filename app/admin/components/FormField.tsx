@@ -1,6 +1,7 @@
 /**
- * Form field component with icon
- * Reusable input field with label and icon support
+ * app/admin/components/FormField.tsx
+ * Form field component.
+ * Reusable input field with label and icon support for admin forms.
  */
 import React from "react";
 import { LucideIcon } from "lucide-react";

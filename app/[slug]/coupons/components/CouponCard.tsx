@@ -1,6 +1,8 @@
-// CouponCard
-// Displays a single coupon card with title, description, expiration, and claim button/status badge.
-// Used in: app/[slug]/coupons/components/CouponsList.tsx
+/**
+ * app/[slug]/coupons/components/CouponCard.tsx
+ * Coupon card component for displaying individual coupons.
+ * Shows coupon details, image, expiration, and claim button with status badges.
+ */
 
 "use client";
 

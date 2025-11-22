@@ -1,3 +1,9 @@
+/**
+ * app/actions/emails.ts
+ * Server actions for email operations.
+ * Handles email opt-ins, verification, and mass email sending.
+ */
+
 "use server";
 
 import { headers } from "next/headers";

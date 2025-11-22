@@ -1,6 +1,7 @@
 /**
- * Coupons admin page
- * Manage promotional coupons for the tenant
+ * app/admin/coupons/page.tsx
+ * Coupons admin page.
+ * Allows administrators to manage promotional coupons for their tenant.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

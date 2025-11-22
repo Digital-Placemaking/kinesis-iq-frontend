@@ -1,7 +1,7 @@
 /**
- * Direct Google OAuth Utilities
- *
- * Implements Google OAuth flow directly without Supabase Auth.
+ * lib/google/oauth-direct.ts
+ * Direct Google OAuth implementation utilities.
+ * Implements Google OAuth flow directly without Supabase Auth for email collection.
  * Only collects email addresses for email_opt_ins table.
  * No Supabase Auth users are created.
  *

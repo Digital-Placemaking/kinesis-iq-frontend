@@ -1,3 +1,9 @@
+/**
+ * app/actions/issued-coupons.ts
+ * Server actions for issued coupon operations.
+ * Handles coupon issuance, validation, redemption, and status management.
+ */
+
 "use server";
 
 import { headers } from "next/headers";

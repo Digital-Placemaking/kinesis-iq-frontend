@@ -1,6 +1,7 @@
 /**
- * Server-side authentication utilities
- * For checking business owner status and tenant access
+ * lib/auth/server.ts
+ * Server-side authentication utilities.
+ * Provides functions for checking business owner status, tenant access, and role-based authorization.
  */
 
 import { createClient } from "@/lib/supabase/server";

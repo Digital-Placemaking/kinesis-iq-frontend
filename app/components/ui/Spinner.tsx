@@ -1,7 +1,7 @@
 /**
- * Spinner Component
- * Modern loading spinner using Lucide Loader2 icon
- * Maintains backward compatibility with size prop
+ * app/components/ui/Spinner.tsx
+ * Loading spinner component.
+ * Modern loading spinner using Lucide Loader2 icon with size customization.
  */
 
 import { Loader2 } from "lucide-react";

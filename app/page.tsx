@@ -1,7 +1,7 @@
 /**
- * Homepage Component
- *
- * Main landing page for KinesisIQ platform showcasing:
+ * app/page.tsx
+ * Homepage component for the KinesisIQ platform.
+ * Main landing page showcasing platform features and value proposition.
  * - Hero section with animated text and preview image
  * - Platform description and value proposition
  * - Customer testimonials

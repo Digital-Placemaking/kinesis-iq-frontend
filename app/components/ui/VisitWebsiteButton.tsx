@@ -1,7 +1,7 @@
 /**
- * VisitWebsiteButton Component
- * Modern button using shadcn Button component
- * Links to tenant's website URL or falls back to tenant landing page
+ * app/components/ui/VisitWebsiteButton.tsx
+ * Visit website button component.
+ * Links to tenant's website URL or falls back to tenant landing page.
  */
 
 "use client";

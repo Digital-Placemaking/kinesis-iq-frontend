@@ -1,3 +1,9 @@
+/**
+ * app/actions/questions.ts
+ * Server actions for survey question management.
+ * Handles question CRUD operations, reordering, and result fetching.
+ */
+
 "use server";
 
 import { createClient } from "@/lib/supabase/server";

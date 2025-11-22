@@ -1,3 +1,9 @@
+/**
+ * app/[slug]/coupons/[couponId]/survey/page.tsx
+ * Survey page for a specific coupon.
+ * Displays survey questions that must be completed before accessing the coupon.
+ */
+
 import { redirect, notFound } from "next/navigation";
 import {
   getSurveyForCoupon,

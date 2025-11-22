@@ -1,3 +1,9 @@
+/**
+ * lib/analytics/events.ts
+ * Analytics event helper functions.
+ * Provides convenience functions for tracking specific analytics events.
+ */
+
 "use server";
 
 import { trackEvent } from "./track";

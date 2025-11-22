@@ -1,3 +1,9 @@
+/**
+ * app/admin/components/WebsiteUrlSettings.tsx
+ * Website URL settings component.
+ * Allows administrators to update the tenant's website URL setting.
+ */
+
 "use client";
 
 import { useState } from "react";

@@ -1,6 +1,5 @@
 /**
- * Google OAuth Server Actions
- *
+ * app/actions/google/oauth.ts
  * Server-side actions for handling direct Google OAuth email collection.
  * These actions handle storing emails in email_opt_ins without creating
  * Supabase Auth users.

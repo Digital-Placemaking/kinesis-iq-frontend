@@ -1,6 +1,7 @@
 /**
- * Rate limiting configuration
- * Controls request frequency per IP address or identifier
+ * lib/constants/rate-limits.ts
+ * Rate limiting configuration constants.
+ * Defines rate limit thresholds for various API endpoints and operations.
  */
 
 export const RATE_LIMITS = {

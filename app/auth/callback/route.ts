@@ -1,3 +1,9 @@
+/**
+ * app/auth/callback/route.ts
+ * Auth callback route handler for Supabase Auth callbacks (admin authentication flows).
+ * Handles password reset, email confirmation, and other admin auth flows.
+ */
+
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 

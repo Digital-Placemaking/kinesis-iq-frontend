@@ -1,6 +1,7 @@
 /**
- * Questions admin page
- * Manage survey questions for the tenant
+ * app/admin/questions/page.tsx
+ * Questions admin page.
+ * Allows administrators to manage survey questions for their tenant.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

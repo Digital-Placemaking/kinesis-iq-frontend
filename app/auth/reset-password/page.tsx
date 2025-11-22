@@ -1,3 +1,9 @@
+/**
+ * app/auth/reset-password/page.tsx
+ * Password reset page.
+ * Allows users to reset their password after clicking a password reset link.
+ */
+
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ResetPasswordForm from "./components/ResetPasswordForm";

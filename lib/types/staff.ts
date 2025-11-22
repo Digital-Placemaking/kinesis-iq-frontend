@@ -1,7 +1,7 @@
 /**
- * Staff Type Definitions
- *
- * Defines all types related to staff members and user roles in the system.
+ * lib/types/staff.ts
+ * Staff type definitions.
+ * Defines all TypeScript interfaces and types related to staff members and user roles.
  * Staff members are users who have access to a tenant's admin dashboard.
  */
 

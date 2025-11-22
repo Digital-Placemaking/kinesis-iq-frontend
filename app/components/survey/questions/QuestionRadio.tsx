@@ -1,6 +1,8 @@
-// QuestionRadio
-// Renders radio buttons for single-choice survey questions.
-// Used in: app/components/survey/QuestionCard.tsx
+/**
+ * app/components/survey/questions/QuestionRadio.tsx
+ * Radio button question component.
+ * Renders radio buttons for single-choice survey questions.
+ */
 
 interface QuestionRadioProps {
   value: string | null;

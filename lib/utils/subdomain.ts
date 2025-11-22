@@ -1,6 +1,7 @@
 /**
- * Subdomain utility functions
- * Helpers for detecting subdomain context and generating correct paths
+ * lib/utils/subdomain.ts
+ * Subdomain utility functions.
+ * Helpers for detecting subdomain context and generating correct tenant paths.
  */
 
 /**

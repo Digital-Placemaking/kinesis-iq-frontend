@@ -1,7 +1,7 @@
 /**
- * Modal Component
- * Wrapper around shadcn Dialog for backward compatibility
- * Maintains the same API as the old Modal component
+ * app/components/ui/Modal.tsx
+ * Modal component wrapper.
+ * Wrapper around shadcn Dialog for backward compatibility with consistent API.
  */
 
 "use client";

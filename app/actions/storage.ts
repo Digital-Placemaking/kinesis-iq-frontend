@@ -1,3 +1,9 @@
+/**
+ * app/actions/storage.ts
+ * Server actions for file uploads to Supabase Storage.
+ * Handles logo and coupon image uploads with validation and tenant isolation.
+ */
+
 "use server";
 
 import { createClient } from "@/lib/supabase/server";

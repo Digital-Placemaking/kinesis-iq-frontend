@@ -1,3 +1,9 @@
+/**
+ * app/actions/coupons.ts
+ * Server actions for coupon CRUD operations (create, read, update, delete).
+ * Handles coupon management with tenant isolation and authentication checks.
+ */
+
 "use server";
 
 import { createClient } from "@/lib/supabase/server";

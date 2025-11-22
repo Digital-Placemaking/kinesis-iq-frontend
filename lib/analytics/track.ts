@@ -1,3 +1,9 @@
+/**
+ * lib/analytics/track.ts
+ * Analytics event tracking utilities.
+ * Provides server-side functions for tracking user events and analytics data.
+ */
+
 "use server";
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";

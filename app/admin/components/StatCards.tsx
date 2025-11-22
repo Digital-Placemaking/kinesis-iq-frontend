@@ -1,6 +1,7 @@
 /**
- * Statistics cards grid component
- * Displays all dashboard metrics in a responsive grid
+ * app/admin/components/StatCards.tsx
+ * Statistics cards grid component.
+ * Displays all dashboard metrics in a responsive grid layout.
  */
 import StatCard from "./StatCard";
 import { Gift, FileText, CheckCircle2 } from "lucide-react";

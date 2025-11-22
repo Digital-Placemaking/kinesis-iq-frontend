@@ -1,6 +1,8 @@
-// CouponCodeDisplay
-// Displays coupon code with copy-to-clipboard functionality and visual feedback.
-// Used in: app/[slug]/coupons/[couponId]/completed/components/CouponCompletion.tsx
+/**
+ * app/[slug]/coupons/[couponId]/completed/components/CouponCodeDisplay.tsx
+ * Coupon code display component.
+ * Displays coupon code with copy-to-clipboard functionality and visual feedback.
+ */
 
 "use client";
 

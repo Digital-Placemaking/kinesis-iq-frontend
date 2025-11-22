@@ -1,6 +1,7 @@
 /**
- * Dashboard header component
- * Displays welcome message and tenant information with logo
+ * app/admin/components/DashboardHeader.tsx
+ * Dashboard header component.
+ * Displays welcome message and tenant information with logo.
  */
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";

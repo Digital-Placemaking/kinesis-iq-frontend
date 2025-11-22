@@ -1,6 +1,7 @@
 /**
- * Analytics admin page
- * Displays visitor analytics, engagement metrics, and time-series trends
+ * app/admin/analytics/page.tsx
+ * Analytics admin page.
+ * Displays visitor analytics, engagement metrics, and time-series trends for tenant administrators.
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

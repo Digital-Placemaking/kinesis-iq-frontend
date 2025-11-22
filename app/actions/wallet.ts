@@ -1,3 +1,9 @@
+/**
+ * app/actions/wallet.ts
+ * Server actions for Google Wallet integration.
+ * Handles digital coupon pass generation for Google Wallet.
+ */
+
 "use server";
 
 import { SignJWT } from "jose";

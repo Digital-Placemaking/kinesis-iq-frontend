@@ -1,6 +1,6 @@
 /**
- * Survey Answer Type Definitions
- *
+ * lib/types/survey-answer.ts
+ * Survey answer type definitions.
  * Defines the structure of answer data stored in survey_responses.answer (JSONB field).
  * The structure varies based on the question type.
  */

@@ -1,3 +1,9 @@
+/**
+ * proxy.ts
+ * Next.js middleware for handling authentication, tenant resolution, and URL rewriting.
+ * Supports both subdomain-based routing (subdomain.domain.com) and path-based routing (domain.com/{slug}).
+ */
+
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getTenantBySubdomain } from "@/app/actions/tenant";

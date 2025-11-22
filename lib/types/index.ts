@@ -1,7 +1,7 @@
 /**
- * Type Definitions Index
- *
- * Central export point for all type definitions used throughout the application.
+ * lib/types/index.ts
+ * Central type definitions export file.
+ * Re-exports all type definitions for convenient importing throughout the application.
  * This ensures consistent typing across server actions, components, and utilities.
  */
 

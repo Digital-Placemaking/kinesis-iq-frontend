@@ -1,7 +1,7 @@
 /**
- * Card Component
- * Wrapper around shadcn Card for backward compatibility
- * Maintains the variant prop for elevated styling
+ * app/components/ui/Card.tsx
+ * Card component wrapper.
+ * Wrapper around shadcn Card for backward compatibility with variant prop support.
  */
 
 import {

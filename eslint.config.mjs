@@ -1,3 +1,9 @@
+/**
+ * eslint.config.mjs
+ * ESLint configuration file.
+ * Configures linting rules for Next.js, TypeScript, and code quality.
+ */
+
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";

@@ -1,3 +1,9 @@
+/**
+ * app/[slug]/survey/page.tsx
+ * Survey page for a tenant.
+ * Displays survey questions for visitors to complete, or shows "coming soon" message if no questions exist.
+ */
+
 import { redirect } from "next/navigation";
 import { getSurveyForTenant, getTenantBySlug } from "@/app/actions";
 import { toTenantDisplay } from "@/lib/utils/tenant";

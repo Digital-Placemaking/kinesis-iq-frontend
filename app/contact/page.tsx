@@ -1,3 +1,9 @@
+/**
+ * app/contact/page.tsx
+ * Contact page component.
+ * Provides a contact form for users to send messages to the platform.
+ */
+
 "use client";
 
 import { useState } from "react";

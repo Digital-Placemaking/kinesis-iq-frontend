@@ -1,6 +1,7 @@
 /**
- * Analytics Event Types
- * Matches the database enum for analytics_event_type
+ * lib/types/analytics.ts
+ * Analytics type definitions.
+ * Defines TypeScript types and enums for analytics events and tracking data.
  */
 export enum EventType {
   PAGE_VISIT = "page_visit",

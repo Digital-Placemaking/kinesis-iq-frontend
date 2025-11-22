@@ -1,3 +1,9 @@
+/**
+ * app/actions/tenant.ts
+ * Server actions for tenant-related operations.
+ * Handles tenant fetching, settings updates, and subdomain resolution.
+ */
+
 "use server";
 
 import { headers } from "next/headers";

@@ -1,3 +1,9 @@
+/**
+ * app/[slug]/admin/page.tsx
+ * Tenant-specific admin dashboard page.
+ * Displays statistics and quick actions for tenant administrators (redirects to /admin).
+ */
+
 import { redirect } from "next/navigation";
 import { requireBusinessOwnerAccess } from "@/lib/auth/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";

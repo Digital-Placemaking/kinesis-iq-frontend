@@ -1,6 +1,7 @@
 /**
- * Issued coupon status enum
- * Matches PostgreSQL enum: issued_coupon_status
+ * lib/types/issued-coupon.ts
+ * Issued coupon type definitions.
+ * Defines TypeScript types for issued coupons, coupon status, and related operations.
  */
 export type IssuedCouponStatus = "issued" | "redeemed" | "revoked" | "expired";
 

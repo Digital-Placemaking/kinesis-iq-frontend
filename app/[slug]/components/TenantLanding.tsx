@@ -1,6 +1,8 @@
-// TenantLanding
-// Main landing page component for tenant sites that handles email submission and social login.
-// Used in: app/[slug]/page.tsx
+/**
+ * app/[slug]/components/TenantLanding.tsx
+ * Tenant landing page component.
+ * Main landing page for tenant sites that handles email submission and OAuth social login.
+ */
 
 "use client";
 

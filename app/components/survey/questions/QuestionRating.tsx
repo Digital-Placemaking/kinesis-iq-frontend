@@ -1,6 +1,8 @@
-// QuestionRating
-// Renders a rating scale (1-5 by default) for rating-type survey questions.
-// Used in: app/components/survey/QuestionCard.tsx
+/**
+ * app/components/survey/questions/QuestionRating.tsx
+ * Rating question component.
+ * Renders a rating scale (1-5 by default) for rating-type survey questions.
+ */
 
 interface QuestionRatingProps {
   value: number | null;

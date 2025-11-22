@@ -1,6 +1,5 @@
 /**
- * OAuth URL Server Actions
- *
+ * app/actions/google/oauth-url.ts
  * Server actions for generating OAuth authorization URLs.
  * These must be server actions because they use environment variables.
  *

@@ -1,7 +1,7 @@
 /**
- * Pagination Component
- * Modern pagination using shadcn Button components
- * Reusable pagination component with page numbers, navigation buttons, and item count display
+ * app/components/ui/Pagination.tsx
+ * Pagination component.
+ * Reusable pagination component with page numbers, navigation buttons, and item count display.
  */
 
 "use client";

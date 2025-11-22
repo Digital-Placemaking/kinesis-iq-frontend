@@ -1,6 +1,8 @@
-// SurveyCompletion
-// Completion page component displayed after completing an anonymous survey with thank you message and email opt-in.
-// Used in: app/[slug]/survey/completed/page.tsx
+/**
+ * app/[slug]/survey/completed/components/SurveyCompletion.tsx
+ * Survey completion component.
+ * Displays thank you message and email opt-in form after completing an anonymous survey.
+ */
 
 "use client";
 

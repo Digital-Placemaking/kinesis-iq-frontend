@@ -1,7 +1,7 @@
 /**
- * ActionButton Component
- * Wrapper around shadcn Button for backward compatibility
- * Maps old variants to new shadcn button variants
+ * app/components/ui/ActionButton.tsx
+ * Action button component.
+ * Wrapper around shadcn Button for backward compatibility with variant mapping.
  */
 
 import { Button } from "@/components/ui/button";

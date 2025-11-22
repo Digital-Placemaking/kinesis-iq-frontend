@@ -1,5 +1,7 @@
 /**
- * Tenant theme configuration
+ * lib/types/tenant.ts
+ * Tenant type definitions.
+ * Defines TypeScript interfaces for tenant data, theme configuration, and tenant display types.
  */
 export interface TenantTheme {
   primary: string;

@@ -1,6 +1,8 @@
-// CouponsList
-// Displays a list of available coupons for a tenant with header, logo, and coupon cards.
-// Used in: app/[slug]/coupons/page.tsx
+/**
+ * app/[slug]/coupons/components/CouponsList.tsx
+ * Coupons list component for displaying available coupons.
+ * Shows tenant header, logo, and a list of coupon cards with "no coupons" fallback.
+ */
 
 import Link from "next/link";
 import Footer from "@/app/components/Footer";

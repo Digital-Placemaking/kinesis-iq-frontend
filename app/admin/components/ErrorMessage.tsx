@@ -1,6 +1,7 @@
 /**
- * Error message component
- * Displays error messages with consistent styling
+ * app/admin/components/ErrorMessage.tsx
+ * Error message component.
+ * Displays error messages with consistent styling and icon.
  */
 import { AlertCircle } from "lucide-react";
 

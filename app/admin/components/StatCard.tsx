@@ -1,6 +1,7 @@
 /**
- * Statistic card component for admin dashboard
- * Displays a metric with an icon and value
+ * app/admin/components/StatCard.tsx
+ * Statistic card component.
+ * Displays a metric with an icon and value for the admin dashboard.
  */
 import Card from "@/app/components/ui/Card";
 

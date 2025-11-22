@@ -1,6 +1,8 @@
-// QuestionNPS
-// Renders Net Promoter Score (NPS) question with 0-10 scale for survey questions.
-// Used in: app/components/survey/QuestionCard.tsx
+/**
+ * app/components/survey/questions/QuestionNPS.tsx
+ * Net Promoter Score (NPS) question component.
+ * Renders NPS question with 0-10 scale using emoji icons for ratings.
+ */
 
 "use client";
 

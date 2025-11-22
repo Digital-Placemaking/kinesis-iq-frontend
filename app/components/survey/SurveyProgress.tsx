@@ -1,6 +1,8 @@
-// SurveyProgress
-// Displays progress bar and question counter for survey forms.
-// Used in: app/[slug]/survey/page.tsx, app/[slug]/coupons/[couponId]/survey/page.tsx
+/**
+ * app/components/survey/SurveyProgress.tsx
+ * Survey progress component.
+ * Displays progress bar and question counter for survey forms.
+ */
 
 interface SurveyProgressProps {
   current?: number;

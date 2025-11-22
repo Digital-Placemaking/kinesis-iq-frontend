@@ -1,7 +1,7 @@
 /**
- * InfoBox Component
- * Modern information box using shadcn Alert component
- * Displays colored information boxes with optional title and content
+ * app/components/ui/InfoBox.tsx
+ * Information box component.
+ * Displays colored information boxes with optional title and content using shadcn Alert.
  */
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";

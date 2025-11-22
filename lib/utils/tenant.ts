@@ -1,3 +1,9 @@
+/**
+ * lib/utils/tenant.ts
+ * Tenant utility functions.
+ * Provides helpers for converting and transforming tenant data.
+ */
+
 import type { Tenant, TenantDisplay } from "@/lib/types/tenant";
 
 /**

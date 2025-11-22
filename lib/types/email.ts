@@ -1,7 +1,7 @@
 /**
- * Email Type Definitions
- *
- * Defines all types related to email opt-ins and email management.
+ * lib/types/email.ts
+ * Email type definitions.
+ * Defines all TypeScript interfaces and types related to email opt-ins and email management.
  * Email opt-ins are visitor email addresses collected for marketing purposes.
  */
 

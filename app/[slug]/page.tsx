@@ -1,3 +1,9 @@
+/**
+ * app/[slug]/page.tsx
+ * Tenant landing page component.
+ * Displays the main landing page for a specific tenant with email collection and OAuth options.
+ */
+
 import { notFound } from "next/navigation";
 import { getTenantBySlug } from "@/app/actions";
 import TenantLanding from "./components/TenantLanding";

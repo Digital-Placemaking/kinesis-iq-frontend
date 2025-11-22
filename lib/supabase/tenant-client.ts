@@ -1,3 +1,9 @@
+/**
+ * lib/supabase/tenant-client.ts
+ * Tenant-scoped Supabase client creation utility.
+ * Creates a Supabase client with x-tenant-id header for RLS tenant isolation.
+ */
+
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 

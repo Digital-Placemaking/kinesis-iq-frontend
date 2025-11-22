@@ -1,6 +1,8 @@
-// NoSurveyMessage
-// Displays a message when there are no survey questions available, asking users to come back soon.
-// Used in: app/[slug]/survey/page.tsx
+/**
+ * app/[slug]/survey/components/NoSurveyMessage.tsx
+ * No survey message component.
+ * Displays a "coming soon" message when there are no survey questions available.
+ */
 
 import Card from "@/app/components/ui/Card";
 import Footer from "@/app/components/Footer";

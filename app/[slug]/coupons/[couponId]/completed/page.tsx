@@ -1,3 +1,9 @@
+/**
+ * app/[slug]/coupons/[couponId]/completed/page.tsx
+ * Coupon completion page.
+ * Displays the issued coupon code and completion status after survey completion.
+ */
+
 import { redirect, notFound } from "next/navigation";
 import {
   getTenantBySlug,

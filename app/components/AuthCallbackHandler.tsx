@@ -1,7 +1,7 @@
 /**
- * AuthCallbackHandler Component
- *
- * Handles Supabase Auth OAuth callbacks for admin authentication flows only.
+ * app/components/AuthCallbackHandler.tsx
+ * Auth callback handler component.
+ * Handles Supabase Auth OAuth callbacks for admin authentication flows.
  * This includes password reset, email confirmation, and other admin auth flows.
  *
  * Note: Tenant OAuth (for email collection) is handled by /auth/oauth-callback route

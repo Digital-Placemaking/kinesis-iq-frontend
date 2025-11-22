@@ -1,8 +1,7 @@
 /**
- * Main Actions File
- * Re-exports all server actions organized by functionality
- *
- * This file serves as a central export point for all server actions.
+ * app/actions.ts
+ * Central export point for all server actions organized by functionality.
+ * Re-exports actions from individual action files for convenient importing.
  * Actions are organized into separate files by domain:
  * - tenant.ts: Tenant-related operations
  * - coupons.ts: Coupon CRUD operations

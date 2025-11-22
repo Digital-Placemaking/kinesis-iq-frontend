@@ -1,3 +1,9 @@
+/**
+ * app/actions/feedback.ts
+ * Server actions for feedback submission.
+ * Handles storing user feedback with tenant isolation.
+ */
+
 "use server";
 
 import { headers } from "next/headers";

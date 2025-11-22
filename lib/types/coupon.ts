@@ -1,7 +1,7 @@
 /**
- * Coupon Type Definitions
- *
- * Defines all types related to coupons in the system.
+ * lib/types/coupon.ts
+ * Coupon type definitions.
+ * Defines all TypeScript interfaces and types related to coupons in the system.
  * Coupons are tenant-specific promotional offers that can be issued to visitors.
  */
 

@@ -1,6 +1,8 @@
-// TenantLogo
-// Displays tenant logo image or fallback initial letter if no logo is available.
-// Used in: app/[slug]/components/TenantLanding.tsx, various admin components.
+/**
+ * app/components/ui/TenantLogo.tsx
+ * Tenant logo component.
+ * Displays tenant logo image or fallback initial letter if no logo is available.
+ */
 
 import type { TenantDisplay } from "@/lib/types/tenant";
 

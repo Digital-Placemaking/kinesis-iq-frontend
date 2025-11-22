@@ -1,6 +1,7 @@
 /**
- * Quick actions grid component
- * Displays common admin actions in a responsive grid
+ * app/admin/components/QuickActions.tsx
+ * Quick actions grid component.
+ * Displays common admin actions in a responsive grid layout.
  */
 import QuickActionCard from "./QuickActionCard";
 
