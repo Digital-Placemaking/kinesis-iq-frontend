@@ -41,6 +41,40 @@ const PREVIEW_IMAGES = [
 // Image rotation interval in milliseconds (10 seconds)
 const IMAGE_ROTATION_INTERVAL = 10000;
 
+// Quotes array for scrolling testimonials
+const QUOTES = [
+  {
+    text: "Your technology, it looks fantastic.",
+    author: "Sharon Sukhdeo",
+    role: "Program Manager, Ontario Centre of Innovation",
+  },
+  {
+    text: "We had a chance to review Digital Placemaking and we're genuinely impressed by what you're building. The vision of transforming physical spaces into AI smart hubs—making the physical world as measurable and responsive as the digital one—is a sophisticated approach to bridging the gap between our physical and digital environments.",
+    author: "Tessa Clarance",
+    role: "Chief of Staff, GetFresh Ventures",
+  },
+  {
+    text: "Reading the pulse of humanity—turning insight into foresight.",
+    author: "KinesisIQ",
+    role: "Platform Tagline",
+  },
+  {
+    text: "It lets organizations act before change hits, turning real-world behavior into a strategic advantage.",
+    author: "KinesisIQ",
+    role: "Platform Value Proposition",
+  },
+  {
+    text: "KinesisIQ transforms real-world interactions into foresight.",
+    author: "KinesisIQ",
+    role: "Platform Description",
+  },
+  {
+    text: "By capturing and analyzing engagement across a network of businesses, communities, and users, KinesisIQ applies probabilistic modeling to predict how groups of people will think, move, and respond.",
+    author: "KinesisIQ",
+    role: "Platform Capabilities",
+  },
+];
+
 /**
  * ScrollAnimation Component
  *
@@ -378,7 +412,7 @@ export default function HomePage() {
 
           {/* Tagline */}
           <ScrollAnimation>
-            <div className="space-y-4 border-t border-zinc-200 pt-16 dark:border-zinc-800">
+            <div className="space-y-4 pt-16">
               <p className="text-2xl leading-relaxed text-zinc-800 dark:text-zinc-200 sm:text-3xl">
                 Reading the pulse of humanity—turning insight into foresight.
               </p>
@@ -389,55 +423,85 @@ export default function HomePage() {
             </div>
           </ScrollAnimation>
 
-          {/* Testimonials Section */}
-          {/* 
-            Customer testimonials displayed as cards.
-            Note: When adding more testimonials, consider implementing a carousel component.
-          */}
-          <div className="space-y-8 border-t border-zinc-200 pt-16 dark:border-zinc-800">
-            <ScrollAnimation>
-              <div className="group rounded-2xl border border-zinc-200 bg-gradient-to-br from-white to-zinc-50 p-8 shadow-sm transition-shadow hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950">
-                <div className="mb-4 text-2xl text-zinc-400 dark:text-zinc-600">
-                  "
-                </div>
-                <p className="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  ...your technology, it looks fantastic.
-                </p>
-                <div className="mt-6">
-                  <p className="font-semibold text-black dark:text-zinc-50">
-                    Sharon Sukhdeo
-                  </p>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    Program Manager, Ontario Centre of Innovation
-                  </p>
-                </div>
-              </div>
-            </ScrollAnimation>
+          {/* Scrolling Quotes Section */}
+          <ScrollAnimation>
+            <div className="flex justify-center pt-16">
+              <div
+                className="relative overflow-hidden py-6"
+                style={{ width: "90vw", maxWidth: "100%" }}
+              >
+                {/* Gradient overlays for fade effect */}
+                <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-32 bg-gradient-to-r from-white to-transparent dark:from-zinc-950" />
+                <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-32 bg-gradient-to-l from-white to-transparent dark:from-zinc-950" />
 
-            <ScrollAnimation>
-              <div className="group rounded-2xl border border-zinc-200 bg-gradient-to-br from-white to-zinc-50 p-8 shadow-sm transition-shadow hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950">
-                <div className="mb-4 text-2xl text-zinc-400 dark:text-zinc-600">
-                  "
-                </div>
-                <p className="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  We had a chance to review Digital Placemaking and we're
-                  genuinely impressed by what you're building. The vision of
-                  transforming physical spaces into AI smart hubs—making the
-                  physical world as measurable and responsive as the digital
-                  one—is a sophisticated approach to bridging the gap between
-                  our physical and digital environments.
-                </p>
-                <div className="mt-6">
-                  <p className="font-semibold text-black dark:text-zinc-50">
-                    Tessa Clarance
-                  </p>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    Chief of Staff, GetFresh Ventures
-                  </p>
+                {/* Scrolling quotes */}
+                <div className="flex animate-scroll gap-6">
+                  {/* First set of quotes */}
+                  {QUOTES.map((quote, index) => (
+                    <div
+                      key={`quote-1-${index}`}
+                      className="flex shrink-0 flex-row items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+                      style={{ maxWidth: "600px", minWidth: "500px" }}
+                    >
+                      <span className="text-2xl leading-none text-zinc-300 dark:text-zinc-700 shrink-0">
+                        "
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm leading-snug text-zinc-700 dark:text-zinc-300 sm:text-base">
+                          {quote.text}
+                        </p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <p className="text-xs font-semibold text-black dark:text-zinc-50">
+                            {quote.author}
+                          </p>
+                          <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                            •
+                          </span>
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                            {quote.role}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-2xl leading-none text-zinc-300 dark:text-zinc-700 shrink-0">
+                        "
+                      </span>
+                    </div>
+                  ))}
+                  {/* Duplicate set for seamless loop */}
+                  {QUOTES.map((quote, index) => (
+                    <div
+                      key={`quote-2-${index}`}
+                      className="flex shrink-0 flex-row items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+                      style={{ maxWidth: "600px", minWidth: "500px" }}
+                    >
+                      <span className="text-2xl leading-none text-zinc-300 dark:text-zinc-700 shrink-0">
+                        "
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm leading-snug text-zinc-700 dark:text-zinc-300 sm:text-base">
+                          {quote.text}
+                        </p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <p className="text-xs font-semibold text-black dark:text-zinc-50">
+                            {quote.author}
+                          </p>
+                          <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                            •
+                          </span>
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                            {quote.role}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-2xl leading-none text-zinc-300 dark:text-zinc-700 shrink-0">
+                        "
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </ScrollAnimation>
-          </div>
+            </div>
+          </ScrollAnimation>
         </div>
       </section>
 
