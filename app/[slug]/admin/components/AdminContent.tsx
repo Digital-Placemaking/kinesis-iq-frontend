@@ -8,6 +8,7 @@
 import DashboardKPICards from "./DashboardKPICards";
 import SentimentDistribution from "./SentimentDistribution";
 import EngagementFunnel from "./EngagementFunnel";
+import PilotAccessPanel from "./PilotAccessPanel";
 import Card from "@/app/components/ui/Card";
 import QuestionsClient from "../questions/components/QuestionsClient";
 import CouponTabs from "../coupons/components/CouponTabs";
@@ -80,15 +81,24 @@ export default function AdminContent({
       case "overview":
         return (
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            {/* Header */}
-            <div className="mb-6 sm:mb-8">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
-                Community Pulse Dashboard
-              </h1>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                Real-time control center for community sentiment and WiFi
-                hotspots
-              </p>
+            {/* Header with Pilot Access */}
+            <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
+                  Community Pulse Dashboard
+                </h1>
+                <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                  Real-time control center for community sentiment and WiFi
+                  hotspots
+                </p>
+              </div>
+              <div className="flex justify-end sm:justify-end">
+                <PilotAccessPanel
+                  tenantSlug={tenantSlug}
+                  tenantSubdomain={tenant?.subdomain || null}
+                  tenantWebsiteUrl={tenant?.website_url || null}
+                />
+              </div>
             </div>
 
             {/* KPI Cards */}
@@ -106,7 +116,7 @@ export default function AdminContent({
             </div>
 
             {/* Charts Grid */}
-            <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
+            <div className="mb-6 sm:mb-8 grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
               {/* Sentiment Distribution */}
               <Card className="p-6" variant="elevated">
                 <div className="mb-4">
