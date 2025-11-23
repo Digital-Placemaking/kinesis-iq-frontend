@@ -1,23 +1,21 @@
 /**
  * app/[slug]/admin/page.tsx
- * Tenant-specific admin dashboard page.
- * Shows login form if not authenticated, otherwise shows dashboard.
+ * Unified tenant-specific admin page.
+ * Loads all admin section data and renders client-side tab switching.
  */
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/server";
 import { getBusinessOwnerForTenantSlug } from "@/lib/auth/server";
-import { createTenantClient } from "@/lib/supabase/tenant-client";
-import { createClient } from "@/lib/supabase/server";
-import { getTenantBySlug } from "@/app/actions/tenant";
-import DashboardHeader from "@/app/[slug]/admin/components/DashboardHeader";
-import StatCards from "@/app/[slug]/admin/components/StatCards";
-import ClientQuickActions from "@/app/[slug]/admin/components/ClientQuickActions";
+import { getTenantBySlug } from "@/app/actions";
 import TenantAdminLoginForm from "./login/components/TenantAdminLoginForm";
 import Footer from "@/app/components/Footer";
+import { Suspense } from "react";
+import AdminLoading from "./components/AdminLoading";
+import AdminPageContent from "./components/AdminPageContent";
 
 interface AdminDashboardProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; tab?: string }>;
 }
 
 export default async function AdminDashboard({
@@ -76,84 +74,10 @@ export default async function AdminDashboard({
     );
   }
 
-  const supabase = await createClient();
-
-  // Resolve tenant slug to UUID
-  const { data: tenantId } = await supabase.rpc("resolve_tenant", {
-    slug_input: slug,
-  });
-
-  if (!tenantId) {
-    redirect(`/${slug}/admin/login?error=tenant_not_found`);
-  }
-
-  // Create tenant-scoped client
-  const tenantSupabase = await createTenantClient(tenantId);
-
-  // Get tenant info for display
-  const { data: tenant, error: tenantError } = await tenantSupabase
-    .from("tenants")
-    .select("id, slug, name, logo_url, website_url")
-    .eq("id", tenantId)
-    .maybeSingle();
-
-  if (tenantError || !tenant) {
-    redirect(`/${slug}/admin/login?error=tenant_not_found`);
-  }
-
-  // Fetch statistics for dashboard
-  const [couponsResult, surveysResult, issuedCouponsResult] = await Promise.all(
-    [
-      tenantSupabase
-        .from("coupons")
-        .select("id", { count: "exact", head: true }),
-      tenantSupabase
-        .from("survey_questions")
-        .select("id", { count: "exact", head: true }),
-      tenantSupabase
-        .from("issued_coupons")
-        .select("id", { count: "exact", head: true }),
-    ]
-  );
-
-  const couponCount = couponsResult.count || 0;
-  const surveyCount = surveysResult.count || 0;
-  const issuedCouponCount = issuedCouponsResult.count || 0;
-
-  /**
-   * Quick actions for the dashboard
-   * Only shown for owner/admin roles, not for staff members
-   */
-  const quickActions =
-    owner.role === "owner" || owner.role === "admin"
-      ? [
-          { label: "Create Coupon" },
-          { label: "Add Survey Question" },
-          { href: `/${slug}/admin/coupons`, label: "View All Coupons" },
-          { href: `/${slug}/admin/settings`, label: "Tenant Settings" },
-        ]
-      : [];
-
+  // Render admin content with loading state
   return (
-    <div className="mx-auto max-w-7xl">
-      <DashboardHeader
-        userEmail={owner.email || user.email || ""}
-        tenant={{
-          id: tenantId,
-          name: tenant.name,
-          slug: tenant.slug,
-          logo_url: tenant.logo_url,
-        }}
-      />
-      <StatCards
-        couponCount={couponCount}
-        surveyCount={surveyCount}
-        issuedCouponCount={issuedCouponCount}
-      />
-      {/* Interactive Quick Actions (client) - only show for owner/admin */}
-      {quickActions.length > 0 && (
-        <ClientQuickActions tenantSlug={tenant.slug} actions={quickActions} />
-      )}
-    </div>
+    <Suspense fallback={<AdminLoading />}>
+      <AdminPageContent slug={slug} user={user} owner={owner} />
+    </Suspense>
   );
 }

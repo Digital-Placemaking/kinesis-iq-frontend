@@ -33,7 +33,7 @@ interface AddQuestionModalProps {
 
 // Question type options
 const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
-  { value: "sentiment", label: "Sentiment" },
+  { value: "sentiment", label: "Sentiment Question" },
   { value: "multiple_choice", label: "Multiple Choice" },
   { value: "single_choice", label: "Single Choice" },
   { value: "ranked_choice", label: "Ranked Choice" },
@@ -325,12 +325,19 @@ export default function AddQuestionModal({
 
         {/* Question Type */}
         <div>
-          <label
-            htmlFor="question-type"
-            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
-            Question Type *
-          </label>
+          <div className="flex items-center gap-2 mb-1">
+            <label
+              htmlFor="question-type"
+              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              Question Type *
+            </label>
+            {questionType === "sentiment" && (
+              <span className="inline-flex items-center rounded-full border border-green-500 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 dark:border-green-400 dark:bg-green-900/20 dark:text-green-400">
+                Records Sentiment
+              </span>
+            )}
+          </div>
           <select
             id="question-type"
             value={questionType}
@@ -352,6 +359,13 @@ export default function AddQuestionModal({
               </option>
             ))}
           </select>
+          {questionType === "sentiment" && (
+            <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+              This question type records sentiment data for the Community Pulse
+              Dashboard. Responses are categorized as Happy (4-5), Neutral (3),
+              or Concerned (1-2).
+            </p>
+          )}
         </div>
 
         {/* Options (for choice-based questions) */}
@@ -373,7 +387,7 @@ export default function AddQuestionModal({
                   <button
                     type="button"
                     onClick={() => handleRemoveOption(index)}
-                    className="rounded-lg p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                    className="rounded-lg p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 cursor-pointer"
                     aria-label="Remove option"
                   >
                     <X className="h-4 w-4" />
@@ -397,7 +411,7 @@ export default function AddQuestionModal({
                 <button
                   type="button"
                   onClick={handleAddOption}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 cursor-pointer"
                 >
                   Add
                 </button>

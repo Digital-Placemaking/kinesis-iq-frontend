@@ -130,7 +130,7 @@ export default function QuestionActions({
         <button
           onClick={handleMoveUp}
           disabled={isPending || questionIndex === 0}
-          className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800 cursor-pointer"
           title="Move up"
         >
           <ArrowUp className="h-4 w-4" />
@@ -138,7 +138,7 @@ export default function QuestionActions({
         <button
           onClick={handleMoveDown}
           disabled={isPending || questionIndex === totalQuestions - 1}
-          className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800 cursor-pointer"
           title="Move down"
         >
           <ArrowDown className="h-4 w-4" />
@@ -146,7 +146,7 @@ export default function QuestionActions({
         <button
           onClick={handleToggleStatus}
           disabled={isPending}
-          className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800 cursor-pointer"
           title={isActive ? "Deactivate" : "Activate"}
         >
           {isActive ? (
@@ -157,14 +157,14 @@ export default function QuestionActions({
         </button>
         <button
           onClick={() => setIsResultsModalOpen(true)}
-          className="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+          className="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 cursor-pointer"
           title="View Results"
         >
           <BarChart3 className="h-4 w-4" />
         </button>
         <button
           onClick={() => setIsEditModalOpen(true)}
-          className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 cursor-pointer"
           title="Edit"
         >
           <Edit className="h-4 w-4" />
@@ -172,7 +172,7 @@ export default function QuestionActions({
         <button
           onClick={handleDeleteClick}
           disabled={isPending}
-          className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/20"
+          className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/20 cursor-pointer"
           title="Delete"
         >
           <Trash2 className="h-4 w-4" />

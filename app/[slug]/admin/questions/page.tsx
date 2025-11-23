@@ -50,7 +50,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
 
   // Map question types to display names
   const questionTypeNames: Record<string, string> = {
-    sentiment: "Sentiment",
+    sentiment: "Sentiment Question",
     multiple_choice: "Multiple Choice",
     single_choice: "Single Choice",
     ranked_choice: "Ranked Choice",

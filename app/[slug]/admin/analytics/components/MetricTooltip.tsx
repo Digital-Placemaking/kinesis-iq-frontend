@@ -21,7 +21,7 @@ export default function MetricTooltip({ description }: MetricTooltipProps) {
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         onClick={() => setShowTooltip(!showTooltip)}
-        className="flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+        className="flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors cursor-pointer"
         aria-label="Metric information"
       >
         <Info className="h-3 w-3 sm:h-4 sm:w-4" />

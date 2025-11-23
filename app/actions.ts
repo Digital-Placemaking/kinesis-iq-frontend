@@ -85,6 +85,10 @@ export {
   getAnalyticsTimeSeries,
 } from "./actions/analytics";
 
+// Dashboard actions
+export { getDashboardMetrics } from "./actions/dashboard";
+export type { DashboardMetrics } from "./actions/dashboard";
+
 // Auth actions
 export { updatePassword } from "./actions/auth";
 

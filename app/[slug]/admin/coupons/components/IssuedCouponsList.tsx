@@ -264,7 +264,7 @@ export default function IssuedCouponsList({
                                   issuedCoupon.id
                                 )
                               }
-                              className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 font-mono text-base sm:text-lg font-semibold text-black transition-colors hover:bg-zinc-50 active:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800 dark:active:bg-zinc-700"
+                              className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 font-mono text-base sm:text-lg font-semibold text-black transition-colors hover:bg-zinc-50 active:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 cursor-pointer"
                               title="Copy code to clipboard"
                             >
                               {issuedCoupon.code}
@@ -312,7 +312,7 @@ export default function IssuedCouponsList({
                                   updatingRedemptionId === issuedCoupon.id ||
                                   issuedCoupon.redemptions_count === 0
                                 }
-                                className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+                                className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 cursor-pointer"
                                 title="Decrement redemption count"
                               >
                                 <Minus className="h-4 w-4" />
@@ -330,7 +330,7 @@ export default function IssuedCouponsList({
                                   issuedCoupon.redemptions_count >=
                                     issuedCoupon.max_redemptions
                                 }
-                                className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+                                className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 cursor-pointer"
                                 title="Increment redemption count"
                               >
                                 <Plus className="h-4 w-4" />

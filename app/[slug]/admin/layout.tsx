@@ -81,15 +81,11 @@ export default async function AdminLayout({
   }
 
   // User is authenticated and has access - show full layout
+  // Note: AdminNav is now rendered inside AdminWrapper, so we don't render it here
+  // Padding is handled by AdminWrapper, so no padding here
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
-      <AdminNav
-        tenantSlug={slug}
-        user={user}
-        owner={owner}
-        availableTenants={availableTenants.length > 1 ? availableTenants : []}
-      />
-      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">{children}</main>
+      {children}
     </div>
   );
 }
