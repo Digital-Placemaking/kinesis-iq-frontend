@@ -4,6 +4,7 @@
  * Separated to allow Suspense boundary
  */
 
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import {
@@ -34,7 +35,8 @@ export default async function AdminPageContent({
   });
 
   if (!tenantId) {
-    return <div>Tenant not found</div>;
+    // Security: Don't leak tenant existence - redirect to login
+    redirect(`/${slug}/admin?error=tenant_not_found`);
   }
 
   // Create tenant-scoped client

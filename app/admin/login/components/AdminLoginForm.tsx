@@ -11,8 +11,8 @@ import Card from "@/app/components/ui/Card";
 import ActionButton from "@/app/components/ui/ActionButton";
 import Spinner from "@/app/components/ui/Spinner";
 import { Mail, Lock } from "lucide-react";
-import FormField from "../../components/FormField";
-import ErrorMessage from "../../components/ErrorMessage";
+import FormField from "@/app/[slug]/admin/components/FormField";
+import ErrorMessage from "@/app/[slug]/admin/components/ErrorMessage";
 
 interface AdminLoginFormProps {
   redirectPath?: string;
