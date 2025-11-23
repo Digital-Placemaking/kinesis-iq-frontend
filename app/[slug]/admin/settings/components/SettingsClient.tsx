@@ -696,7 +696,7 @@ export default function SettingsClient({
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
             <p className="text-xs text-amber-800 dark:text-amber-300">
               <strong>Important:</strong> Subdomain changes are limited to once
-              per day. Make sure this is the subdomain you want before
+              per week. Make sure this is the subdomain you want before
               confirming.
             </p>
           </div>

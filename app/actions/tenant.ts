@@ -363,6 +363,20 @@ export async function updateTenantSettings(
         tenantId: resolvedTenantId,
         updates: updateData,
       });
+
+      // Handle duplicate subdomain error with user-friendly message
+      if (
+        updateError.code === "23505" ||
+        updateError.message?.includes("tenants_subdomain_idx") ||
+        updateError.message?.includes("unique constraint") ||
+        updateError.message?.includes("duplicate key")
+      ) {
+        return {
+          success: false,
+          error: "This subdomain is already taken. Please try another.",
+        };
+      }
+
       return {
         success: false,
         error: `Failed to update settings: ${updateError.message}`,
