@@ -27,7 +27,17 @@ import { getEmailFromGoogleCode } from "@/lib/google/oauth-direct";
 import { storeOAuthEmail } from "@/app/actions/google/oauth";
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  // Get the correct origin from request headers (handles localhost, production, etc.)
+  const host =
+    request.headers.get("host") ||
+    request.headers.get("x-forwarded-host") ||
+    "localhost:3000";
+  const protocol =
+    request.headers.get("x-forwarded-proto") ||
+    (host.includes("localhost") ? "http" : "https");
+  const origin = `${protocol}://${host}`;
+
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state"); // Contains tenant slug
   // Note: Google OAuth doesn't preserve query parameters, so we default to "google"
@@ -42,10 +52,8 @@ export async function GET(request: NextRequest) {
 
     // If we have tenant in state, redirect back to tenant landing page
     if (state) {
-      const baseUrl = new URL(origin);
-      const hostname = baseUrl.hostname;
-      const isSubdomain = hostname.split(".").length >= 3;
-      const redirectUrl = new URL(isSubdomain ? "/" : `/${state}`, origin);
+      // Always use path-based routing with tenant slug
+      const redirectUrl = new URL(`/${state}`, origin);
       redirectUrl.searchParams.set("error", "oauth_failed");
       return NextResponse.redirect(redirectUrl);
     }
@@ -56,13 +64,8 @@ export async function GET(request: NextRequest) {
 
   // Must have code and state (tenant slug)
   if (!code || !state) {
-    const baseUrl = new URL(origin);
-    const hostname = baseUrl.hostname;
-    const isSubdomain = hostname.split(".").length >= 3;
-    const redirectUrl = new URL(
-      isSubdomain ? "/" : `/${state || "unknown"}`,
-      origin
-    );
+    // Always use path-based routing with tenant slug
+    const redirectUrl = new URL(`/${state || "unknown"}`, origin);
     redirectUrl.searchParams.set("error", "oauth_invalid");
     return NextResponse.redirect(redirectUrl);
   }
@@ -107,18 +110,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Build redirect URL to tenant's coupons page
-    const baseUrl = new URL(origin);
-    const hostname = baseUrl.hostname;
-    const isSubdomain = hostname.split(".").length >= 3;
-
-    let redirectPath: string;
-    if (isSubdomain) {
-      redirectPath = "/coupons";
-    } else {
-      redirectPath = `/${tenantSlug}/coupons`;
-    }
-
+    // Always use path-based routing with tenant slug to ensure consistency
+    // The subdomain routing is handled by the proxy/middleware layer
+    const redirectPath = `/${tenantSlug}/coupons`;
     const couponsUrl = new URL(redirectPath, origin);
+
     if (storeResult.email) {
       couponsUrl.searchParams.set("email", storeResult.email);
     }
@@ -128,10 +124,8 @@ export async function GET(request: NextRequest) {
     console.error("Error in OAuth callback:", err);
 
     // Redirect back to tenant landing page with error
-    const baseUrl = new URL(origin);
-    const hostname = baseUrl.hostname;
-    const isSubdomain = hostname.split(".").length >= 3;
-    const redirectUrl = new URL(isSubdomain ? "/" : `/${tenantSlug}`, origin);
+    // Always use path-based routing with tenant slug
+    const redirectUrl = new URL(`/${tenantSlug}`, origin);
     redirectUrl.searchParams.set(
       "error",
       err instanceof Error ? err.message : "oauth_processing_failed"
