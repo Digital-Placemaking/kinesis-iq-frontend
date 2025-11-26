@@ -104,7 +104,14 @@ export async function getBusinessOwnerForTenant(
 }
 
 /**
- * Checks if the current user is a business owner for a tenant by slug
+ * Checks if the current user is a business owner, admin, or staff for a tenant by slug.
+ *
+ * This function handles both active and inactive tenants. If the `resolve_tenant` RPC
+ * fails (e.g., tenant is inactive), it falls back to a direct database lookup.
+ * This allows admin/staff users to access tenant admin pages even when the tenant is deactivated.
+ *
+ * @param tenantSlug - The slug identifier of the tenant
+ * @returns Promise resolving to BusinessOwner record if user has access, null otherwise
  */
 export async function getBusinessOwnerForTenantSlug(
   tenantSlug: string
@@ -113,6 +120,7 @@ export async function getBusinessOwnerForTenantSlug(
     const supabase = await createClient();
 
     // Resolve tenant slug to UUID
+    // Note: resolve_tenant RPC may filter by active=true, so we handle inactive tenants
     const { data: tenantId, error: resolveError } = await supabase.rpc(
       "resolve_tenant",
       {
@@ -120,7 +128,24 @@ export async function getBusinessOwnerForTenantSlug(
       }
     );
 
-    if (resolveError || !tenantId) {
+    let resolvedTenantId = tenantId;
+
+    // If resolve_tenant fails (e.g., tenant is inactive), try direct lookup
+    // This allows admin/staff to access even when tenant is deactivated
+    if (resolveError || !resolvedTenantId) {
+      const { data: tenant, error: tenantError } = await supabase
+        .from("tenants")
+        .select("id")
+        .eq("slug", tenantSlug)
+        .maybeSingle();
+
+      if (tenantError || !tenant || !tenant.id) {
+        return null;
+      }
+      resolvedTenantId = tenant.id;
+    }
+
+    if (!resolvedTenantId) {
       return null;
     }
 
@@ -129,7 +154,7 @@ export async function getBusinessOwnerForTenantSlug(
       return null;
     }
 
-    return getBusinessOwnerForTenant(tenantId, user.id);
+    return getBusinessOwnerForTenant(resolvedTenantId, user.id);
   } catch (err) {
     console.error("Error checking business owner by slug:", err);
     return null;

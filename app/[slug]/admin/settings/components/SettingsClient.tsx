@@ -227,17 +227,26 @@ export default function SettingsClient({
       // Note: logo_url is updated automatically when uploading, so we only update if it's a URL change
       // Pass tenantId to bypass resolve_tenant RPC (which may filter by active=true)
 
+      // Always include active field if it's being changed
+      const settingsUpdates: {
+        name: string;
+        logo_url?: string | null;
+        subdomain: string | null;
+        active: boolean;
+      } = {
+        name: name.trim(),
+        subdomain: subdomain.trim() || null,
+        active,
+      };
+
+      // Only update logo_url if it's different from what we have (URL input change)
+      if (logoUrl !== tenant.logo_url) {
+        settingsUpdates.logo_url = logoUrl.trim() || null;
+      }
+
       const settingsResult = await updateTenantSettings(
         tenant.slug,
-        {
-          name: name.trim(),
-          // Only update logo_url if it's different from what we have (URL input change)
-          ...(logoUrl !== tenant.logo_url && {
-            logo_url: logoUrl.trim() || null,
-          }),
-          subdomain: subdomain.trim() || null,
-          active,
-        },
+        settingsUpdates,
         tenantId
       );
 

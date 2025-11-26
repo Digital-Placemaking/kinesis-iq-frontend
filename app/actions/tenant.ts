@@ -20,8 +20,14 @@ import { RATE_LIMITS } from "@/lib/constants/rate-limits";
  */
 
 /**
- * Fetches a tenant by slug
- * Note: Can work with inactive tenants (for admin access)
+ * Fetches a tenant by slug.
+ *
+ * This function handles both active and inactive tenants. If the `resolve_tenant` RPC
+ * fails (e.g., tenant is inactive), it falls back to a direct database lookup.
+ * This allows admin/staff users to access tenant data even when the tenant is deactivated.
+ *
+ * @param tenantSlug - The slug identifier of the tenant
+ * @returns Promise resolving to a TenantResponse containing the tenant data or an error
  */
 export async function getTenantBySlug(
   tenantSlug: string
@@ -90,8 +96,14 @@ export async function getTenantBySlug(
 }
 
 /**
- * Fetches a tenant by subdomain
- * Note: Can work with inactive tenants (for admin access)
+ * Fetches a tenant by subdomain.
+ *
+ * This function handles both active and inactive tenants. If the `resolve_tenant_by_subdomain` RPC
+ * fails (e.g., tenant is inactive), it falls back to a direct database lookup.
+ * This allows admin/staff users to access tenant data even when the tenant is deactivated.
+ *
+ * @param tenantSubdomain - The subdomain identifier of the tenant
+ * @returns Promise resolving to a TenantResponse containing the tenant data or an error
  */
 export async function getTenantBySubdomain(
   tenantSubdomain: string
@@ -159,9 +171,16 @@ export async function getTenantBySubdomain(
 }
 
 /**
- * Updates the tenant's settings
- * Requires owner/admin access
- * Note: Can work with inactive tenants (for admin access)
+ * Updates the tenant's settings.
+ *
+ * Requires owner/admin access. This function can work with inactive tenants (for admin access).
+ * If `tenantId` is provided, it bypasses slug resolution, which is preferred for admin operations
+ * on inactive tenants.
+ *
+ * @param tenantSlug - The slug identifier of the tenant
+ * @param updates - Object containing the fields to update (name, logo_url, active, subdomain, background_url)
+ * @param tenantId - Optional tenant ID to bypass slug resolution (preferred for inactive tenants)
+ * @returns Promise resolving to an object with success status and optional error message
  */
 export async function updateTenantSettings(
   tenantSlug: string,
@@ -170,6 +189,7 @@ export async function updateTenantSettings(
     logo_url?: string | null;
     active?: boolean;
     subdomain?: string | null;
+    background_url?: string | null;
   },
   tenantId?: string
 ): Promise<{ success: boolean; error: string | null }> {
@@ -260,7 +280,7 @@ export async function updateTenantSettings(
       const subdomainValue = updates.subdomain?.trim() || null;
 
       // Get current tenant to check if subdomain is actually changing
-      const tenantSupabase = await createTenantClient(resolvedTenantId);
+      // Reuse the tenantSupabase client created above
       const { data: currentTenant } = await tenantSupabase
         .from("tenants")
         .select("subdomain")
@@ -390,11 +410,13 @@ export async function updateTenantSettings(
         {
           tenantId: resolvedTenantId,
           updates: updateData,
+          activeValue: updates.active,
         }
       );
       return {
         success: false,
-        error: "Update blocked - no rows were updated. Check RLS policies.",
+        error:
+          "Update blocked - no rows were updated. This may be due to RLS policies or the tenant not being found.",
       };
     }
 

@@ -19,7 +19,9 @@ import {
   ChevronDown,
   Building2,
   User,
+  Palette,
 } from "lucide-react";
+import type { AdminTab } from "./AdminContent";
 
 interface AdminNavProps {
   tenantSlug: string;
@@ -32,8 +34,6 @@ interface AdminNavProps {
   /** Callback to change active tab */
   onTabChange: (tab: AdminTab) => void;
 }
-
-import type { AdminTab } from "./AdminContent";
 
 export default function AdminNav({
   tenantSlug,

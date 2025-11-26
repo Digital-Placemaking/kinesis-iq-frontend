@@ -16,8 +16,14 @@ import { EventType } from "@/lib/types/analytics";
  */
 
 /**
- * Get aggregated analytics summary for visitors page
- * Returns counts for each event type
+ * Get aggregated analytics summary for visitors page.
+ *
+ * Returns counts for each event type including page visits, survey completions,
+ * code copies, downloads, and wallet adds. This function handles both active
+ * and inactive tenants by falling back to direct database lookup when needed.
+ *
+ * @param tenantSlug - The slug identifier of the tenant
+ * @returns Promise resolving to analytics summary with counts for each event type
  */
 export async function getAnalyticsSummary(tenantSlug: string): Promise<{
   pageVisits: number;
@@ -32,6 +38,7 @@ export async function getAnalyticsSummary(tenantSlug: string): Promise<{
     const supabase = await createClient();
 
     // Resolve tenant slug to UUID
+    // Note: resolve_tenant RPC may filter by active=true, so we handle inactive tenants
     const { data: tenantId, error: resolveError } = await supabase.rpc(
       "resolve_tenant",
       {
@@ -39,7 +46,32 @@ export async function getAnalyticsSummary(tenantSlug: string): Promise<{
       }
     );
 
-    if (resolveError || !tenantId) {
+    let resolvedTenantId = tenantId;
+
+    // If resolve_tenant fails (e.g., tenant is inactive), try direct lookup
+    // This allows admin/staff to access even when tenant is deactivated
+    if (resolveError || !resolvedTenantId) {
+      const { data: tenant, error: tenantError } = await supabase
+        .from("tenants")
+        .select("id")
+        .eq("slug", tenantSlug)
+        .maybeSingle();
+
+      if (tenantError || !tenant || !tenant.id) {
+        return {
+          pageVisits: 0,
+          congratulations: 0,
+          copyCode: 0,
+          downloads: 0,
+          walletAdds: 0,
+          uniqueActionTakers: 0,
+          error: `Tenant not found: ${tenantSlug}`,
+        };
+      }
+      resolvedTenantId = tenant.id;
+    }
+
+    if (!resolvedTenantId) {
       return {
         pageVisits: 0,
         congratulations: 0,
@@ -52,7 +84,7 @@ export async function getAnalyticsSummary(tenantSlug: string): Promise<{
     }
 
     // Create tenant-scoped client
-    const tenantSupabase = await createTenantClient(tenantId);
+    const tenantSupabase = await createTenantClient(resolvedTenantId);
 
     // Fetch all events to calculate unique counts
     // We need to fetch data to count distinct sessions/emails
@@ -145,8 +177,15 @@ export async function getAnalyticsSummary(tenantSlug: string): Promise<{
 }
 
 /**
- * Get time-series analytics data for charts
- * Returns daily aggregated data for the last 30 days
+ * Get time-series analytics data for charts.
+ *
+ * Returns daily aggregated data for the specified number of days (default 30).
+ * This function handles both active and inactive tenants by falling back to
+ * direct database lookup when needed.
+ *
+ * @param tenantSlug - The slug identifier of the tenant
+ * @param days - Number of days to fetch data for (default: 30)
+ * @returns Promise resolving to time-series data array with daily event counts
  */
 export async function getAnalyticsTimeSeries(
   tenantSlug: string,
@@ -166,6 +205,7 @@ export async function getAnalyticsTimeSeries(
     const supabase = await createClient();
 
     // Resolve tenant slug to UUID
+    // Note: resolve_tenant RPC may filter by active=true, so we handle inactive tenants
     const { data: tenantId, error: resolveError } = await supabase.rpc(
       "resolve_tenant",
       {
@@ -173,7 +213,27 @@ export async function getAnalyticsTimeSeries(
       }
     );
 
-    if (resolveError || !tenantId) {
+    let resolvedTenantId = tenantId;
+
+    // If resolve_tenant fails (e.g., tenant is inactive), try direct lookup
+    // This allows admin/staff to access even when tenant is deactivated
+    if (resolveError || !resolvedTenantId) {
+      const { data: tenant, error: tenantError } = await supabase
+        .from("tenants")
+        .select("id")
+        .eq("slug", tenantSlug)
+        .maybeSingle();
+
+      if (tenantError || !tenant || !tenant.id) {
+        return {
+          data: [],
+          error: `Tenant not found: ${tenantSlug}`,
+        };
+      }
+      resolvedTenantId = tenant.id;
+    }
+
+    if (!resolvedTenantId) {
       return {
         data: [],
         error: `Tenant not found: ${tenantSlug}`,
@@ -181,7 +241,7 @@ export async function getAnalyticsTimeSeries(
     }
 
     // Create tenant-scoped client
-    const tenantSupabase = await createTenantClient(tenantId);
+    const tenantSupabase = await createTenantClient(resolvedTenantId);
 
     // Calculate date range
     const endDate = new Date();

@@ -37,8 +37,20 @@ export interface DashboardMetrics {
 }
 
 /**
- * Get Community Pulse Dashboard metrics
- * Returns all metrics needed for the overview dashboard
+ * Get Community Pulse Dashboard metrics.
+ *
+ * Returns all metrics needed for the overview dashboard, including:
+ * - Total responses and unique sessions
+ * - Happiness score and sentiment distribution
+ * - Page visits and conversion rate
+ * - Engagement metrics (copy, download, wallet)
+ * - Top coupon information
+ *
+ * This function handles both active and inactive tenants. If the `resolve_tenant` RPC
+ * fails (e.g., tenant is inactive), it falls back to a direct database lookup.
+ *
+ * @param tenantSlug - The slug identifier of the tenant
+ * @returns Promise resolving to DashboardMetrics containing all dashboard data
  */
 export async function getDashboardMetrics(
   tenantSlug: string
@@ -47,6 +59,7 @@ export async function getDashboardMetrics(
     const supabase = await createClient();
 
     // Resolve tenant slug to UUID
+    // Note: resolve_tenant RPC may filter by active=true, so we handle inactive tenants
     const { data: tenantId, error: resolveError } = await supabase.rpc(
       "resolve_tenant",
       {
@@ -54,7 +67,45 @@ export async function getDashboardMetrics(
       }
     );
 
-    if (resolveError || !tenantId) {
+    let resolvedTenantId = tenantId;
+
+    // If resolve_tenant fails (e.g., tenant is inactive), try direct lookup
+    // This allows admin/staff to access even when tenant is deactivated
+    if (resolveError || !resolvedTenantId) {
+      const { data: tenant, error: tenantError } = await supabase
+        .from("tenants")
+        .select("id")
+        .eq("slug", tenantSlug)
+        .maybeSingle();
+
+      if (tenantError || !tenant || !tenant.id) {
+        return {
+          totalResponses: 0,
+          uniqueSessions: 0,
+          happinessScore: 0,
+          happyResponses: 0,
+          pageVisits: 0,
+          conversionRate: 0,
+          engagement: 0,
+          topCoupon: null,
+          sentimentDistribution: {
+            happy: 0,
+            neutral: 0,
+            concerned: 0,
+          },
+          engagementFunnel: {
+            pageVisits: 0,
+            surveyResponses: 0,
+            copyCodeClicks: 0,
+            downloadWallet: 0,
+          },
+          error: `Tenant not found: ${tenantSlug}`,
+        };
+      }
+      resolvedTenantId = tenant.id;
+    }
+
+    if (!resolvedTenantId) {
       return {
         totalResponses: 0,
         uniqueSessions: 0,
@@ -80,7 +131,7 @@ export async function getDashboardMetrics(
     }
 
     // Create tenant-scoped client
-    const tenantSupabase = await createTenantClient(tenantId);
+    const tenantSupabase = await createTenantClient(resolvedTenantId);
 
     // Fetch all data in parallel
     const [
