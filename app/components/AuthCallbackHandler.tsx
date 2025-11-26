@@ -65,7 +65,12 @@ export default function AuthCallbackHandler() {
       // Handle authentication errors
       if (error) {
         console.error("Auth error:", error, errorDescription);
-        router.push(`/?error=${encodeURIComponent(error)}`);
+        // Map error codes to user-friendly messages
+        let errorCode = error;
+        if (error === "access_denied") {
+          errorCode = "oauth_access_denied";
+        }
+        router.push(`/?error=${encodeURIComponent(errorCode)}`);
         return;
       }
 

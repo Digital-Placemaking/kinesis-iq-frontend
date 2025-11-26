@@ -32,14 +32,31 @@ export default async function TenantPage({
     return <DeactivatedMessage tenantName={tenant.name} />;
   }
 
+  // Map error codes to user-friendly messages
+  let errorMessage: string | null = null;
+  if (errorParam === "email_not_verified") {
+    errorMessage = "Please submit your email to access coupons and surveys.";
+  } else if (errorParam === "oauth_access_denied") {
+    errorMessage =
+      "Google sign-in was cancelled. You can try again or use your email address instead.";
+  } else if (errorParam === "oauth_failed") {
+    errorMessage =
+      "Google sign-in failed. Please try again or use your email address instead.";
+  } else if (errorParam === "oauth_invalid_request") {
+    errorMessage =
+      "Invalid sign-in request. Please try again or use your email address instead.";
+  } else if (errorParam === "oauth_invalid") {
+    errorMessage =
+      "Invalid sign-in request. Please try again or use your email address instead.";
+  } else if (errorParam === "oauth_processing_failed") {
+    errorMessage =
+      "Sign-in processing failed. Please try again or use your email address instead.";
+  }
+
   return (
     <TenantLanding
       tenant={toTenantDisplay(tenant)}
-      initialError={
-        errorParam === "email_not_verified"
-          ? "Please submit your email to access coupons and surveys."
-          : null
-      }
+      initialError={errorMessage}
     />
   );
 }

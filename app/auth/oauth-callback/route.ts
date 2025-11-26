@@ -50,16 +50,26 @@ export async function GET(request: NextRequest) {
     console.error("OAuth error:", error);
     const errorDescription = searchParams.get("error_description");
 
+    // Map OAuth error codes to user-friendly error messages
+    let errorCode = "oauth_failed";
+    if (error === "access_denied") {
+      errorCode = "oauth_access_denied";
+    } else if (error === "invalid_request") {
+      errorCode = "oauth_invalid_request";
+    }
+
     // If we have tenant in state, redirect back to tenant landing page
     if (state) {
       // Always use path-based routing with tenant slug
       const redirectUrl = new URL(`/${state}`, origin);
-      redirectUrl.searchParams.set("error", "oauth_failed");
+      redirectUrl.searchParams.set("error", errorCode);
       return NextResponse.redirect(redirectUrl);
     }
 
-    // Otherwise redirect to home
-    return NextResponse.redirect(new URL("/", origin));
+    // Otherwise redirect to home (shouldn't happen if state is properly set)
+    const redirectUrl = new URL("/", origin);
+    redirectUrl.searchParams.set("error", errorCode);
+    return NextResponse.redirect(redirectUrl);
   }
 
   // Must have code and state (tenant slug)
