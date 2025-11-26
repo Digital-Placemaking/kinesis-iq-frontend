@@ -62,6 +62,18 @@ export default async function CompletedPage({
     return <DeactivatedMessage tenantName={tenantData.name} />;
   }
 
+  // SECURITY: Verify email exists in email_opt_ins table
+  // This prevents users from manipulating the email parameter to bypass the survey
+  // If email is not in database, redirect to survey page
+  const optInCheck = await verifyEmailOptIn(slug, email);
+
+  if (!optInCheck.valid) {
+    // Email not found in database - redirect to survey
+    redirect(
+      `/${slug}/coupons/${couponId}/survey?email=${encodeURIComponent(email)}`
+    );
+  }
+
   // Get coupon data
   const { coupon, error: couponError } = await getCouponById(slug, couponId);
 

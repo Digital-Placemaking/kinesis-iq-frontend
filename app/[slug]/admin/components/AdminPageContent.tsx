@@ -117,12 +117,13 @@ export default async function AdminPageContent({
       .select("*")
       .order("created_at", { ascending: false }),
 
-    // Emails (only if owner/admin)
+    // Emails (only if owner/admin) - use getTenantEmails to get from both sources
     userRole !== "staff"
-      ? tenantSupabase
-          .from("email_opt_ins")
-          .select("*")
-          .order("created_at", { ascending: false })
+      ? (async () => {
+          const { getTenantEmails } = await import("@/app/actions/emails");
+          const result = await getTenantEmails(slug);
+          return { data: result.emails, error: result.error };
+        })()
       : Promise.resolve({ data: [], error: null }),
 
     // Tenant data for settings

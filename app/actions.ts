@@ -40,6 +40,7 @@ export {
   submitEmailOptIn,
   verifyEmailOptIn,
   sendMassEmail,
+  getTenantEmails,
 } from "./actions/emails";
 
 // Survey actions
