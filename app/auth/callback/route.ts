@@ -56,11 +56,13 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(redirectUrl);
       }
 
-      // Default: redirect to the intended destination or admin login (tenant selection)
-      const redirectedURL = new URL(
-        next === "/" ? "/admin/login" : next,
-        origin
-      );
+      // Default: redirect to admin login (tenant selection page)
+      // This will show tenant selection if user has access, or helpful message if they don't
+      const redirectedURL = new URL("/admin/login", origin);
+      // Preserve the next parameter if it was provided
+      if (next && next !== "/") {
+        redirectedURL.searchParams.set("redirect", next);
+      }
       return NextResponse.redirect(redirectedURL);
     }
   }

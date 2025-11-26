@@ -55,8 +55,27 @@ export default async function AdminDashboard({
   // Check if user has access to this tenant
   const owner = await getBusinessOwnerForTenantSlug(slug);
 
-  // If no access, show login form with error
+  // If no access, show login form with helpful error message
   if (!owner) {
+    // If user is authenticated but doesn't have access, show a more helpful message
+    if (user) {
+      return (
+        <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
+          <div className="flex flex-1 items-center justify-center px-4">
+            <div className="w-full max-w-md">
+              <TenantAdminLoginForm
+                tenantSlug={slug}
+                tenantName={tenantName}
+                tenantLogo={tenantLogo}
+                error="unauthorized"
+              />
+            </div>
+          </div>
+          <Footer />
+        </div>
+      );
+    }
+    // If not authenticated, show login form without error (they need to log in first)
     return (
       <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
         <div className="flex flex-1 items-center justify-center px-4">
@@ -65,7 +84,7 @@ export default async function AdminDashboard({
               tenantSlug={slug}
               tenantName={tenantName}
               tenantLogo={tenantLogo}
-              error="unauthorized"
+              error={error}
             />
           </div>
         </div>

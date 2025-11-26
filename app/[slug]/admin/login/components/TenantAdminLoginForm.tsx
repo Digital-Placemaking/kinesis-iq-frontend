@@ -34,9 +34,10 @@ function getErrorMessage(errorCode?: string): string | null {
 
   const errorMap: Record<string, string> = {
     unauthorized:
-      "You don't have access to this tenant. Please contact the tenant owner.",
-    tenant_not_found: "Tenant not found.",
-    no_access: "You don't have access to this tenant.",
+      "You don't have access to this pilot. Please contact the pilot owner or administrator to grant you access.",
+    tenant_not_found: "Pilot not found.",
+    no_access:
+      "You don't have access to this pilot. Please contact the pilot owner or administrator.",
   };
 
   return errorMap[errorCode] || errorCode;
@@ -106,11 +107,11 @@ export default function TenantAdminLoginForm({
 
         if (staffError || !staff) {
           setError(
-            "You don't have access to this tenant. Please contact the tenant owner."
+            "You don't have access to this pilot. Please contact the pilot owner or administrator to grant you access."
           );
           setLoading(false);
-          // Sign out since they don't have access to prevent unauthorized access
-          await supabase.auth.signOut();
+          // Don't sign out - let them try again or contact admin
+          // Signing out would be frustrating for users who just need to be added
           return;
         }
 

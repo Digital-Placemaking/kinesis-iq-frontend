@@ -9,6 +9,9 @@ import { createTenantClient } from "@/lib/supabase/tenant-client";
 import AdminLoginForm from "./components/AdminLoginForm";
 import TenantSelection from "./components/TenantSelection";
 import Footer from "@/app/components/Footer";
+import Card from "@/app/components/ui/Card";
+import { Building2 } from "lucide-react";
+import SignOutButton from "./components/SignOutButton";
 
 interface AdminLoginPageProps {
   searchParams: Promise<{ redirect?: string; error?: string }>;
@@ -94,9 +97,76 @@ export default async function AdminLoginPage({
         </div>
       );
     }
+
+    // User is authenticated but has no staff records (new user not yet added to any tenant)
+    // Show helpful message instead of login form
+    if (user && !error) {
+      return (
+        <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
+          <div className="flex flex-1 items-center justify-center px-4">
+            <div className="w-full max-w-md">
+              <Card className="p-8" variant="elevated">
+                <div className="mb-6 text-center">
+                  <div className="mb-4 flex justify-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                      <Building2 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  </div>
+                  <h1 className="text-2xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-3xl">
+                    Account Created
+                  </h1>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    Your account has been created successfully.
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <svg
+                        className="h-5 w-5 text-amber-600 dark:text-amber-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                        Access Pending
+                      </h3>
+                      <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">
+                        Your account is ready, but you haven't been added to any
+                        pilot yet. Please contact the pilot owner or
+                        administrator to grant you access.
+                      </p>
+                      <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
+                        Once you've been added to a pilot, you'll be able to
+                        access the admin dashboard.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <SignOutButton />
+                </div>
+              </Card>
+            </div>
+          </div>
+          <Footer />
+        </div>
+      );
+    }
   }
 
-  // Show login form if not authenticated or no tenants found
+  // Show login form if not authenticated
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
       <div className="flex flex-1 items-center justify-center px-4">
