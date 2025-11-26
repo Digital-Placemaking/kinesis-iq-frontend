@@ -138,7 +138,7 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
         {/* Footer Options */}
         <div className="space-y-3 text-center">
           <div className="flex flex-col items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 sm:flex-row sm:text-sm">
-            <Bell className="h-4 w-4 flex-shrink-0" />
+            <Bell className="h-4 w-4 shrink-0" />
             <span>Want to hear about more offers?</span>
           </div>
 

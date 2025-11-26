@@ -40,7 +40,7 @@ export default function QuestionSlider({
           onChange={(e) => onChange(parseFloat(e.target.value))}
           className="flex-1"
         />
-        <div className="flex min-w-[4rem] items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex min-w-16 items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
           <span className="text-base font-semibold text-black dark:text-zinc-50">
             {currentValue}
           </span>

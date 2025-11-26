@@ -93,7 +93,7 @@ export default function CouponsList({
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="mb-2 flex flex-wrap items-center gap-2 sm:gap-3">
-                      <h3 className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50 break-words">
+                      <h3 className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50 wrap-break-word">
                         {coupon.title}
                       </h3>
                       {isActive && (
@@ -103,7 +103,7 @@ export default function CouponsList({
                       )}
                     </div>
                     {coupon.description && (
-                      <p className="mb-4 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 break-words">
+                      <p className="mb-4 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 wrap-break-word">
                         {coupon.description}
                       </p>
                     )}

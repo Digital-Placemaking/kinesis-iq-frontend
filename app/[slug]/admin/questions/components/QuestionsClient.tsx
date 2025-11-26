@@ -85,7 +85,7 @@ export default function QuestionsClient({
                           Order: {question.order_index}
                         </span>
                       </div>
-                      <p className="break-words text-sm font-medium leading-relaxed text-black dark:text-zinc-50 sm:text-base">
+                      <p className="wrap-break-word text-sm font-medium leading-relaxed text-black dark:text-zinc-50 sm:text-base">
                         {question.question}
                       </p>
                     </div>

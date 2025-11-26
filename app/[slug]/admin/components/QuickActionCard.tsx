@@ -21,7 +21,7 @@ export default function QuickActionCard({
       {href ? (
         <a
           href={href}
-          className="block cursor-pointer text-center text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 break-words"
+          className="block cursor-pointer text-center text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 wrap-break-word"
         >
           {label}
         </a>
@@ -29,7 +29,7 @@ export default function QuickActionCard({
         <button
           type="button"
           onClick={onClick}
-          className="block w-full cursor-pointer text-center text-xs sm:text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 break-words"
+          className="block w-full cursor-pointer text-center text-xs sm:text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 wrap-break-word"
         >
           {label}
         </button>

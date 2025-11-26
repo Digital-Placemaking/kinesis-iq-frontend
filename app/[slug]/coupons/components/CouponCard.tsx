@@ -120,7 +120,7 @@ export default function CouponCard({
 
             {/* Title and Discount */}
             <div className="min-w-0 flex-1">
-              <h3 className="mb-2 break-words text-lg font-bold leading-tight text-black dark:text-zinc-50 sm:text-xl">
+              <h3 className="mb-2 wrap-break-word text-lg font-bold leading-tight text-black dark:text-zinc-50 sm:text-xl">
                 {coupon.title}
               </h3>
               {coupon.discount && (

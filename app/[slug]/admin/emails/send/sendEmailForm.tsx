@@ -59,7 +59,7 @@ export default function SendEmailForm({ tenantSlug }: SendEmailFormProps) {
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={8}
-          className="w-full max-w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 whitespace-pre-wrap break-words"
+          className="w-full max-w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 whitespace-pre-wrap wrap-break-word"
           placeholder="Write your announcement or promotion..."
         />
         <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">

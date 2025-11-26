@@ -295,7 +295,7 @@ export default function IssuedCouponsList({
                             <span className="text-zinc-600 dark:text-zinc-400">
                               Email:{" "}
                             </span>
-                            <span className="font-medium text-black dark:text-zinc-50 break-words">
+                            <span className="font-medium text-black dark:text-zinc-50 wrap-break-word">
                               {issuedCoupon.email || "Anonymous"}
                             </span>
                           </div>
@@ -317,7 +317,7 @@ export default function IssuedCouponsList({
                               >
                                 <Minus className="h-4 w-4" />
                               </button>
-                              <span className="font-medium text-black dark:text-zinc-50 min-w-[3rem] text-center">
+                              <span className="font-medium text-black dark:text-zinc-50 min-w-12 text-center">
                                 {issuedCoupon.redemptions_count} /{" "}
                                 {issuedCoupon.max_redemptions}
                               </span>

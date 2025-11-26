@@ -330,7 +330,7 @@ export default function HomePage() {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <div className="relative w-full select-none aspect-[16/10]">
+              <div className="relative w-full select-none aspect-16/10">
                 <AnimatePresence>
                   <motion.div
                     key={currentImageIndex}
