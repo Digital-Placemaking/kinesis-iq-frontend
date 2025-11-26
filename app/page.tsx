@@ -431,8 +431,8 @@ export default function HomePage() {
                 style={{ width: "90vw", maxWidth: "100%" }}
               >
                 {/* Gradient overlays for fade effect */}
-                <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-32 bg-gradient-to-r from-white to-transparent dark:from-zinc-950" />
-                <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-32 bg-gradient-to-l from-white to-transparent dark:from-zinc-950" />
+                <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-32 bg-linear-to-r from-white to-transparent dark:from-zinc-950" />
+                <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-32 bg-linear-to-l from-white to-transparent dark:from-zinc-950" />
 
                 {/* Scrolling quotes */}
                 <div className="flex animate-scroll gap-6">
