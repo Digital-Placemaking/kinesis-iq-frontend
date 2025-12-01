@@ -22,8 +22,31 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const error = searchParams.get("error"); // OAuth error from provider
   const next = searchParams.get("next") ?? "/";
   const type = searchParams.get("type"); // recovery, signup, etc.
+
+  // Handle OAuth errors (e.g., user denied access)
+  if (error) {
+    console.error("OAuth error in callback:", error);
+    const errorDescription = searchParams.get("error_description");
+
+    // Map OAuth error codes to user-friendly error messages
+    let errorCode = "oauth_failed";
+    if (error === "access_denied") {
+      errorCode = "oauth_access_denied";
+    } else if (error === "invalid_request") {
+      errorCode = "oauth_invalid_request";
+    }
+
+    // Redirect to admin login with error message
+    const redirectUrl = new URL("/admin/login", origin);
+    redirectUrl.searchParams.set("error", errorCode);
+    if (next && next !== "/") {
+      redirectUrl.searchParams.set("redirect", next);
+    }
+    return NextResponse.redirect(redirectUrl);
+  }
 
   if (code) {
     // Exchange code for session
@@ -44,9 +67,11 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(
+      code
+    );
 
-    if (!error) {
+    if (!exchangeError) {
       // Handle password recovery/creation flows
       if (type === "recovery" || type === "signup") {
         const redirectUrl = new URL(
@@ -64,9 +89,20 @@ export async function GET(request: NextRequest) {
         redirectedURL.searchParams.set("redirect", next);
       }
       return NextResponse.redirect(redirectedURL);
+    } else {
+      // Error exchanging code for session
+      console.error("Error exchanging code for session:", exchangeError);
+      const redirectUrl = new URL("/admin/login", origin);
+      redirectUrl.searchParams.set("error", "auth_failed");
+      if (next && next !== "/") {
+        redirectUrl.searchParams.set("redirect", next);
+      }
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
-  // If there's an error or no code, redirect to home
-  return NextResponse.redirect(new URL("/", origin));
+  // If there's no code and no error, redirect to admin login
+  const redirectUrl = new URL("/admin/login", origin);
+  redirectUrl.searchParams.set("error", "invalid_request");
+  return NextResponse.redirect(redirectUrl);
 }

@@ -31,6 +31,18 @@ function getErrorMessage(errorCode?: string): string | null {
     staff_query_failed:
       "Failed to verify tenant access. Please check RLS policies on the staff table.",
     unauthorized: "You don't have access to this tenant.",
+    oauth_access_denied:
+      "Google sign-in was cancelled. Please try again or use email and password to sign in.",
+    oauth_failed:
+      "Google sign-in failed. Please try again or use email and password to sign in.",
+    oauth_invalid_request:
+      "Invalid sign-in request. Please try again or use email and password to sign in.",
+    auth_failed:
+      "Authentication failed. Please try again or contact support if the problem persists.",
+    session_failed:
+      "Failed to establish session. Please try again or contact support if the problem persists.",
+    invalid_request:
+      "Invalid request. Please try again or contact support if the problem persists.",
   };
 
   return errorMap[errorCode] || errorCode;

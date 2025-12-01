@@ -70,7 +70,9 @@ export default function AuthCallbackHandler() {
         if (error === "access_denied") {
           errorCode = "oauth_access_denied";
         }
-        router.push(`/?error=${encodeURIComponent(errorCode)}`);
+        // Redirect to admin login page instead of homepage
+        // This ensures errors are displayed properly
+        router.push(`/admin/login?error=${encodeURIComponent(errorCode)}`);
         return;
       }
 
@@ -86,7 +88,7 @@ export default function AuthCallbackHandler() {
           .then(async ({ error: sessionError }) => {
             if (sessionError) {
               console.error("Failed to set session:", sessionError);
-              router.push(`/?error=session_failed`);
+              router.push(`/admin/login?error=session_failed`);
               return;
             }
 
@@ -108,7 +110,7 @@ export default function AuthCallbackHandler() {
           })
           .catch((err) => {
             console.error("Failed to set session:", err);
-            router.push(`/?error=auth_failed`);
+            router.push(`/admin/login?error=auth_failed`);
           });
       }
     }

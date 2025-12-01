@@ -4,20 +4,22 @@ Multi-tenant web application built with Next.js and Supabase for managing tenant
 
 ## Overview
 
-KinesisIQ is a Conversational Intelligence and Predictive Insight Platform that transforms real-world interactions into foresight. This application enables businesses to create and manage digital coupons, collect customer feedback through surveys, and track visitor engagement with comprehensive analytics. The system supports multiple routing strategies: path-based routes (`yourdomain.com/company1`) and subdomain routes (`company1.yourdomain.com`).
+KinesisIQ is a Conversational Intelligence and Predictive Insight Platform that transforms real-world interactions into foresight. This application enables businesses (pilots) to create and manage digital coupons, collect customer feedback through surveys, and track visitor engagement with comprehensive analytics. The system supports multiple routing strategies: path-based routes (`yourdomain.com/pilot-slug`) and subdomain routes (`pilot-slug.yourdomain.com`).
 
-## Technologies Used
+## Tech Stack
 
 ### Core Framework
 
-- **Next.js 16** - React framework with App Router for server-side rendering and routing
-- **TypeScript** - Type-safe JavaScript for better developer experience and code reliability
-- **React 19** - UI library for building interactive user interfaces
+- **Next.js 16.0.1** - React framework with App Router for server-side rendering and routing
+- **TypeScript 5** - Type-safe JavaScript for better developer experience and code reliability
+- **React 19.2.0** - UI library for building interactive user interfaces
+- **Node.js** - Runtime environment
 
 ### Styling & UI
 
-- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
-- **shadcn/ui** - High-quality React component library
+- **Tailwind CSS 4** - Utility-first CSS framework for rapid UI development
+- **shadcn/ui** - High-quality React component library built on Radix UI
+- **Radix UI** - Unstyled, accessible component primitives
 - **Lucide React** - Icon library for consistent iconography
 - **Framer Motion** - Animation library for smooth transitions and interactions
 - **Recharts** - Charting library for data visualization
@@ -26,23 +28,49 @@ KinesisIQ is a Conversational Intelligence and Predictive Insight Platform that 
 
 - **Supabase** - Backend-as-a-Service platform providing:
   - PostgreSQL database with Row Level Security (RLS)
-  - Authentication and user management
+  - Authentication and user management (Supabase Auth)
   - Real-time subscriptions
   - Storage for file uploads
+  - Server-side RPC functions
 
 ### Infrastructure & Services
 
-- **Upstash Redis** - Serverless Redis for rate limiting and caching
-- **Resend** - Email delivery service for transactional emails
+- **Vercel** - Hosting and deployment platform
+  - Serverless functions
+  - Edge network
+  - Automatic deployments
+- **Vercel Analytics** - Web analytics and performance monitoring
+- **Upstash Redis** - Serverless Redis for:
+  - Rate limiting (email submissions, coupon issuance)
+  - Survey completion tracking
+  - Distributed caching
+- **Resend** - Email delivery service for:
+  - Mass email campaigns
+  - Transactional emails
+  - Contact form submissions
 - **Google Wallet API** - Integration for digital coupon passes
+- **Google OAuth** - Direct OAuth implementation for tenant email collection
 
 ### Development Tools
 
+- **ESLint** - Code linting and quality checks
 - **class-variance-authority** - For component variant management
 - **clsx** - Utility for constructing className strings conditionally
 - **tailwind-merge** - Merge Tailwind CSS classes without conflicts
+- **jose** - JWT handling for Google Wallet
+- **html5-qrcode** - QR code scanning functionality
 
 ## System Architecture
+
+### Deployment Infrastructure
+
+The application is deployed on **Vercel** with the following architecture:
+
+- **Edge Network**: Global CDN for static assets
+- **Serverless Functions**: Next.js API routes and server actions run as serverless functions
+- **Automatic Scaling**: Handles traffic spikes automatically
+- **Environment Variables**: Managed through Vercel dashboard
+- **Custom Domain**: Supports both path-based and subdomain routing
 
 ### Request Flow
 
@@ -61,12 +89,27 @@ For subdomain routing, users access tenant pages via `{subdomain}.yourdomain.com
 
 ### Authentication and Authorization
 
-Authentication is handled by Supabase Auth, integrated via Next.js middleware and server components. When a user accesses protected routes, the middleware checks for an active session and redirects unauthenticated users to the login page.
+Authentication is handled by **Supabase Auth**, integrated via Next.js middleware and server components. The system supports two authentication flows:
+
+1. **Admin Authentication** (Supabase Auth):
+
+   - Email/password authentication
+   - OAuth providers (Google) for admin account creation
+   - Password reset via email links
+   - Session management via cookies
+
+2. **Tenant Email Collection** (Direct Google OAuth):
+   - Direct Google OAuth for collecting visitor emails
+   - Does NOT create Supabase Auth users
+   - Stores emails in `email_opt_ins` table
+   - Allows visitors to skip surveys if email already exists
+
+When a user accesses protected routes, the middleware checks for an active session and redirects unauthenticated users to the login page.
 
 The application uses role-based access control (RBAC) with three roles:
 
 - **Owner** - Full access to all tenant features, can manage staff and settings
-- **Admin** - Administrative access, can manage most tenant settings (currently same as owner)
+- **Admin** - Administrative access, can manage most tenant settings
 - **Staff** - Limited access, can only view issued coupons
 
 Roles are stored in the `staff` table and associated with users via the `user_id` foreign key. Server actions and page components use the tenant-scoped Supabase client to enforce role-based permissions.
@@ -98,9 +141,11 @@ Visitor analytics are tracked through server-side event logging. The system uses
 
 Events are stored in the `analytics_events` table with session identifiers to group related activities, enabling funnel analysis and visitor journey tracking.
 
+**Vercel Analytics** is also integrated for web performance monitoring and user behavior tracking.
+
 ### Rate Limiting
 
-Rate limiting uses Upstash Redis to prevent abuse and manage API usage. The system tracks requests per identifier (email address or IP address) and enforces limits based on configurable thresholds. Rate limit checks occur in server actions before processing requests.
+Rate limiting uses **Upstash Redis** to prevent abuse and manage API usage. The system tracks requests per identifier (email address or IP address) and enforces limits based on configurable thresholds. Rate limit checks occur in server actions before processing requests.
 
 The rate limiting system uses a fixed-window algorithm where each time window has a maximum request count. When a user exceeds the limit, the system returns an error response indicating when they can retry. Redis keys automatically expire when the time window ends, eliminating the need for manual cleanup.
 
@@ -110,6 +155,26 @@ The rate limiting system uses a fixed-window algorithm where each time window ha
 - Per-endpoint configuration via constants
 - Automatic key expiration
 - Clear error messages for rate limit violations
+- IP-based rate limiting for coupon issuance (prevents abuse)
+- Email-based rate limiting for email submissions
+
+**Rate Limit Types:**
+
+- Email submission: Per email address
+- Coupon issuance: Per IP address and coupon ID
+- Survey completion: Tracked in Redis (prevents re-submission)
+
+### Survey Completion Tracking
+
+Survey completion is tracked using **Upstash Redis** to prevent users from completing the same survey multiple times. When a user completes a survey, a Redis key is set with a 30-day expiration. Before allowing survey access, the system checks if the key exists.
+
+**Survey Tracking Features:**
+
+- Email-based tracking (if email provided)
+- Anonymous tracking (if no email)
+- 30-day expiration
+- Coupon-specific tracking (for coupon surveys)
+- Prevents bypassing by changing email in URL
 
 ### Server Actions and Data Flow
 
@@ -132,6 +197,27 @@ Client components interact with the server through server actions and fetch requ
 
 For read operations, server components fetch data directly from Supabase using the tenant-scoped client. Data is passed to client components as props, enabling a clear separation between server-side data fetching and client-side interactivity.
 
+### Admin Dashboard Architecture
+
+The admin dashboard is a **single-page application (SPA)** with client-side tab switching. All admin sections are loaded on initial page load, and tab switching happens client-side without page reloads.
+
+**Admin Sections:**
+
+- **Dashboard** - Community Pulse Dashboard with KPIs, sentiment distribution, and engagement funnel
+- **Questions** - Survey question management with live preview
+- **Coupons** - Coupon management and issued coupons tracking
+- **Analytics** - Detailed analytics with charts and metrics
+- **Emails** - Email list management and mass email sending
+- **Settings** - Tenant settings, logo, subdomain, and customization
+- **Customization** - Background image customization (coming soon)
+
+**Admin Navigation:**
+
+- Tenant-specific routes: `/{slug}/admin`
+- Client-side tab switching (no page reloads)
+- Loading states for each section
+- Responsive design with mobile support
+
 ## Important Data Types
 
 The application uses comprehensive TypeScript type definitions to ensure type safety across all database operations. All types are defined in `lib/types/` and exported from `lib/types/index.ts`.
@@ -140,7 +226,7 @@ The application uses comprehensive TypeScript type definitions to ensure type sa
 
 #### Tenant Types (`lib/types/tenant.ts`)
 
-- **`Tenant`** - Full tenant record from database (id, slug, subdomain, name, logo_url, website_url, theme, active, created_at)
+- **`Tenant`** - Full tenant record from database (id, slug, subdomain, name, logo_url, website_url, theme, active, background_url, created_at)
 - **`TenantTheme`** - Theme configuration (primary, secondary colors)
 - **`TenantDisplay`** - Simplified tenant data for frontend display
 - **`TenantResponse`** - Response wrapper for tenant operations
@@ -243,7 +329,7 @@ The application uses comprehensive TypeScript type definitions to ensure type sa
   - Required for analytics tracking and user invitations
   - Must be kept secret and never committed to version control
 
-**Upstash Redis Configuration (for rate limiting):**
+**Upstash Redis Configuration (for rate limiting and survey tracking):**
 
 - `UPSTASH_REDIS_REST_URL` - Upstash Redis REST API URL
 - `UPSTASH_REDIS_REST_TOKEN` - Upstash Redis REST API token
@@ -282,7 +368,7 @@ To set up Google OAuth:
 - `NEXT_GOOGLE_SERVICE_ACCOUNT_EMAIL` - Service account email
 - `NEXT_GOOGLE_PRIVATE_KEY` - Service account private key
 
-**Resend Configuration (for contact form emails):**
+**Resend Configuration (for contact form and mass emails):**
 
 - `RESEND_API_KEY` - Resend API key for sending emails
 
@@ -290,13 +376,35 @@ To set up Resend:
 
 1. Create an account at https://resend.com
 2. Generate an API key from the dashboard
-3. Verify your sending domain (the from email is set to `Contact Form <onboarding@resend.dev>` in the code)
+3. Verify your sending domain
 4. Add `RESEND_API_KEY` to your `.env.local` file (or Vercel project settings)
 
 **Site Configuration:**
 
 - `NEXT_PUBLIC_SITE_URL` - Public URL of your application (e.g., `https://yourdomain.com`)
   - Used for OAuth redirects and email links
+
+### Supabase Redirect URL Configuration
+
+**Important**: For password reset and account creation links to work, configure Supabase redirect URLs correctly:
+
+**Site URL:**
+
+```
+https://www.digitalplacemaking.ca
+```
+
+(No trailing slash)
+
+**Redirect URLs:**
+
+```
+http://localhost:3000/**
+https://www.digitalplacemaking.ca/**
+https://digitalplacemaking.ca/**
+```
+
+The `/**` wildcard is required to allow redirects to any path (e.g., `/auth/callback`, `/auth/reset-password`).
 
 ### Local Development
 
@@ -323,28 +431,40 @@ To set up Resend:
    ```
 
 5. **Access the application:**
-   - Path-based: `http://localhost:3000/{slug}`
-   - Subdomain: `http://{subdomain}.localhost:3000` (requires local DNS configuration)
+   - Homepage: `http://localhost:3000`
+   - Path-based tenant: `http://localhost:3000/{slug}`
+   - Subdomain tenant: `http://{subdomain}.localhost:3000` (requires local DNS configuration)
 
 ### Production Deployment
 
-1. **Build the application:**
+The application is designed to be deployed on **Vercel**:
+
+1. **Connect repository to Vercel:**
+
+   - Import your Git repository
+   - Vercel will auto-detect Next.js
+
+2. **Configure environment variables:**
+
+   - Add all required environment variables in Vercel project settings
+   - Use Vercel's environment variable management
+
+3. **Configure custom domain:**
+
+   - Add your domain in Vercel project settings
+   - Configure DNS records as instructed
+   - For subdomain support, set up wildcard DNS: `*.yourdomain.com` → Vercel
+
+4. **Deploy:**
+
+   - Automatic deployments on push to main branch
+   - Preview deployments for pull requests
+
+5. **Build the application:**
 
    ```bash
    npm run build
    ```
-
-2. **Start the production server:**
-
-   ```bash
-   npm start
-   ```
-
-3. **For Vercel deployment:**
-   - Connect your repository to Vercel
-   - Add all environment variables in Vercel project settings
-   - Configure custom domain with wildcard DNS for subdomain support
-   - Deploy automatically on push to main branch
 
 ## Multi-Tenant Architecture
 
@@ -368,7 +488,7 @@ This approach maintains a single routing structure while supporting both access 
 
 **Subdomain Setup:**
 
-1. Configure wildcard DNS: `*.yourdomain.com` → Your server IP
+1. Configure wildcard DNS: `*.yourdomain.com` → Your server IP (or Vercel)
 2. Add subdomain to tenant record in database
 3. Middleware automatically handles routing
 
@@ -376,9 +496,10 @@ This approach maintains a single routing structure while supporting both access 
 
 ### Core Application Files
 
-- `app/layout.tsx` - Root layout with global metadata and theme configuration
-- `app/page.tsx` - Homepage component
-- `middleware.ts` - Request middleware for authentication, tenant resolution, and routing
+- `app/layout.tsx` - Root layout with global metadata, theme configuration, and Vercel Analytics
+- `app/page.tsx` - Homepage component with testimonials
+- `proxy.ts` - Middleware for request handling, authentication, tenant resolution, and routing
+- `next.config.ts` - Next.js configuration
 
 ### Tenant-Facing Pages
 
@@ -389,15 +510,33 @@ This approach maintains a single routing structure while supporting both access 
 - `app/[slug]/survey/page.tsx` - Anonymous feedback survey
 - `app/[slug]/survey/completed/page.tsx` - Survey completion page
 
-### Admin Pages
+### Admin Pages (Tenant-Specific)
 
-- `app/admin/page.tsx` - Admin dashboard with statistics
-- `app/admin/coupons/` - Coupon management (list, create, edit, delete)
-- `app/admin/questions/` - Survey question management
-- `app/admin/analytics/` - Analytics dashboard with charts and metrics
-- `app/admin/emails/` - Email list management
-- `app/admin/settings/` - Tenant settings and configuration
-- `app/admin/login/` - Admin login page
+- `app/[slug]/admin/page.tsx` - Admin dashboard (single-page app with tab switching)
+- `app/[slug]/admin/components/` - Admin dashboard components
+  - `AdminWrapper.tsx` - Main wrapper with tab state management
+  - `AdminNav.tsx` - Navigation with tab switching
+  - `AdminContent.tsx` - Content area that renders based on active tab
+  - `AdminPageContent.tsx` - Server component that fetches all data
+  - `DashboardKPICards.tsx` - KPI cards for dashboard
+  - `SentimentDistribution.tsx` - Sentiment distribution chart
+  - `EngagementFunnel.tsx` - Engagement funnel visualization
+- `app/[slug]/admin/questions/` - Survey question management
+- `app/[slug]/admin/coupons/` - Coupon management
+- `app/[slug]/admin/analytics/` - Analytics dashboard
+- `app/[slug]/admin/emails/` - Email list management and mass email
+- `app/[slug]/admin/settings/` - Tenant settings and configuration
+- `app/[slug]/admin/login/` - Tenant-specific admin login
+
+### Global Admin Pages
+
+- `app/admin/login/page.tsx` - Global admin login (tenant selection)
+
+### Auth Routes
+
+- `app/auth/callback/route.ts` - Supabase Auth callback (admin authentication)
+- `app/auth/oauth-callback/route.ts` - Google OAuth callback (tenant email collection)
+- `app/auth/reset-password/page.tsx` - Password reset/create page
 
 ### Server Actions
 
@@ -405,12 +544,16 @@ This approach maintains a single routing structure while supporting both access 
 - `app/actions/coupons.ts` - Coupon CRUD operations
 - `app/actions/issued-coupons.ts` - Coupon issuance and validation
 - `app/actions/surveys.ts` - Survey fetching and submission
-- `app/actions/emails.ts` - Email opt-in management
+- `app/actions/emails.ts` - Email opt-in management and mass email sending
 - `app/actions/questions.ts` - Survey question management
 - `app/actions/wallet.ts` - Google Wallet integration
 - `app/actions/staff.ts` - Staff management operations
 - `app/actions/analytics.ts` - Analytics data fetching
+- `app/actions/dashboard.ts` - Dashboard metrics aggregation
 - `app/actions/contact.ts` - Contact form submission
+- `app/actions/auth.ts` - Authentication operations
+- `app/actions/google/oauth-url.ts` - Google OAuth URL generation
+- `app/actions/google/oauth.ts` - Google OAuth email storage
 - `app/actions.ts` - Central export point for all server actions
 
 ### Type Definitions
@@ -441,16 +584,20 @@ This approach maintains a single routing structure while supporting both access 
 - `lib/constants/rate-limits.ts` - Rate limit configuration constants
 - `lib/analytics/track.ts` - Analytics event tracking
 - `lib/analytics/events.ts` - Analytics event helpers
+- `lib/google/oauth.ts` - Google OAuth URL building utilities
+- `lib/google/oauth-direct.ts` - Direct Google OAuth implementation
 
 ### Shared Components
 
 - `app/components/Footer.tsx` - Global footer with navigation
+- `app/components/AuthCallbackHandler.tsx` - Handles Supabase Auth OAuth callbacks
 - `app/components/ui/TenantLogo.tsx` - Tenant logo display component
 - `app/components/ui/Modal.tsx` - Reusable modal component
 - `app/components/ui/Spinner.tsx` - Loading spinner component
 - `app/components/ui/Card.tsx` - Card component
 - `app/components/ui/ActionButton.tsx` - Action button component
 - `app/components/survey/` - Survey-related components
+- `components/ui/` - shadcn/ui components (button, card, dialog, etc.)
 
 ## Running Locally
 
@@ -473,6 +620,47 @@ This approach maintains a single routing structure while supporting both access 
    - Path-based tenant: `http://localhost:3000/{slug}`
    - Subdomain tenant: `http://{subdomain}.localhost:3000` (requires local DNS configuration)
 
+## Key Features
+
+### Survey System
+
+- **14 Question Types**: Ranked choice, sentiment, single/multiple choice, Likert scales, NPS, rating, yes/no, open text, numeric, slider, date, time
+- **Live Preview**: Real-time preview when creating/editing questions
+- **Sentiment Tracking**: Special "Sentiment Question" type for sentiment analysis
+- **Survey Completion Tracking**: Redis-based tracking prevents re-submission
+- **Email Verification**: Ensures users complete survey before getting coupon
+
+### Coupon Management
+
+- **Digital Coupons**: Create, edit, and manage coupons
+- **Google Wallet Integration**: Generate digital wallet passes
+- **Coupon Issuance**: Track issued coupons with redemption status
+- **IP-Based Rate Limiting**: Prevents abuse of coupon generation
+- **QR Code Support**: QR codes for coupon redemption
+
+### Analytics Dashboard
+
+- **Community Pulse Dashboard**: Overview with KPIs
+- **Sentiment Distribution**: Visual representation of sentiment data
+- **Engagement Funnel**: User journey visualization
+- **Detailed Analytics**: Page visits, conversions, engagement metrics
+- **Vercel Analytics**: Performance and user behavior tracking
+
+### Email Management
+
+- **Email Collection**: Via form submission or Google OAuth
+- **Email List Management**: View and search collected emails
+- **Mass Email**: Send emails to all collected addresses via Resend
+- **Email Verification**: Prevents unauthorized coupon generation
+
+### Admin Features
+
+- **Single-Page Admin**: Client-side tab switching for fast navigation
+- **Tenant Switching**: Switch between multiple tenants (if user has access)
+- **Role-Based Access**: Owner, admin, and staff roles
+- **Customization**: Logo upload, background customization, subdomain management
+- **Real-Time Updates**: No page reloads for tab switching
+
 ## Additional Notes
 
 - **Type Safety**: All database operations use explicit TypeScript types. No `any` types are used in production code.
@@ -482,7 +670,9 @@ This approach maintains a single routing structure while supporting both access 
 - **Server Components**: The application uses server components by default for optimal performance and SEO.
 - **Analytics**: Uses admin client to bypass RLS for reliable tracking of unauthenticated visitors.
 - **Dark Mode**: Application is configured for dark mode by default.
+- **Mobile Responsive**: All pages are optimized for mobile devices.
+- **Security**: RLS policies enforce tenant isolation at the database level. IP-based rate limiting prevents abuse.
 
 ## License
 
-Copyright © 2024 KinesisIQ by Digital Placemaking. All rights reserved.
+Copyright © 2025 KinesisIQ by Digital Placemaking. All rights reserved.
