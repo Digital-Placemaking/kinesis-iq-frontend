@@ -130,6 +130,19 @@ export default function QuestionCard({
 
       // Rating questions (1-5 scale)
       case "sentiment":
+        return (
+          <div>
+            <QuestionRating
+              value={answer?.answer_number || null}
+              onChange={handleNumberChange}
+              min={1}
+              max={5}
+            />
+            <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+              1 being 'excellent' and 5 being strongly dissatisfied.
+            </p>
+          </div>
+        );
       case "rating_5":
         return (
           <QuestionRating

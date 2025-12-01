@@ -196,6 +196,11 @@ export default function CouponCompletion({
             </p>
           )}
 
+          {/* Privacy Message */}
+          <p className="mb-3 text-center text-xs font-bold text-zinc-600 dark:text-zinc-400">
+            Your data stays anonymous.
+          </p>
+
           {/* Error Display */}
           {error && (
             <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">

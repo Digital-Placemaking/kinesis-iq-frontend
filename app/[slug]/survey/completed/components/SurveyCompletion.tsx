@@ -85,6 +85,9 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
             Your feedback helps us improve our services. We appreciate your time
             and input!
           </p>
+          <p className="mb-4 text-center text-xs font-bold text-zinc-600 dark:text-zinc-400 sm:mb-6 sm:text-sm">
+            Your data stays anonymous.
+          </p>
 
           {/* Email Opt-in Section */}
           {!submitted ? (

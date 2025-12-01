@@ -42,12 +42,14 @@ export default function Modal({
 }: ModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn(sizeClasses[size])}>
-        <DialogHeader>
+      <DialogContent
+        className={cn(sizeClasses[size], "max-h-[90vh] flex flex-col")}
+      >
+        <DialogHeader className="shrink-0">
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        <div className="py-4">{children}</div>
+        <div className="py-4 overflow-y-auto flex-1 min-h-0">{children}</div>
       </DialogContent>
     </Dialog>
   );
