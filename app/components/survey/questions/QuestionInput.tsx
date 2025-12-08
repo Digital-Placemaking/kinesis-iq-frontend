@@ -22,16 +22,16 @@ export default function QuestionInput({
   multiline = false,
 }: QuestionInputProps) {
   const baseClasses =
-    "w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
+    "w-full rounded-xl border-2 border-border bg-card px-4 sm:px-5 py-3.5 sm:py-4 text-base sm:text-lg leading-relaxed text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:shadow-lg focus:shadow-primary/20 focus:outline-none transition-all duration-250 resize-none";
 
   if (multiline) {
     return (
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder || "Type your thoughts here..."}
         required={required}
-        rows={4}
+        rows={6}
         className={baseClasses}
       />
     );

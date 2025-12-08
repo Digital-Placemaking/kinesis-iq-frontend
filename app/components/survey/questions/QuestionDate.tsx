@@ -26,7 +26,7 @@ export default function QuestionDate({
       onChange={(e) => onChange(e.target.value)}
       min={min}
       max={max}
-      className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-black focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+      className="w-full rounded-xl border-2 border-border bg-card px-4 py-3.5 sm:py-4 text-base sm:text-lg text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:shadow-lg focus:shadow-primary/20 transition-all duration-250"
     />
   );
 }

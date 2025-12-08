@@ -24,17 +24,17 @@ export default function QuestionNPS({ value, onChange }: QuestionNPSProps) {
   const scale = Array.from({ length: 11 }, (_, i) => i); // 0-10
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
         {scale.map((num) => (
           <button
             key={num}
             type="button"
             onClick={() => onChange(num)}
-            className={`group relative flex h-12 w-12 flex-col items-center justify-center rounded-lg border-2 transition-all sm:h-14 sm:w-14 ${
+            className={`group relative flex h-14 w-14 sm:h-16 sm:w-16 flex-col items-center justify-center rounded-xl border-2 transition-all duration-250 ${
               value === num
-                ? "border-blue-500 bg-blue-50 shadow-md dark:border-blue-400 dark:bg-blue-900/20"
-                : "border-zinc-200 bg-white text-zinc-600 hover:border-blue-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-blue-700 dark:hover:bg-zinc-800"
+                ? "border-primary bg-primary/10 shadow-lg scale-105"
+                : "border-border bg-card hover:border-primary/50 hover:bg-muted/30 hover:scale-105 active:scale-95"
             }`}
             title={`${num} - ${
               num <= 2
@@ -47,9 +47,7 @@ export default function QuestionNPS({ value, onChange }: QuestionNPSProps) {
             <span className="text-xl sm:text-2xl">{getNPSIcon(num)}</span>
             <span
               className={`mt-0.5 text-[10px] font-semibold sm:text-xs ${
-                value === num
-                  ? "text-blue-600 dark:text-blue-400"
-                  : "text-zinc-500 dark:text-zinc-400"
+                value === num ? "text-primary" : "text-muted-foreground"
               }`}
             >
               {num}

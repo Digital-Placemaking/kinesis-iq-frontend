@@ -25,25 +25,25 @@ export default function QuestionLikert({
   const points = Array.from({ length: scale }, (_, i) => i + 1);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
         {points.map((point) => (
           <button
             key={point}
             type="button"
             onClick={() => onChange(point)}
-            className={`flex h-12 w-12 items-center justify-center rounded-lg border-2 transition-all ${
+            className={`flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl border-2 transition-all duration-250 ${
               value === point
-                ? "border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/20 dark:text-blue-400"
-                : "border-zinc-200 bg-white text-zinc-600 hover:border-blue-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-blue-700 dark:hover:bg-zinc-800"
+                ? "border-primary bg-primary/10 text-primary shadow-lg scale-105"
+                : "border-border bg-card text-foreground hover:border-primary/50 hover:bg-muted/30 hover:scale-105 active:scale-95"
             }`}
           >
-            <span className="text-lg font-semibold">{point}</span>
+            <span className="text-xl sm:text-2xl font-bold">{point}</span>
           </button>
         ))}
       </div>
       {labels && (
-        <div className="flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           {labels.left && <span>{labels.left}</span>}
           {value !== null && (
             <span className="font-medium">Selected: {value}</span>

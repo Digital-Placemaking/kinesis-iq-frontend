@@ -8,11 +8,11 @@
 
 import { useMemo, useCallback } from "react";
 import type { SurveyQuestion, QuestionAnswer } from "@/lib/types/survey";
-import Card from "@/app/components/ui/Card";
 import QuestionInput from "@/app/components/survey/questions/QuestionInput";
 import QuestionRadio from "@/app/components/survey/questions/QuestionRadio";
 import QuestionRating from "@/app/components/survey/questions/QuestionRating";
 import QuestionCheckbox from "@/app/components/survey/questions/QuestionCheckbox";
+import QuestionRankedChoice from "@/app/components/survey/questions/QuestionRankedChoice";
 import QuestionNPS from "@/app/components/survey/questions/QuestionNPS";
 import QuestionLikert from "@/app/components/survey/questions/QuestionLikert";
 import QuestionYesNo from "@/app/components/survey/questions/QuestionYesNo";
@@ -37,8 +37,9 @@ export default function QuestionCard({
     if (!question.options || !Array.isArray(question.options)) {
       return [];
     }
-    return question.options.map((opt: any) =>
-      typeof opt === "string" ? opt : opt.label || opt.value || String(opt)
+    return question.options.map(
+      (opt: string | { label?: string; value?: string }) =>
+        typeof opt === "string" ? opt : opt.label || opt.value || String(opt)
     );
   }, [question.options]);
 
@@ -106,11 +107,30 @@ export default function QuestionCard({
 
       // Single selection questions
       case "single_choice":
-      case "ranked_choice":
         return (
           <QuestionRadio
             value={answer?.answer_text || null}
             onChange={handleTextChange}
+            options={options}
+          />
+        );
+
+      // Ranked choice questions (multiple selection with ordering)
+      case "ranked_choice":
+        const rankedValues = answer?.answer_text
+          ? (JSON.parse(answer.answer_text) as string[])
+          : [];
+        return (
+          <QuestionRankedChoice
+            value={rankedValues}
+            onChange={(values) => {
+              onChange({
+                question_id: question.id,
+                answer_text: JSON.stringify(values),
+                answer_number: null,
+                answer_boolean: null,
+              });
+            }}
             options={options}
           />
         );
@@ -131,17 +151,12 @@ export default function QuestionCard({
       // Rating questions (1-5 scale)
       case "sentiment":
         return (
-          <div>
-            <QuestionRating
-              value={answer?.answer_number || null}
-              onChange={handleNumberChange}
-              min={1}
-              max={5}
-            />
-            <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-              1 being 'excellent' and 5 being strongly dissatisfied.
-            </p>
-          </div>
+          <QuestionRating
+            value={answer?.answer_number || null}
+            onChange={handleNumberChange}
+            min={1}
+            max={5}
+          />
         );
       case "rating_5":
         return (
@@ -275,13 +290,24 @@ export default function QuestionCard({
   };
 
   return (
-    <Card className="p-6" variant="elevated">
-      <div className="mb-4">
-        <label className="block text-base font-semibold text-black dark:text-zinc-50">
-          {question.question}
-        </label>
+    <div className="w-full space-y-6 sm:space-y-8">
+      <div>
+        {question.type === "ranked_choice" ? (
+          <div className="space-y-1">
+            <label className="block text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-tight">
+              Rank your preferences
+            </label>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              (most to least important)
+            </p>
+          </div>
+        ) : (
+          <label className="block text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-tight">
+            {question.question}
+          </label>
+        )}
       </div>
-      <div className="mt-4">{renderQuestionInput()}</div>
-    </Card>
+      <div className="w-full">{renderQuestionInput()}</div>
+    </div>
   );
 }

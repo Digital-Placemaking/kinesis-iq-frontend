@@ -152,16 +152,16 @@ export default function CouponCompletion({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+    <div className="mobile-theme flex min-h-screen flex-col bg-kinesisiq-gradient">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-6">
         {/* Main Content Card */}
         <Card className="mb-4 p-4" variant="elevated">
           {/* Congratulations Header */}
           <div className="mb-3 text-center">
-            <h1 className="mb-1 text-xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-2xl">
+            <h1 className="mb-1 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               Congratulations! 🎉
             </h1>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Thanks for completing our survey
             </p>
           </div>
@@ -176,7 +176,7 @@ export default function CouponCompletion({
                 />
               ) : (
                 <div className="flex aspect-square items-center justify-center">
-                  <span className="text-4xl font-bold text-zinc-600 dark:text-zinc-400">
+                  <span className="text-4xl font-bold text-muted-foreground">
                     {tenant.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -185,25 +185,23 @@ export default function CouponCompletion({
           </div>
 
           {/* Coupon Title */}
-          <h2 className="mb-1 text-center text-base font-bold text-blue-600 dark:text-blue-400 sm:text-lg">
+          <h2 className="mb-1 text-center text-base font-bold text-primary sm:text-lg">
             {coupon.title}
           </h2>
 
           {/* Coupon Description */}
           {coupon.description && (
-            <p className="mb-3 text-center text-xs text-zinc-600 dark:text-zinc-400">
+            <p className="mb-3 text-center text-xs text-muted-foreground">
               {coupon.description}
             </p>
           )}
 
-          {/* Privacy Message */}
-          <p className="mb-3 text-center text-xs font-bold text-zinc-600 dark:text-zinc-400">
+          <p className="mb-3 text-center text-xs font-bold text-muted-foreground">
             Your data stays anonymous.
           </p>
 
-          {/* Error Display */}
           {error && (
-            <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+            <div className="mb-3 rounded-lg border-2 border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
               <p className="font-semibold">Error issuing coupon:</p>
               <p className="mt-1">{error}</p>
             </div>
@@ -215,7 +213,7 @@ export default function CouponCompletion({
               <CouponCodeDisplay code={couponCode} />
               {/* Show message if this is an existing redeemed coupon */}
               {isAlreadyRedeemed && (
-                <div className="mt-2 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-2 text-xs text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                <div className="mt-2 flex items-start gap-2 rounded-lg border-2 border-primary/20 bg-primary/10 p-2 text-xs text-primary">
                   <Info className="h-3 w-3 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold">
@@ -233,17 +231,16 @@ export default function CouponCompletion({
 
           {/* Share Section */}
           <InfoBox title="Share" variant="success" className="mb-3 py-2">
-            <p className="text-center text-xs font-semibold text-green-700 dark:text-green-300">
+            <p className="text-center text-xs font-semibold text-primary">
               Send to family, friends and colleagues.
             </p>
           </InfoBox>
 
-          {/* Important Information */}
           <InfoBox variant="info" className="mb-0 py-2">
-            <p className="mb-1 text-xs font-semibold text-zinc-900 dark:text-zinc-50">
+            <p className="mb-1 text-xs font-semibold text-foreground">
               IMPORTANT:
             </p>
-            <ul className="space-y-0.5 text-[11px] text-zinc-700 dark:text-zinc-300">
+            <ul className="space-y-0.5 text-[11px] text-muted-foreground">
               <li>• Save this code! Take a screenshot or write it down.</li>
               <li>• Use before expiry date.</li>
               <li>• One-time use only.</li>
@@ -253,7 +250,7 @@ export default function CouponCompletion({
 
         {/* Wallet Error Display */}
         {walletError && (
-          <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+          <div className="mb-3 rounded-lg border-2 border-destructive/20 bg-destructive/10 p-2 text-xs text-destructive">
             {walletError}
           </div>
         )}
@@ -286,7 +283,7 @@ export default function CouponCompletion({
 
         {/* Footer Options */}
         <div className="space-y-2 text-center">
-          <div className="flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <Bell className="h-3 w-3" />
             <span>Want to hear about more offers?</span>
           </div>

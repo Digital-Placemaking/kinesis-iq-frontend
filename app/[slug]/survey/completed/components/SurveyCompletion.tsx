@@ -61,16 +61,16 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+    <div className="mobile-theme flex min-h-screen flex-col bg-kinesisiq-gradient">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8 sm:px-8 sm:py-12">
         {/* Main Content Card */}
         <Card className="mb-4 w-full p-4 sm:mb-6 sm:p-6" variant="elevated">
           {/* Congratulations Header */}
           <div className="mb-4 text-center sm:mb-6">
-            <h1 className="mb-2 text-xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-2xl md:text-3xl">
+            <h1 className="mb-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
               Congratulations! 🎉
             </h1>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 sm:text-sm">
+            <p className="text-xs text-muted-foreground sm:text-sm">
               Thanks for completing our survey
             </p>
           </div>
@@ -81,20 +81,20 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
           </div>
 
           {/* Thank You Message */}
-          <p className="mb-4 text-center text-xs text-zinc-600 dark:text-zinc-400 sm:mb-6 sm:text-sm">
+          <p className="mb-4 text-center text-xs text-muted-foreground sm:mb-6 sm:text-sm">
             Your feedback helps us improve our services. We appreciate your time
             and input!
           </p>
-          <p className="mb-4 text-center text-xs font-bold text-zinc-600 dark:text-zinc-400 sm:mb-6 sm:text-sm">
+          <p className="mb-4 text-center text-xs font-bold text-muted-foreground sm:mb-6 sm:text-sm">
             Your data stays anonymous.
           </p>
 
           {/* Email Opt-in Section */}
           {!submitted ? (
             <div className="space-y-3">
-              <p className="text-center text-xs font-medium text-zinc-700 dark:text-zinc-300 sm:text-sm">
-                Want to stay updated with exclusive offers?
-              </p>
+            <p className="text-center text-xs font-medium text-muted-foreground sm:text-sm">
+              Want to stay updated with exclusive offers?
+            </p>
               <form onSubmit={handleEmailSubmit} className="space-y-2">
                 <input
                   type="email"
@@ -103,7 +103,7 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
                   placeholder="Enter your email"
                   required
                   disabled={loading}
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                  className="w-full rounded-lg border-2 border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 transition-all duration-250"
                 />
                 <div className="flex justify-center">
                   <ActionButton
@@ -124,14 +124,14 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
                 </div>
               </form>
               {error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+                <div className="rounded-lg border-2 border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
                   {error}
                 </div>
               )}
             </div>
           ) : (
-            <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center dark:border-green-800 dark:bg-green-900/20 sm:p-4">
-              <p className="text-xs font-semibold text-green-800 dark:text-green-200 sm:text-sm">
+            <div className="rounded-lg border-2 border-primary/20 bg-primary/10 p-3 text-center sm:p-4">
+              <p className="text-xs font-semibold text-primary sm:text-sm">
                 Thank you! You've been added to our mailing list.
               </p>
             </div>
@@ -140,7 +140,7 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
 
         {/* Footer Options */}
         <div className="space-y-3 text-center">
-          <div className="flex flex-col items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 sm:flex-row sm:text-sm">
+          <div className="flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground sm:flex-row sm:text-sm">
             <Bell className="h-4 w-4 shrink-0" />
             <span>Want to hear about more offers?</span>
           </div>

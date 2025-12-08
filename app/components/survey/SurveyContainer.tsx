@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Survey, QuestionAnswer } from "@/lib/types/survey";
 import { submitSurveyAnswers } from "@/app/actions";
@@ -19,6 +19,7 @@ interface SurveyContainerProps {
   tenantSlug: string;
   couponId: string | null;
   email: string | null;
+  onQuestionChange?: (index: number) => void;
 }
 
 export default function SurveyContainer({
@@ -26,12 +27,19 @@ export default function SurveyContainer({
   tenantSlug,
   couponId,
   email,
+  onQuestionChange,
 }: SurveyContainerProps) {
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, QuestionAnswer>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Sync initial question index with parent
+  useEffect(() => {
+    onQuestionChange?.(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Guard against empty survey
   if (!survey.questions || survey.questions.length === 0) {
@@ -51,8 +59,8 @@ export default function SurveyContainer({
 
   if (!currentQuestion) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-zinc-600 dark:text-zinc-400">
+      <div className="rounded-xl border-2 border-border bg-card p-8 text-center">
+        <p className="text-muted-foreground">
           No questions available for this survey.
         </p>
       </div>
@@ -109,7 +117,9 @@ export default function SurveyContainer({
     }
 
     if (currentQuestionIndex < survey.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      const newIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(newIndex);
+      onQuestionChange?.(newIndex);
       setError(null);
     }
   };
@@ -204,37 +214,36 @@ export default function SurveyContainer({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl">
-      <SurveyProgress
-        current={currentQuestionIndex + 1}
-        total={survey.questions.length}
-      />
-
+    <form onSubmit={handleSubmit} className="flex h-full flex-col min-h-0">
       {error && (
-        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+        <div className="mb-4 rounded-lg border-2 border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive shadow-sm flex-shrink-0">
           {error}
         </div>
       )}
 
-      <QuestionCard
-        question={currentQuestion}
-        answer={currentAnswer}
-        onChange={handleAnswerChange}
-      />
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+        <QuestionCard
+          question={currentQuestion}
+          answer={currentAnswer}
+          onChange={handleAnswerChange}
+        />
+      </div>
 
-      <SurveyNavigation
-        currentQuestion={currentQuestionIndex + 1}
-        totalQuestions={survey.questions.length}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        isNextDisabled={
-          !currentAnswer ||
-          (!currentAnswer.answer_text &&
-            !currentAnswer.answer_number &&
-            currentAnswer.answer_boolean === null)
-        }
-        isSubmitting={isSubmitting}
-      />
+      <div className="flex-shrink-0 mt-auto pt-4 pb-2 space-y-2">
+        <SurveyNavigation
+          currentQuestion={currentQuestionIndex + 1}
+          totalQuestions={survey.questions.length}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          isNextDisabled={
+            !currentAnswer ||
+            (!currentAnswer.answer_text &&
+              !currentAnswer.answer_number &&
+              currentAnswer.answer_boolean === null)
+          }
+          isSubmitting={isSubmitting}
+        />
+      </div>
     </form>
   );
 }
