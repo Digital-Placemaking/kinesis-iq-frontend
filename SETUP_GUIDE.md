@@ -207,3 +207,6 @@ npm run lint
 - **Supabase** is like Firebase - it's a backend-as-a-service (no server needed)
 - **Server Actions** (files with `"use server"`) run on the server, not in the browser
 
+
+
+

@@ -17,6 +17,7 @@ import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
 import Spinner from "@/app/components/ui/Spinner";
 import SectionSeparator from "@/app/components/ui/SectionSeparator";
+import { Separator } from "@/components/ui/separator";
 import { getTenantPath } from "@/lib/utils/subdomain";
 import type { TenantDisplay } from "@/lib/types/tenant";
 
@@ -172,7 +173,7 @@ export default function TenantLanding({
   return (
     <div className="mobile-theme flex min-h-screen flex-col bg-kinesisiq-gradient">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8 sm:px-6 sm:py-12">
-        <div className="mb-10 text-center sm:mb-12">
+        <div className="mb-6 text-center sm:mb-8">
           <div
             className="mx-auto mb-6 flex justify-center animate-fade-in sm:mb-8"
             style={{ animationDelay: "0.2s", animationFillMode: "both" }}
@@ -190,11 +191,11 @@ export default function TenantLanding({
         </div>
 
         <div className="space-y-5 sm:space-y-6">
-          <div className="text-center space-y-1.5">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          <div className="text-center space-y-1">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Access VIP Events & Exclusive Offers
             </h2>
-            <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground max-w-xs mx-auto px-2">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               Exclusive Offers - Access Below
             </p>
           </div>
@@ -265,17 +266,17 @@ export default function TenantLanding({
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-3 text-sm font-semibold shadow-lg transition-all duration-250 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 text-white px-4 py-3 text-sm font-semibold shadow-lg transition-all duration-250 hover:bg-blue-700 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {loading ? (
                 <>
-                  <Spinner size="sm" className="text-primary-foreground" />
+                  <Spinner size="sm" className="text-white" />
                   <span>Submitting...</span>
                 </>
               ) : (
                 <>
                   <Mail className="h-5 w-5" />
-                  <span>Continue with Email</span>
+                  <span>Email for exclusive offers</span>
                 </>
               )}
             </button>
@@ -300,8 +301,14 @@ export default function TenantLanding({
             </span>
           </div>
 
-          <div className="space-y-2 pt-6 sm:pt-8">
-            <SectionSeparator text="Just want to share feedback?" />
+          <div className="space-y-3 pt-2">
+            <div className="relative flex items-center gap-4">
+              <Separator className="flex-1 bg-primary/30" />
+              <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                Just want to share feedback?
+              </span>
+              <Separator className="flex-1 bg-primary/30" />
+            </div>
             <button
               type="button"
               onClick={handleFeedbackClick}
@@ -310,15 +317,9 @@ export default function TenantLanding({
             >
               Take Poll
             </button>
-            <button
-              type="button"
-              onClick={handleFeedbackClick}
-              disabled={loading}
-              className="w-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 py-2"
-              aria-label="Skip feedback"
-            >
+            <p className="text-center text-xs text-muted-foreground">
               Your data stays anonymous.
-            </button>
+            </p>
           </div>
 
           {error && (

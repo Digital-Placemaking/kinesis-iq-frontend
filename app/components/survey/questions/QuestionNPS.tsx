@@ -1,7 +1,8 @@
 /**
  * app/components/survey/questions/QuestionNPS.tsx
  * Net Promoter Score (NPS) question component.
- * Renders NPS question with 0-10 scale using emoji icons for ratings.
+ * Renders NPS question with 0-10 scale with color-coded feedback.
+ * Colors: Red (0-4), Orange (5), Yellow (6-7), Green (8-10)
  */
 
 "use client";
@@ -11,49 +12,80 @@ interface QuestionNPSProps {
   onChange: (value: number) => void;
 }
 
-// Get emoji icon for NPS score (0-10)
-function getNPSIcon(score: number): string {
-  if (score <= 2) return "😞"; // Very negative
-  if (score <= 4) return "😐"; // Negative
-  if (score <= 6) return "😑"; // Neutral
-  if (score <= 8) return "🙂"; // Positive
-  return "😊"; // Very positive (9-10)
+// Color coding based on score
+function getScoreColor(score: number): { border: string; bg: string; text: string } {
+  if (score <= 4) return { border: "border-red-500", bg: "bg-red-500/20", text: "text-red-400" };
+  if (score === 5) return { border: "border-orange-500", bg: "bg-orange-500/20", text: "text-orange-400" };
+  if (score <= 7) return { border: "border-yellow-500", bg: "bg-yellow-500/20", text: "text-yellow-400" };
+  return { border: "border-green-500", bg: "bg-green-500/20", text: "text-green-400" };
 }
 
 export default function QuestionNPS({ value, onChange }: QuestionNPSProps) {
-  const scale = Array.from({ length: 11 }, (_, i) => i); // 0-10
+  const selectedColor = value !== null ? getScoreColor(value) : null;
+  
+  // Get label for selected value
+  const getLabel = (score: number): string => {
+    if (score <= 4) return "Not likely";
+    if (score === 5) return "Neutral";
+    if (score <= 7) return "Somewhat likely";
+    return "Very likely";
+  };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-        {scale.map((num) => (
-          <button
-            key={num}
-            type="button"
-            onClick={() => onChange(num)}
-            className={`group relative flex h-14 w-14 sm:h-16 sm:w-16 flex-col items-center justify-center rounded-xl border-2 transition-all duration-250 ${
-              value === num
-                ? "border-primary bg-primary/10 shadow-lg scale-105"
-                : "border-border bg-card hover:border-primary/50 hover:bg-muted/30 hover:scale-105 active:scale-95"
-            }`}
-            title={`${num} - ${
-              num <= 2
-                ? "Not at all likely"
-                : num <= 6
-                ? "Somewhat likely"
-                : "Extremely likely"
-            }`}
-          >
-            <span className="text-xl sm:text-2xl">{getNPSIcon(num)}</span>
-            <span
-              className={`mt-0.5 text-[10px] font-semibold sm:text-xs ${
-                value === num ? "text-primary" : "text-muted-foreground"
+    <div className="space-y-4">
+      {/* Row 1: 0-5 */}
+      <div className="flex justify-center gap-2">
+        {[0, 1, 2, 3, 4, 5].map((num) => {
+          const isSelected = value === num;
+          const colors = getScoreColor(num);
+          return (
+            <button
+              key={num}
+              type="button"
+              onClick={() => onChange(num)}
+              className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 font-bold text-base transition-all duration-200 ${
+                isSelected
+                  ? `${colors.border} ${colors.bg} ${colors.text} shadow-lg scale-110`
+                  : "border-border bg-card text-foreground hover:border-muted-foreground/50 hover:bg-muted/30 active:scale-95"
               }`}
             >
               {num}
-            </span>
-          </button>
-        ))}
+            </button>
+          );
+        })}
+      </div>
+      {/* Row 2: 6-10 */}
+      <div className="flex justify-center gap-2">
+        {[6, 7, 8, 9, 10].map((num) => {
+          const isSelected = value === num;
+          const colors = getScoreColor(num);
+          return (
+            <button
+              key={num}
+              type="button"
+              onClick={() => onChange(num)}
+              className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 font-bold text-base transition-all duration-200 ${
+                isSelected
+                  ? `${colors.border} ${colors.bg} ${colors.text} shadow-lg scale-110`
+                  : "border-border bg-card text-foreground hover:border-muted-foreground/50 hover:bg-muted/30 active:scale-95"
+              }`}
+            >
+              {num}
+            </button>
+          );
+        })}
+      </div>
+      {/* Selected feedback with label */}
+      <div className="text-center min-h-[2.5rem] flex items-center justify-center">
+        {value !== null && selectedColor ? (
+          <p className={`text-sm font-semibold ${selectedColor.text}`}>
+            {value}/10 — {getLabel(value)}
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Select a number from 0 (not likely) to 10 (very likely)
+          </p>
+        )}
       </div>
     </div>
   );

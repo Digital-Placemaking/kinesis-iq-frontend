@@ -27,12 +27,12 @@ export default function SurveyNavigation({
   const isLastQuestion = currentQuestion === totalQuestions;
 
   return (
-    <div className="flex items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-6">
+    <div className="flex items-center justify-between gap-2 pt-4 mt-auto">
       <button
         type="button"
         onClick={onPrevious}
         disabled={isFirstQuestion || isSubmitting}
-        className="flex items-center gap-2 rounded-lg border-2 border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-all duration-250 hover:border-primary/50 hover:bg-muted/50 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+        className="flex items-center gap-1.5 rounded-lg border-2 border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-all duration-200 hover:border-primary/50 hover:bg-muted/50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <ChevronLeft className="h-4 w-4" />
         Previous
@@ -42,7 +42,7 @@ export default function SurveyNavigation({
         <button
           type="submit"
           disabled={isNextDisabled || isSubmitting}
-          className="flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold shadow-lg transition-all duration-250 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+          className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold shadow-md transition-all duration-200 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "Submitting..." : "Submit Survey"}
           {!isSubmitting && <ChevronRight className="h-4 w-4" />}
@@ -52,7 +52,7 @@ export default function SurveyNavigation({
           type="button"
           onClick={onNext}
           disabled={isNextDisabled || isSubmitting}
-          className="flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold shadow-lg transition-all duration-250 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+          className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold shadow-md transition-all duration-200 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next
           <ChevronRight className="h-4 w-4" />

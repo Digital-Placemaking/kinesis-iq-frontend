@@ -64,7 +64,10 @@ export default async function SurveyPage({
   }
 
   return (
-    <main className="mobile-theme flex min-h-screen items-start justify-center bg-kinesisiq-gradient p-4 pt-8 sm:pt-12">
+    <main className="mobile-theme flex min-h-screen flex-col items-center bg-kinesisiq-gradient p-4 pt-6 sm:pt-10">
+      <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 sm:mb-6">
+        Feedback Survey
+      </h1>
       <SurveyCard
         survey={survey}
         tenantSlug={slug}

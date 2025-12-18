@@ -44,3 +44,6 @@ All screens use **mock/dummy data** so you can:
 
 Once you get Supabase credentials, you can test with real data at `/{tenant-slug}`.
 
+
+
+

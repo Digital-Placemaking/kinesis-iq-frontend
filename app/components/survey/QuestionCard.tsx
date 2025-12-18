@@ -152,7 +152,7 @@ export default function QuestionCard({
       case "sentiment":
         return (
           <QuestionRating
-            value={answer?.answer_number || null}
+            value={answer?.answer_number ?? null}
             onChange={handleNumberChange}
             min={1}
             max={5}
@@ -161,7 +161,7 @@ export default function QuestionCard({
       case "rating_5":
         return (
           <QuestionRating
-            value={answer?.answer_number || null}
+            value={answer?.answer_number ?? null}
             onChange={handleNumberChange}
             min={1}
             max={5}
@@ -172,7 +172,7 @@ export default function QuestionCard({
       case "likert_5":
         return (
           <QuestionLikert
-            value={answer?.answer_number || null}
+            value={answer?.answer_number ?? null}
             onChange={handleNumberChange}
             scale={5}
             labels={
@@ -186,7 +186,7 @@ export default function QuestionCard({
       case "likert_7":
         return (
           <QuestionLikert
-            value={answer?.answer_number || null}
+            value={answer?.answer_number ?? null}
             onChange={handleNumberChange}
             scale={7}
             labels={
@@ -201,7 +201,7 @@ export default function QuestionCard({
       case "nps":
         return (
           <QuestionNPS
-            value={answer?.answer_number || null}
+            value={answer?.answer_number ?? null}
             onChange={handleNumberChange}
           />
         );

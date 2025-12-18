@@ -20,6 +20,7 @@ interface SurveyContainerProps {
   couponId: string | null;
   email: string | null;
   onQuestionChange?: (index: number) => void;
+  onDemoSubmit?: () => void;
 }
 
 export default function SurveyContainer({
@@ -28,6 +29,7 @@ export default function SurveyContainer({
   couponId,
   email,
   onQuestionChange,
+  onDemoSubmit,
 }: SurveyContainerProps) {
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -173,6 +175,12 @@ export default function SurveyContainer({
       return;
     }
 
+    // Demo mode: skip actual submission
+    if (onDemoSubmit) {
+      onDemoSubmit();
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -238,7 +246,7 @@ export default function SurveyContainer({
           isNextDisabled={
             !currentAnswer ||
             (!currentAnswer.answer_text &&
-              !currentAnswer.answer_number &&
+              currentAnswer.answer_number === null &&
               currentAnswer.answer_boolean === null)
           }
           isSubmitting={isSubmitting}
