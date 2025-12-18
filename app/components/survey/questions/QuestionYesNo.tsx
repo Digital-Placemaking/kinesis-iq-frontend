@@ -13,7 +13,7 @@ interface QuestionYesNoProps {
 
 export default function QuestionYesNo({ value, onChange }: QuestionYesNoProps) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 pt-4">
       <button
         type="button"
         onClick={() => onChange(true)}

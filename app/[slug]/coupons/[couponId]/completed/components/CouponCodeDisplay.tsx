@@ -18,7 +18,21 @@ export default function CouponCodeDisplay({ code }: CouponCodeDisplayProps) {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(code);
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        // Fallback for mobile/HTTP: create temporary input
+        const textArea = document.createElement("textarea");
+        textArea.value = code;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -27,15 +41,15 @@ export default function CouponCodeDisplay({ code }: CouponCodeDisplayProps) {
   };
 
   return (
-    <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/10 p-3">
-      <p className="mb-1.5 text-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/10 p-2.5">
+      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
         Your Coupon Code
       </p>
       <button
         onClick={handleCopy}
-        className="mb-1.5 w-full group"
+        className="mb-1 w-full group"
       >
-        <div className="flex flex-col items-center gap-1.5 rounded-lg border-2 border-border bg-card px-3 py-2 transition-all hover:border-primary/50 hover:bg-card/80 active:scale-[0.98]">
+        <div className="flex flex-col items-center gap-1 rounded-lg border-2 border-border bg-card px-3 py-1.5 transition-all hover:border-primary/50 hover:bg-card/80 active:scale-[0.98]">
           <span className="break-all text-center text-base font-bold text-primary sm:text-lg">
             {code}
           </span>

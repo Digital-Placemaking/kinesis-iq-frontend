@@ -22,7 +22,7 @@ export default function QuestionRating({
   const ratings = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pt-4">
       <div className="flex items-center justify-center gap-2">
         {ratings.map((rating) => (
           <button

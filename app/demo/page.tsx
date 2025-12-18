@@ -208,6 +208,9 @@ export default function DemoPage() {
               onClick={() => setStep("coupons")}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 text-white px-4 py-3 text-sm font-semibold shadow-lg transition-all hover:bg-blue-700"
             >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
               Email for exclusive offers
             </button>
           </div>
@@ -274,15 +277,6 @@ export default function DemoPage() {
         coupons={mockCoupons}
         email="demo@example.com"
       />
-      {/* Demo: Go to survey */}
-      <div className="fixed bottom-20 left-4 right-4 flex justify-center">
-        <button
-          onClick={() => setStep("survey-coupon")}
-          className="rounded-lg border-2 border-dashed border-primary/50 bg-card/90 backdrop-blur px-6 py-3 text-sm font-medium text-primary shadow-lg transition-all hover:bg-primary/20"
-        >
-          Demo: Select Coupon → Survey
-        </button>
-      </div>
     </div>
   );
 

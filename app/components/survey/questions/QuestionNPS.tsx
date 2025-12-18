@@ -32,7 +32,7 @@ export default function QuestionNPS({ value, onChange }: QuestionNPSProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 pt-8">
       {/* Row 1: 0-5 */}
       <div className="flex justify-center gap-2">
         {[0, 1, 2, 3, 4, 5].map((num) => {
@@ -45,7 +45,7 @@ export default function QuestionNPS({ value, onChange }: QuestionNPSProps) {
               onClick={() => onChange(num)}
               className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 font-bold text-base transition-all duration-200 ${
                 isSelected
-                  ? `${colors.border} ${colors.bg} ${colors.text} shadow-lg scale-110`
+                  ? `${colors.border} ${colors.bg} ${colors.text} shadow-lg scale-105`
                   : "border-border bg-card text-foreground hover:border-muted-foreground/50 hover:bg-muted/30 active:scale-95"
               }`}
             >
@@ -66,7 +66,7 @@ export default function QuestionNPS({ value, onChange }: QuestionNPSProps) {
               onClick={() => onChange(num)}
               className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 font-bold text-base transition-all duration-200 ${
                 isSelected
-                  ? `${colors.border} ${colors.bg} ${colors.text} shadow-lg scale-110`
+                  ? `${colors.border} ${colors.bg} ${colors.text} shadow-lg scale-105`
                   : "border-border bg-card text-foreground hover:border-muted-foreground/50 hover:bg-muted/30 active:scale-95"
               }`}
             >

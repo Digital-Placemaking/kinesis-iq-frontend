@@ -66,7 +66,19 @@ export default function CouponCompletion({
     } else {
       // Fallback: copy to clipboard
       try {
-        await navigator.clipboard.writeText(couponCode);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(couponCode);
+        } else {
+          const textArea = document.createElement("textarea");
+          textArea.value = couponCode;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-9999px";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+        }
       } catch (err) {
         console.error("Failed to copy:", err);
       }
@@ -170,7 +182,7 @@ export default function CouponCompletion({
 
           {/* Coupon Code Display */}
           {couponCode && (
-            <div className="mb-2">
+            <div className="mb-1.5">
               <CouponCodeDisplay code={couponCode} />
               {/* Show message if this is an existing redeemed coupon */}
               {isAlreadyRedeemed && (
