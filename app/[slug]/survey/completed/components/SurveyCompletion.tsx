@@ -82,8 +82,7 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
 
           {/* Thank You Message */}
           <p className="mb-4 text-center text-xs text-muted-foreground sm:mb-6 sm:text-sm">
-            Your feedback helps us improve our services. We appreciate your time
-            and input!
+            Thank you — your insight helps shape decisions people can trust.
           </p>
           <p className="mb-4 text-center text-xs font-bold text-muted-foreground sm:mb-6 sm:text-sm">
             Your data stays anonymous.
