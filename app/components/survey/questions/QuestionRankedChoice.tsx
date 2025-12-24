@@ -6,7 +6,6 @@
 
 "use client";
 
-import { useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -90,7 +89,7 @@ export default function QuestionRankedChoice({
   required = false,
 }: QuestionRankedChoiceProps) {
   const rankings = value || [];
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const setActiveId = (_id: string | null) => {};
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
