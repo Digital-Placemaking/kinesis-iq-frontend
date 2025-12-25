@@ -265,7 +265,7 @@ export default function TenantLanding({
           {/* Feedback Section */}
           <div className="space-y-2 border-t border-zinc-200 pt-6 dark:border-zinc-800">
             <p className="text-center text-xs font-medium text-zinc-700 dark:text-zinc-300 sm:text-sm">
-              Just want to share feedback?
+              Take the 20-Second Poll
             </p>
             <button
               type="button"

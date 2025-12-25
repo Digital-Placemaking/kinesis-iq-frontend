@@ -82,8 +82,7 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
 
           {/* Thank You Message */}
           <p className="mb-4 text-center text-xs text-zinc-600 dark:text-zinc-400 sm:mb-6 sm:text-sm">
-            Your feedback helps us improve our services. We appreciate your time
-            and input!
+            Thank you for your support!
           </p>
           <p className="mb-4 text-center text-xs font-bold text-zinc-600 dark:text-zinc-400 sm:mb-6 sm:text-sm">
             Your data stays anonymous.
@@ -140,11 +139,6 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
 
         {/* Footer Options */}
         <div className="space-y-3 text-center">
-          <div className="flex flex-col items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 sm:flex-row sm:text-sm">
-            <Bell className="h-4 w-4 shrink-0" />
-            <span>Want to hear about more offers?</span>
-          </div>
-
           <div className="flex justify-center">
             <VisitWebsiteButton tenant={tenant} />
           </div>
