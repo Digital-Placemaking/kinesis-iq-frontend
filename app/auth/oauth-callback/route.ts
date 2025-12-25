@@ -80,7 +80,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  const tenantSlug = state;
+  // Parse state parameter - can be "tenantSlug" or "tenantSlug|returnTo"
+  const [tenantSlug, returnTo] = state.split("|");
   const redirectUri = new URL("/auth/oauth-callback", origin).toString();
 
   try {
@@ -119,17 +120,29 @@ export async function GET(request: NextRequest) {
       // User can still browse coupons, but may need to complete survey
     }
 
-    // Build redirect URL to tenant's coupons page
+    // Build redirect URL based on returnTo or default to coupons page
     // Always use path-based routing with tenant slug to ensure consistency
     // The subdomain routing is handled by the proxy/middleware layer
-    const redirectPath = `/${tenantSlug}/coupons`;
-    const couponsUrl = new URL(redirectPath, origin);
+    let redirectPath: string;
+    if (returnTo) {
+      // Use the returnTo path (e.g., "/survey/completed")
+      redirectPath = `/${tenantSlug}${returnTo}`;
+    } else {
+      // Default to coupons page
+      redirectPath = `/${tenantSlug}/coupons`;
+    }
+    const targetUrl = new URL(redirectPath, origin);
 
     if (storeResult.email) {
-      couponsUrl.searchParams.set("email", storeResult.email);
+      targetUrl.searchParams.set("email", storeResult.email);
+    }
+    
+    // Mark as subscribed if coming from survey completion
+    if (returnTo?.includes("survey/completed")) {
+      targetUrl.searchParams.set("subscribed", "true");
     }
 
-    return NextResponse.redirect(couponsUrl);
+    return NextResponse.redirect(targetUrl);
   } catch (err) {
     console.error("Error in OAuth callback:", err);
 

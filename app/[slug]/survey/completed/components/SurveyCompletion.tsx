@@ -6,8 +6,9 @@
 
 "use client";
 
-import { useState } from "react";
-import { Mail, Bell } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Mail } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import type { TenantDisplay } from "@/lib/types/tenant";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
@@ -15,17 +16,73 @@ import Card from "@/app/components/ui/Card";
 import ActionButton from "@/app/components/ui/ActionButton";
 import Spinner from "@/app/components/ui/Spinner";
 import VisitWebsiteButton from "@/app/components/ui/VisitWebsiteButton";
+import SocialLoginButton from "@/app/[slug]/components/ui/SocialLoginButton";
+import SectionSeparator from "@/app/components/ui/SectionSeparator";
 import { submitEmail } from "@/app/actions";
+import { getGoogleOAuthUrl } from "@/app/actions/google/oauth-url";
 
 interface SurveyCompletionProps {
   tenant: TenantDisplay;
 }
 
 export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user just completed OAuth subscription
+  useEffect(() => {
+    const subscribed = searchParams.get("subscribed");
+    if (subscribed === "true") {
+      setSubmitted(true);
+    }
+  }, [searchParams]);
+
+  /**
+   * Handles social login (Google/Apple OAuth)
+   * Similar to TenantLanding but redirects back to survey completion
+   */
+  const handleSocialLogin = async (provider: "apple" | "google") => {
+    // Only Google is currently implemented
+    if (provider !== "google") {
+      setError("Apple login is not yet available. Please use Google or email.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Generate Google OAuth authorization URL with returnTo parameter
+      const result = await getGoogleOAuthUrl(
+        tenant.slug,
+        window.location.origin,
+        "/survey/completed" // Return to survey completion page after OAuth
+      );
+
+      if (result.error || !result.url) {
+        setError(
+          result.error || "Failed to initiate Google login. Please try again."
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Redirect to Google OAuth
+      window.location.href = result.url;
+      // No need to set loading to false - user is being redirected
+    } catch (err) {
+      console.error("Error initiating Google OAuth:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again."
+      );
+      setLoading(false);
+    }
+  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +151,26 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
               <p className="text-center text-xs font-medium text-zinc-700 dark:text-zinc-300 sm:text-sm">
                 Want to stay updated with exclusive offers?
               </p>
+
+              {/* Social Login Buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Apple login - Coming soon */}
+                <SocialLoginButton
+                  provider="apple"
+                  onClick={() => handleSocialLogin("apple")}
+                  disabled
+                />
+                {/* Google OAuth - Active */}
+                <SocialLoginButton
+                  provider="google"
+                  onClick={() => handleSocialLogin("google")}
+                  disabled={loading}
+                />
+              </div>
+
+              {/* Separator */}
+              <SectionSeparator text="Or continue with email" />
+
               <form onSubmit={handleEmailSubmit} className="space-y-2">
                 <input
                   type="email"
