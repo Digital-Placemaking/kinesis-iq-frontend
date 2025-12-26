@@ -20,6 +20,7 @@ import { useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer from "./components/Footer";
+import Navbar from "./components/Navbar";
 import AuthCallbackHandler from "./components/AuthCallbackHandler";
 
 // Preview images with subtitles
@@ -159,6 +160,9 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* Handles OAuth callbacks and session establishment */}
       <AuthCallbackHandler />
+      
+      {/* Navbar */}
+      <Navbar />
 
       {/* Loading Screen */}
       <AnimatePresence>
@@ -420,6 +424,36 @@ export default function HomePage() {
                 It lets organizations act before change hits, turning real-world
                 behavior into a strategic advantage.
               </p>
+            </div>
+          </ScrollAnimation>
+
+          {/* Reporting & Analytics Section */}
+          <ScrollAnimation>
+            <div className="pt-16 space-y-6">
+              <div className="space-y-4">
+                <h2 className="text-3xl font-bold text-black dark:text-zinc-50 sm:text-4xl">
+                  Data Acquisition & Reporting
+                </h2>
+                <p className="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 sm:text-xl">
+                  KinesisIQ transforms real-world interactions into actionable insights.
+                  Our platform provides comprehensive analytics, engagement funnels, and
+                  sentiment analysis—all while maintaining privacy and consent awareness.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <a
+                  href="/demo/reporting"
+                  className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                >
+                  View Analytics Demo →
+                </a>
+                <a
+                  href="/contact"
+                  className="inline-flex items-center rounded-lg border border-zinc-600 bg-zinc-900/80 backdrop-blur-sm px-6 py-3 text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800/80"
+                >
+                  Learn More
+                </a>
+              </div>
             </div>
           </ScrollAnimation>
 
