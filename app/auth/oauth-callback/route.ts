@@ -24,6 +24,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getEmailFromGoogleCode } from "@/lib/google/oauth-direct";
+import { getEmailFromAppleCode } from "@/lib/apple/oauth-direct";
 import { storeOAuthEmail } from "@/app/actions/google/oauth";
 
 export async function GET(request: NextRequest) {
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state"); // Contains tenant slug
   // Note: Google OAuth doesn't preserve query parameters, so we default to "google"
   // In the future, we could encode the provider in the state parameter
-  const provider = "google"; // Default to Google for now (Apple not yet implemented)
+  const provider = "google";
   const error = searchParams.get("error");
 
   // Handle OAuth errors
@@ -98,9 +99,20 @@ export async function GET(request: NextRequest) {
         );
       }
       email = await getEmailFromGoogleCode(code, redirectUri);
+      
     } else if (provider === "apple") {
-      // Apple OAuth implementation will be added later
-      throw new Error("Apple OAuth not yet implemented");
+      // Verify Apple environment variables are set
+      if (
+        !process.env.APPLE_CLIENT_ID ||
+        !process.env.APPLE_TEAM_ID ||
+        !process.env.APPLE_KEY_ID ||
+        !process.env.APPLE_PRIVATE_KEY
+      ) {
+        throw new Error(
+          "Apple OAuth credentials not configured. Please set APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, and APPLE_PRIVATE_KEY environment variables."
+        );
+      }
+      email = await getEmailFromAppleCode(code, redirectUri);
     } else {
       throw new Error(`Unsupported OAuth provider: ${provider}`);
     }
@@ -135,6 +147,114 @@ export async function GET(request: NextRequest) {
 
     // Redirect back to tenant landing page with error
     // Always use path-based routing with tenant slug
+    const redirectUrl = new URL(`/${tenantSlug}`, origin);
+    redirectUrl.searchParams.set(
+      "error",
+      err instanceof Error ? err.message : "oauth_processing_failed"
+    );
+    return NextResponse.redirect(redirectUrl);
+  }
+}
+
+/**
+ * POST handler for Apple OAuth callback.
+ * Apple uses form_post response_mode, so it POSTs the authorization code to this endpoint.
+ * 
+ * Flow:
+ * 1. Apple POSTs form data with code and state to this endpoint
+ * 2. We extract the authorization code from the POST body
+ * 3. Exchange code for access token and id_token
+ * 4. Decode id_token to get user's email
+ * 5. Store email in database
+ * 6. Redirect to tenant coupons page
+ */
+export async function POST(request: NextRequest) {
+  // Get the correct origin from request headers
+  const host =
+    request.headers.get("host") ||
+    request.headers.get("x-forwarded-host") ||
+    "localhost:3000";
+  const protocol =
+    request.headers.get("x-forwarded-proto") ||
+    (host.includes("localhost") ? "http" : "https");
+  const origin = `${protocol}://${host}`;
+
+  // Store tenant slug early for error handling
+  let tenantSlug = "unknown";
+
+  try {
+    // Parse form data from Apple's POST request
+    const formData = await request.formData();
+    const code = formData.get("code") as string | null;
+    const state = formData.get("state") as string | null; // Contains tenant slug
+    const error = formData.get("error") as string | null;
+
+    if (state) {
+      tenantSlug = state;
+    }
+
+    // Handle OAuth errors
+    if (error) {
+      console.error("Apple OAuth error:", error);
+
+      let errorCode = "oauth_failed";
+      if (error === "access_denied") {
+        errorCode = "oauth_access_denied";
+      } else if (error === "invalid_request") {
+        errorCode = "oauth_invalid_request";
+      }
+
+      const redirectUrl = new URL(`/${tenantSlug}`, origin);
+      redirectUrl.searchParams.set("error", errorCode);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // Must have code and state (tenant slug)
+    if (!code || !state) {
+      const redirectUrl = new URL(`/${tenantSlug}`, origin);
+      redirectUrl.searchParams.set("error", "oauth_invalid");
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const redirectUri = new URL("/auth/oauth-callback", origin).toString();
+
+    // Verify Apple environment variables
+    if (
+      !process.env.APPLE_CLIENT_ID ||
+      !process.env.APPLE_TEAM_ID ||
+      !process.env.APPLE_KEY_ID ||
+      !process.env.APPLE_PRIVATE_KEY
+    ) {
+      throw new Error(
+        "Apple OAuth credentials not configured. Please set APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, and APPLE_PRIVATE_KEY environment variables."
+      );
+    }
+
+    // Exchange Apple authorization code for email
+    // This creates a signed JWT client_secret and exchanges it for tokens
+    const email = await getEmailFromAppleCode(code, redirectUri);
+
+    // Store email in email_opt_ins table (same as Google OAuth)
+    const storeResult = await storeOAuthEmail(tenantSlug, email);
+
+    if (!storeResult.success && storeResult.error) {
+      console.error("Failed to store Apple OAuth email:", storeResult.error);
+      // Continue anyway - redirect to coupons even if storage fails
+    }
+
+    // Redirect to tenant's coupons page
+    const redirectPath = `/${tenantSlug}/coupons`;
+    const couponsUrl = new URL(redirectPath, origin);
+
+    if (storeResult.email) {
+      couponsUrl.searchParams.set("email", storeResult.email);
+    }
+
+    return NextResponse.redirect(couponsUrl);
+  } catch (err) {
+    console.error("Error in Apple OAuth callback:", err);
+
+    // Use the tenantSlug we stored earlier
     const redirectUrl = new URL(`/${tenantSlug}`, origin);
     redirectUrl.searchParams.set(
       "error",

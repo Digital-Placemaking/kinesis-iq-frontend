@@ -193,7 +193,7 @@ export default function TenantLanding({
 
           {/* Social Login Buttons */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Apple login - Coming soon */}
+            {/* Apple Sign In - Active */}
             <SocialLoginButton
               provider="apple"
               onClick={() => handleSocialLogin("apple")}

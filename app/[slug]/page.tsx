@@ -38,10 +38,10 @@ export default async function TenantPage({
     errorMessage = "Please submit your email to access coupons and surveys.";
   } else if (errorParam === "oauth_access_denied") {
     errorMessage =
-      "Google sign-in was cancelled. You can try again or use your email address instead.";
+      "Sign-in was cancelled. You can try again or use your email address instead.";
   } else if (errorParam === "oauth_failed") {
     errorMessage =
-      "Google sign-in failed. Please try again or use your email address instead.";
+      "Sign-in failed. Please try again or use your email address instead.";
   } else if (errorParam === "oauth_invalid_request") {
     errorMessage =
       "Invalid sign-in request. Please try again or use your email address instead.";
