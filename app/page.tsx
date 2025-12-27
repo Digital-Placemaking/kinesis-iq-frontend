@@ -19,6 +19,8 @@
 import { useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { MessageSquare, TrendingUp, Users, Brain } from "lucide-react";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import AuthCallbackHandler from "./components/AuthCallbackHandler";
@@ -160,7 +162,7 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* Handles OAuth callbacks and session establishment */}
       <AuthCallbackHandler />
-      
+
       {/* Navbar */}
       <Navbar />
 
@@ -290,12 +292,12 @@ export default function HomePage() {
               }}
             >
               {/* Primary CTA - Links to contact form */}
-              <a
+              <Link
                 href="/contact"
                 className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
               >
                 Get started
-              </a>
+              </Link>
               {/* Secondary CTA - Smooth scrolls to "What is KinesisIQ?" section */}
               <a
                 href="#what-is-kinesisiq"
@@ -427,6 +429,87 @@ export default function HomePage() {
             </div>
           </ScrollAnimation>
 
+          {/* How It Works Preview Section */}
+          <ScrollAnimation>
+            <div className="pt-16 space-y-6">
+              <div className="space-y-4">
+                <h2 className="text-3xl font-bold text-black dark:text-zinc-50 sm:text-4xl">
+                  How KinesisIQ Works
+                </h2>
+                <p className="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 sm:text-xl">
+                  From data collection to actionable intelligence—KinesisIQ
+                  transforms real-world interactions into foresight through four
+                  core capabilities.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-8">
+                {[
+                  {
+                    icon: MessageSquare,
+                    iconColor: "text-blue-400",
+                    bgColor: "bg-blue-500/10",
+                    title: "Conversational Intelligence",
+                    description: "Capture and analyze real-world conversations",
+                  },
+                  {
+                    icon: TrendingUp,
+                    iconColor: "text-green-400",
+                    bgColor: "bg-green-500/10",
+                    title: "Predictive Insights",
+                    description: "Forecast how groups will think and respond",
+                  },
+                  {
+                    icon: Users,
+                    iconColor: "text-purple-400",
+                    bgColor: "bg-purple-500/10",
+                    title: "Behavior Modeling",
+                    description: "Track engagement patterns across communities",
+                  },
+                  {
+                    icon: Brain,
+                    iconColor: "text-orange-400",
+                    bgColor: "bg-orange-500/10",
+                    title: "Adaptive Intelligence",
+                    description: "Combine conversation, behavior, and place",
+                  },
+                ].map((feature, index) => (
+                  <motion.div
+                    key={feature.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="p-6 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/70 transition-colors"
+                  >
+                    <div
+                      className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${feature.bgColor} mb-3`}
+                    >
+                      <feature.icon
+                        className={`h-6 w-6 ${feature.iconColor}`}
+                      />
+                    </div>
+                    <h3 className="font-semibold text-black dark:text-white mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                      {feature.description}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <motion.a
+                  href="/how-it-works"
+                  className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Learn More →
+                </motion.a>
+              </div>
+            </div>
+          </ScrollAnimation>
+
           {/* Reporting & Analytics Section */}
           <ScrollAnimation>
             <div className="pt-16 space-y-6">
@@ -435,24 +518,29 @@ export default function HomePage() {
                   Data Acquisition & Reporting
                 </h2>
                 <p className="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 sm:text-xl">
-                  KinesisIQ transforms real-world interactions into actionable insights.
-                  Our platform provides comprehensive analytics, engagement funnels, and
-                  sentiment analysis—all while maintaining privacy and consent awareness.
+                  KinesisIQ transforms real-world interactions into actionable
+                  insights. Our platform provides comprehensive analytics,
+                  engagement funnels, and sentiment analysis—all while
+                  maintaining privacy and consent awareness.
                 </p>
               </div>
               <div className="flex flex-wrap gap-4 pt-4">
-                <a
+                <motion.a
                   href="/demo/reporting"
-                  className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                  className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   View Analytics Demo →
-                </a>
-                <a
+                </motion.a>
+                <motion.a
                   href="/contact"
-                  className="inline-flex items-center rounded-lg border border-zinc-600 bg-zinc-900/80 backdrop-blur-sm px-6 py-3 text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800/80"
+                  className="inline-flex items-center rounded-lg border border-zinc-600 bg-zinc-900/80 backdrop-blur-sm px-6 py-3 text-sm font-medium text-zinc-200 transition-all hover:bg-zinc-800/80 hover:border-zinc-500"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  Learn More
-                </a>
+                  Get Started
+                </motion.a>
               </div>
             </div>
           </ScrollAnimation>
@@ -478,7 +566,7 @@ export default function HomePage() {
                       style={{ maxWidth: "600px", minWidth: "500px" }}
                     >
                       <span className="text-2xl leading-none text-zinc-300 dark:text-zinc-700 shrink-0">
-                        "
+                        &ldquo;
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm leading-snug text-zinc-700 dark:text-zinc-300 sm:text-base">
@@ -497,7 +585,7 @@ export default function HomePage() {
                         </div>
                       </div>
                       <span className="text-2xl leading-none text-zinc-300 dark:text-zinc-700 shrink-0">
-                        "
+                        &rdquo;
                       </span>
                     </div>
                   ))}
@@ -509,7 +597,7 @@ export default function HomePage() {
                       style={{ maxWidth: "600px", minWidth: "500px" }}
                     >
                       <span className="text-2xl leading-none text-zinc-300 dark:text-zinc-700 shrink-0">
-                        "
+                        &ldquo;
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm leading-snug text-zinc-700 dark:text-zinc-300 sm:text-base">
@@ -528,7 +616,7 @@ export default function HomePage() {
                         </div>
                       </div>
                       <span className="text-2xl leading-none text-zinc-300 dark:text-zinc-700 shrink-0">
-                        "
+                        &rdquo;
                       </span>
                     </div>
                   ))}
