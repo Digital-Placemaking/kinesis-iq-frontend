@@ -4,7 +4,13 @@ import { motion } from "framer-motion";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { ScrollReveal } from "@/app/components/ui/scroll-reveal";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -135,8 +141,9 @@ export default function HowItWorksPage() {
               transition={{ delay: 0.4 }}
               className="text-lg text-zinc-400 max-w-2xl mx-auto"
             >
-              KinesisIQ transforms real-world interactions into actionable intelligence,
-              helping organizations see emerging patterns and act with confidence.
+              KinesisIQ transforms real-world interactions into actionable
+              intelligence, helping organizations see emerging patterns and act
+              with confidence.
             </motion.p>
           </div>
         </div>
@@ -151,35 +158,45 @@ export default function HowItWorksPage() {
                 Core Capabilities
               </h2>
               <p className="text-lg text-zinc-400">
-                Where mathematics meets humanity. Understand engagement patterns before they
-                fully emerge.
+                Where mathematics meets humanity. Understand engagement patterns
+                before they fully emerge.
               </p>
             </div>
           </ScrollReveal>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
+          <div
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
+            style={{ gridAutoRows: "1fr" }}
+          >
             {FEATURES.map((feature, index) => (
               <ScrollReveal key={feature.title} delay={index * 0.1}>
                 <motion.div
                   whileHover={{ scale: 1.02, y: -4 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="h-full"
                 >
                   <Card
                     className={`border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900/70 transition-all backdrop-blur-sm ${feature.borderColor} hover:border-opacity-40 h-full flex flex-col`}
                   >
-                    <CardHeader className="flex-1">
+                    <CardHeader className="flex-shrink-0">
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        transition={{ delay: index * 0.1 + 0.3, type: "spring", stiffness: 200 }}
+                        transition={{
+                          delay: index * 0.1 + 0.3,
+                          type: "spring",
+                          stiffness: 200,
+                        }}
                         className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${feature.bgColor} mb-4`}
                       >
                         <feature.icon className={`h-7 w-7 ${feature.color}`} />
                       </motion.div>
-                      <CardTitle className="text-white text-xl mb-2">{feature.title}</CardTitle>
+                      <CardTitle className="text-white text-xl mb-2">
+                        {feature.title}
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent className="flex-1">
-                      <CardDescription className="text-zinc-400 leading-relaxed">
+                    <CardContent className="flex-1 flex flex-col">
+                      <CardDescription className="text-zinc-400 leading-relaxed flex-1">
                         {feature.description}
                       </CardDescription>
                     </CardContent>
@@ -200,8 +217,8 @@ export default function HowItWorksPage() {
                 The KinesisIQ Process
               </h2>
               <p className="text-lg text-zinc-400">
-                From data collection to actionable intelligence—see how insights flow through
-                our platform.
+                From data collection to actionable intelligence—see how insights
+                flow through our platform.
               </p>
             </div>
           </ScrollReveal>
@@ -221,16 +238,25 @@ export default function HowItWorksPage() {
                         <motion.div
                           initial={{ scale: 0, rotate: -180 }}
                           animate={{ scale: 1, rotate: 0 }}
-                          transition={{ delay: index * 0.15 + 0.3, type: "spring", stiffness: 200 }}
+                          transition={{
+                            delay: index * 0.15 + 0.3,
+                            type: "spring",
+                            stiffness: 200,
+                          }}
                           className="w-20 h-20 rounded-full bg-gradient-to-br from-zinc-800 to-zinc-900 border-2 border-zinc-700 flex items-center justify-center shadow-lg"
                         >
-                          <span className="text-2xl font-bold text-zinc-300">{step.step}</span>
+                          <span className="text-2xl font-bold text-zinc-300">
+                            {step.step}
+                          </span>
                         </motion.div>
                         {index < WORKFLOW_STEPS.length - 1 && (
                           <motion.div
                             initial={{ height: 0 }}
                             animate={{ height: 64 }}
-                            transition={{ delay: index * 0.15 + 0.5, duration: 0.5 }}
+                            transition={{
+                              delay: index * 0.15 + 0.5,
+                              duration: 0.5,
+                            }}
                             className="w-0.5 bg-gradient-to-b from-zinc-700 to-zinc-800 mt-2"
                           />
                         )}
@@ -238,8 +264,22 @@ export default function HowItWorksPage() {
                       <motion.div
                         initial={{ scale: 0, rotate: -90 }}
                         animate={{ scale: 1, rotate: 0 }}
-                        transition={{ delay: index * 0.15 + 0.4, type: "spring", stiffness: 200 }}
-                        className={`w-16 h-16 rounded-xl ${step.color.replace("text-", "bg-").replace("-400", "-500/20")} border border-${step.color.replace("text-", "").replace("-400", "-500/30")} flex items-center justify-center shadow-lg backdrop-blur-sm`}
+                        transition={{
+                          delay: index * 0.15 + 0.4,
+                          type: "spring",
+                          stiffness: 200,
+                        }}
+                        className={`w-16 h-16 rounded-xl ${step.color
+                          .replace("text-", "bg-")
+                          .replace(
+                            "-400",
+                            "-500/20"
+                          )} border border-${step.color
+                          .replace("text-", "")
+                          .replace(
+                            "-400",
+                            "-500/30"
+                          )} flex items-center justify-center shadow-lg backdrop-blur-sm`}
                       >
                         <step.icon className={`h-8 w-8 ${step.color}`} />
                       </motion.div>
@@ -253,7 +293,9 @@ export default function HowItWorksPage() {
                   >
                     <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 transition-all h-full">
                       <CardHeader>
-                        <CardTitle className="text-white text-xl mb-2">{step.title}</CardTitle>
+                        <CardTitle className="text-white text-xl mb-2">
+                          {step.title}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <CardDescription className="text-zinc-400 leading-relaxed">
@@ -289,12 +331,15 @@ export default function HowItWorksPage() {
                 <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
                   <CardHeader>
                     <MapPin className="h-8 w-8 text-blue-400 mb-2" />
-                    <CardTitle className="text-white">Location Intelligence</CardTitle>
+                    <CardTitle className="text-white">
+                      Location Intelligence
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-zinc-400">
-                      Understand how different locations perform, identify hotspots, and optimize
-                      engagement strategies based on geographic insights.
+                      Understand how different locations perform, identify
+                      hotspots, and optimize engagement strategies based on
+                      geographic insights.
                     </CardDescription>
                   </CardContent>
                 </Card>
@@ -304,12 +349,15 @@ export default function HowItWorksPage() {
                 <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
                   <CardHeader>
                     <Clock className="h-8 w-8 text-green-400 mb-2" />
-                    <CardTitle className="text-white">Time-Based Trends</CardTitle>
+                    <CardTitle className="text-white">
+                      Time-Based Trends
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-zinc-400">
-                      Track engagement patterns over time, identify seasonal trends, and predict
-                      future behavior with probabilistic modeling.
+                      Track engagement patterns over time, identify seasonal
+                      trends, and predict future behavior with probabilistic
+                      modeling.
                     </CardDescription>
                   </CardContent>
                 </Card>
@@ -323,8 +371,8 @@ export default function HowItWorksPage() {
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-zinc-400">
-                      All data is anonymized, aggregated, and consent-aware. We comply with
-                      GDPR, CCPA, and other privacy regulations.
+                      All data is anonymized, aggregated, and consent-aware. We
+                      comply with GDPR, CCPA, and other privacy regulations.
                     </CardDescription>
                   </CardContent>
                 </Card>
@@ -343,8 +391,8 @@ export default function HowItWorksPage() {
                 Ready to Get Started?
               </h2>
               <p className="text-lg text-zinc-400">
-                Experience KinesisIQ and see how predictive intelligence can transform your
-                organization.
+                Experience KinesisIQ and see how predictive intelligence can
+                transform your organization.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
                 <Button
@@ -375,4 +423,3 @@ export default function HowItWorksPage() {
     </div>
   );
 }
-
