@@ -15,11 +15,23 @@ import { Menu, X } from "lucide-react";
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 20);
+    
+    // Hide navbar on scroll down, show on scroll up
+    if (latest < 10) {
+      setIsVisible(true);
+    } else if (latest > lastScrollY && latest > 100) {
+      setIsVisible(false);
+    } else if (latest < lastScrollY) {
+      setIsVisible(true);
+    }
+    setLastScrollY(latest);
   });
 
   const isActive = (path: string) => {
@@ -30,12 +42,19 @@ export default function Navbar() {
   return (
     <motion.nav
       initial={{ y: 0 }}
-      animate={{ y: isScrolled ? 0 : 0 }}
-      className="sticky top-0 z-50 w-full border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-sm transition-all"
+      animate={{ 
+        y: isVisible ? 0 : -100,
+        opacity: isVisible ? 1 : 0
+      }}
+      transition={{ 
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1]
+      }}
+      className="sticky top-0 z-50 w-full border-b border-zinc-800/40 bg-zinc-950/70 backdrop-blur-md transition-all"
       style={{
         backgroundColor: isScrolled
-          ? "rgba(9, 9, 11, 0.95)"
-          : "rgba(9, 9, 11, 0.8)",
+          ? "rgba(9, 9, 11, 0.85)"
+          : "rgba(9, 9, 11, 0.65)",
       }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -68,8 +87,8 @@ export default function Navbar() {
               How It Works
               {isActive("/how-it-works") && (
                 <motion.div
-                  layoutId="activeIndicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500"
+                  layoutId="navbarActiveIndicator"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent"
                   initial={false}
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
@@ -86,8 +105,8 @@ export default function Navbar() {
               Demo
               {isActive("/demo") && (
                 <motion.div
-                  layoutId="activeIndicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500"
+                  layoutId="navbarActiveIndicator"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent"
                   initial={false}
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
@@ -104,8 +123,8 @@ export default function Navbar() {
               Contact
               {isActive("/contact") && (
                 <motion.div
-                  layoutId="activeIndicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500"
+                  layoutId="navbarActiveIndicator"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent"
                   initial={false}
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
@@ -114,12 +133,13 @@ export default function Navbar() {
           </div>
 
           {/* Desktop CTA Button */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-4">
             <Link href="/contact">
               <Button
                 variant="default"
                 size="default"
-                className="bg-blue-600 text-white hover:bg-blue-700"
+                className="text-white hover:opacity-90"
+                style={{ backgroundColor: "#f16609" }}
               >
                 Get Started
               </Button>
@@ -178,15 +198,18 @@ export default function Navbar() {
             >
               Contact
             </Link>
-            <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
-              <Button
-                variant="default"
-                size="sm"
-                className="w-full bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Get Started
-              </Button>
-            </Link>
+            <div className="flex items-center gap-3 pt-2">
+              <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="flex-1">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full text-white hover:opacity-90"
+                style={{ backgroundColor: "#f16609" }}
+                >
+                  Get Started
+                </Button>
+              </Link>
+            </div>
           </div>
         )}
       </div>

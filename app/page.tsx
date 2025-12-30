@@ -20,29 +20,11 @@ import { useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { MessageSquare, TrendingUp, Users, Brain } from "lucide-react";
+import { MessageSquare, TrendingUp, Users, Brain, Database, Cpu, Sparkles, BarChart3, Network, Zap } from "lucide-react";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import AuthCallbackHandler from "./components/AuthCallbackHandler";
 
-// Preview images with subtitles
-const PREVIEW_IMAGES = [
-  {
-    url: "/previews/questions-dashboard-preview.png",
-    subtitle: "Manage survey questions and collect valuable customer insights.",
-  },
-  {
-    url: "/previews/analytics-dashboard-preview.png",
-    subtitle: "Track engagement metrics and visualize data trends over time.",
-  },
-  {
-    url: "/previews/issued-dashboard-preview.png",
-    subtitle: "Monitor coupon issuances and track redemption rates.",
-  },
-];
-
-// Image rotation interval in milliseconds (10 seconds)
-const IMAGE_ROTATION_INTERVAL = 10000;
 
 // Quotes array for scrolling testimonials
 const QUOTES = [
@@ -83,38 +65,460 @@ const QUOTES = [
  *
  * Wraps content with Framer Motion scroll-triggered animations.
  * Animates elements as they enter the viewport with a smooth fade-up effect.
+ * Optimized for slow scrolling with earlier trigger point.
  *
  * @param {React.ReactNode} children - Content to animate
  * @returns {JSX.Element} Animated wrapper component
  */
 function ScrollAnimation({ children }: { children: React.ReactNode }) {
   const ref = useRef(null);
-  // Trigger animation when element is 100px before entering viewport
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  // Trigger animation earlier (200px before entering viewport) for slow scrolling
+  const isInView = useInView(ref, { once: true, margin: "-200px" });
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
   );
 }
 
-export default function HomePage() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Preload all images and wait for them to load
+// Sequential Line Animation Component - Smooth wave pattern
+function SequentialNetworkVisual({ className }: { className?: string }) {
+  const [activeLineIndex, setActiveLineIndex] = useState<number>(-1);
+  
+  // Define connection paths - straight lines only, orange lines connect to orange nodes
+  const connections = [
+    // Input to center - navy from navy nodes (120, 280), orange from orange nodes (150, 200, 250)
+    { id: 0, d: "M 120 160 L 200 300", color: "#23137f", isOrange: false },
+    { id: 1, d: "M 150 180 L 200 300", color: "#f16609", isOrange: true },
+    { id: 2, d: "M 200 150 L 200 300", color: "#f16609", isOrange: true },
+    { id: 3, d: "M 250 180 L 200 300", color: "#f16609", isOrange: true },
+    { id: 4, d: "M 280 160 L 200 300", color: "#23137f", isOrange: false },
+    // Center to output - navy to navy nodes (120, 280), orange to orange nodes (150, 200, 250)
+    { id: 5, d: "M 200 300 L 120 440", color: "#23137f", isOrange: false },
+    { id: 6, d: "M 200 300 L 150 420", color: "#f16609", isOrange: true },
+    { id: 7, d: "M 200 300 L 200 450", color: "#f16609", isOrange: true },
+    { id: 8, d: "M 200 300 L 250 420", color: "#f16609", isOrange: true },
+    { id: 9, d: "M 200 300 L 280 440", color: "#23137f", isOrange: false },
+  ];
+  
+  // Random aesthetic dots - purely decorative, not connected
+  const aestheticDots = [
+    // Left side
+    { cx: 80, cy: 200, isOrange: true, size: 3 },
+    { cx: 100, cy: 350, isOrange: false, size: 2.5 },
+    { cx: 90, cy: 500, isOrange: true, size: 2 },
+    // Right side
+    { cx: 320, cy: 180, isOrange: true, size: 3 },
+    { cx: 310, cy: 320, isOrange: false, size: 2.5 },
+    { cx: 330, cy: 480, isOrange: true, size: 2.5 },
+    // Scattered around
+    { cx: 140, cy: 120, isOrange: false, size: 2 },
+    { cx: 260, cy: 140, isOrange: true, size: 2 },
+    { cx: 160, cy: 480, isOrange: false, size: 2 },
+    { cx: 240, cy: 500, isOrange: true, size: 2 },
+  ];
+  
   useEffect(() => {
-    const imagesToLoad = [
-      "/toronto-skyline.jpg",
-      ...PREVIEW_IMAGES.map((img) => img.url),
-      "/dp-logo.png",
-    ];
+    let timeoutId: NodeJS.Timeout;
+    let currentIndex = 0;
+    
+    const cycleLines = () => {
+      setActiveLineIndex(currentIndex);
+      currentIndex = (currentIndex + 1) % connections.length;
+      timeoutId = setTimeout(() => cycleLines(), 2000);
+    };
+    
+    // Start the cycle after initial delay
+    timeoutId = setTimeout(() => cycleLines(), 1500);
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
+  
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 400 600"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      {/* Network nodes - smoother design */}
+      {/* Input nodes (top) */}
+      {[
+        { cx: 120, cy: 160, isOrange: false },
+        { cx: 150, cy: 180, isOrange: true },
+        { cx: 200, cy: 150, isOrange: true },
+        { cx: 250, cy: 180, isOrange: true },
+        { cx: 280, cy: 160, isOrange: false },
+      ].map((node, i) => (
+        <g key={`input-node-${i}`}>
+          {/* Outer glow - smooth and soft */}
+          <motion.circle
+            cx={node.cx}
+            cy={node.cy}
+            r="12"
+            fill={node.isOrange ? "rgba(241, 102, 9, 0.15)" : "rgba(35, 19, 127, 0.15)"}
+            animate={{
+              opacity: [0.2, 0.35, 0.2],
+              scale: [1, 1.15, 1],
+            }}
+            transition={{
+              duration: 4 + i * 0.4,
+              repeat: Infinity,
+              delay: i * 0.15,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+          />
+          {/* Middle ring */}
+          <motion.circle
+            cx={node.cx}
+            cy={node.cy}
+            r="7"
+            fill={node.isOrange ? "rgba(241, 102, 9, 0.25)" : "rgba(35, 19, 127, 0.25)"}
+            animate={{
+              opacity: [0.3, 0.5, 0.3],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 3 + i * 0.3,
+              repeat: Infinity,
+              delay: i * 0.15,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+          />
+          {/* Core dot - smooth and solid */}
+          <motion.circle
+            cx={node.cx}
+            cy={node.cy}
+            r="4"
+            fill={node.isOrange ? "#f16609" : "#23137f"}
+            animate={{
+              opacity: [0.9, 1, 0.9],
+            }}
+            transition={{
+              duration: 2.5 + i * 0.3,
+              repeat: Infinity,
+              delay: i * 0.15,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+          />
+        </g>
+      ))}
+      
+      {/* Central processing hub - enhanced orange with occasional pulses */}
+      <g>
+        {/* Outer glow layers - stronger orange */}
+        <motion.circle
+          cx="200"
+          cy="300"
+          r="32"
+          fill="rgba(241, 102, 9, 0.12)"
+          animate={{
+            opacity: [0.15, 0.3, 0.15],
+            scale: [1, 1.25, 1],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: [0.4, 0, 0.2, 1],
+          }}
+        />
+        <motion.circle
+          cx="200"
+          cy="300"
+          r="24"
+          fill="rgba(241, 102, 9, 0.25)"
+          animate={{
+            opacity: [0.25, 0.4, 0.25],
+            scale: [1, 1.18, 1],
+          }}
+          transition={{
+            duration: 3.5,
+            repeat: Infinity,
+            ease: [0.4, 0, 0.2, 1],
+          }}
+        />
+        {/* Middle ring with occasional pulse */}
+        <motion.circle
+          cx="200"
+          cy="300"
+          r="18"
+          fill="rgba(241, 102, 9, 0.4)"
+          animate={{
+            opacity: [0.3, 0.6, 0.3],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: [0.4, 0, 0.2, 1],
+          }}
+        />
+        {/* Core hub - bright orange */}
+        <motion.circle
+          cx="200"
+          cy="300"
+          r="12"
+          fill="#f16609"
+          animate={{
+            opacity: [0.95, 1, 0.95],
+            scale: [1, 1.08, 1],
+          }}
+          transition={{
+            duration: 2.5,
+            repeat: Infinity,
+            ease: [0.4, 0, 0.2, 1],
+          }}
+        />
+        {/* Occasional sparkle effect */}
+        {[0, 1, 2].map((i) => {
+          const angle = (i * 120 * Math.PI) / 180;
+          const radius = 20;
+          const x = 200 + radius * Math.cos(angle);
+          const y = 300 + radius * Math.sin(angle);
+          return (
+            <motion.circle
+              key={`sparkle-${i}`}
+              cx={x}
+              cy={y}
+              r="2"
+              fill="#f16609"
+              animate={{
+                opacity: [0, 1, 0],
+                scale: [0.5, 1.5, 0.5],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: i * 0.7,
+                ease: "easeInOut",
+              }}
+            />
+          );
+        })}
+      </g>
+      
+      {/* Output nodes (bottom) - symmetrical with top (3 orange, 2 navy) */}
+      {[
+        { cx: 120, cy: 440, isOrange: false },
+        { cx: 150, cy: 420, isOrange: true },
+        { cx: 200, cy: 450, isOrange: true },
+        { cx: 250, cy: 420, isOrange: true },
+        { cx: 280, cy: 440, isOrange: false },
+      ].map((node, i) => (
+        <g key={`output-node-${i}`}>
+          {/* Outer glow - smooth and soft */}
+          <motion.circle
+            cx={node.cx}
+            cy={node.cy}
+            r="12"
+            fill={node.isOrange ? "rgba(241, 102, 9, 0.15)" : "rgba(35, 19, 127, 0.15)"}
+            animate={{
+              opacity: [0.2, 0.35, 0.2],
+              scale: [1, 1.15, 1],
+            }}
+            transition={{
+              duration: 4 + i * 0.4,
+              repeat: Infinity,
+              delay: i * 0.15 + 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+          />
+          {/* Middle ring */}
+          <motion.circle
+            cx={node.cx}
+            cy={node.cy}
+            r="7"
+            fill={node.isOrange ? "rgba(241, 102, 9, 0.25)" : "rgba(35, 19, 127, 0.25)"}
+            animate={{
+              opacity: [0.3, 0.5, 0.3],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 3 + i * 0.3,
+              repeat: Infinity,
+              delay: i * 0.15 + 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+          />
+          {/* Core dot - smooth and solid */}
+          <motion.circle
+            cx={node.cx}
+            cy={node.cy}
+            r="4"
+            fill={node.isOrange ? "#f16609" : "#23137f"}
+            animate={{
+              opacity: [0.9, 1, 0.9],
+            }}
+            transition={{
+              duration: 2.5 + i * 0.3,
+              repeat: Infinity,
+              delay: i * 0.15 + 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+          />
+        </g>
+      ))}
+      
+      {/* Engaging wave pattern with occasional design elements */}
+      {connections.map((conn, index) => {
+        const isActive = activeLineIndex === index;
+        const wasActive = activeLineIndex === (index - 1 + connections.length) % connections.length;
+        const willBeActive = activeLineIndex === (index + 1) % connections.length;
+        const isOrangeLine = conn.isOrange;
+        
+        return (
+          <g key={conn.id}>
+            {/* Enhanced glow for orange lines */}
+            {isActive && isOrangeLine && (
+              <motion.path
+                d={conn.d}
+                strokeWidth="6"
+                fill="none"
+                strokeLinecap="round"
+                stroke="#f16609"
+                opacity="0.3"
+                initial={{ pathLength: 0 }}
+                animate={{ 
+                  pathLength: 1,
+                  opacity: [0.3, 0.5, 0.3],
+                }}
+                transition={{ 
+                  duration: 1.5, 
+                  ease: "easeInOut",
+                  opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                }}
+              />
+            )}
+            {/* Subtle glow for navy lines */}
+            {isActive && !isOrangeLine && (
+              <motion.path
+                d={conn.d}
+                strokeWidth="5"
+                fill="none"
+                strokeLinecap="round"
+                stroke={conn.color}
+                opacity="0.2"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+              />
+            )}
+            {/* Main line with varying width for orange */}
+            <motion.path
+              d={conn.d}
+              strokeWidth={isOrangeLine ? "3" : "2.5"}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{
+                pathLength: isActive ? 1 : wasActive ? 1 : 0,
+                opacity: isActive 
+                  ? (isOrangeLine ? 1 : 0.85) 
+                  : wasActive 
+                  ? (isOrangeLine ? 0.4 : 0.3) 
+                  : willBeActive 
+                  ? 0.1 
+                  : 0,
+                stroke: conn.color,
+              }}
+              transition={{
+                pathLength: { 
+                  duration: isActive ? 1.8 : 0.3, 
+                  ease: [0.4, 0, 0.2, 1]
+                },
+                opacity: { 
+                  duration: 0.5, 
+                  ease: [0.4, 0, 0.2, 1]
+                },
+              }}
+            />
+            {/* Occasional pulse effect on orange lines - positioned at path midpoints */}
+            {isActive && isOrangeLine && index % 2 === 0 && (
+              <motion.circle
+                cx={index < 5 ? (120 + (index * 40) + 200) / 2 : (200 + (280 - (index - 5) * 40)) / 2}
+                cy={index < 5 ? (160 + 300) / 2 : (300 + 440) / 2}
+                r="3"
+                fill="#f16609"
+                animate={{
+                  opacity: [0.5, 1, 0.5],
+                  scale: [1, 1.5, 1],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            )}
+          </g>
+        );
+      })}
+      
+      {/* Aesthetic dots - purely decorative, randomly scattered */}
+      {aestheticDots.map((dot, i) => (
+        <motion.circle
+          key={`aesthetic-${i}`}
+          cx={dot.cx}
+          cy={dot.cy}
+          r={dot.size}
+          fill={dot.isOrange ? "#f16609" : "#23137f"}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{
+            opacity: [0.4, 0.7, 0.4],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            opacity: {
+              duration: 3 + i * 0.5,
+              repeat: Infinity,
+              delay: i * 0.3,
+              ease: "easeInOut",
+            },
+            scale: {
+              duration: 2.5 + i * 0.4,
+              repeat: Infinity,
+              delay: i * 0.3,
+              ease: "easeInOut",
+            },
+          }}
+        />
+      ))}
+    </svg>
+  );
+}
+
+export default function HomePage() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  
+  // Track scroll progress for background gradient
+  useEffect(() => {
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const maxScroll = documentHeight - windowHeight;
+      const progress = Math.min(scrollTop / maxScroll, 1);
+      setScrollProgress(progress);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial call
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Preload images
+  useEffect(() => {
+    const imagesToLoad = ["/toronto-skyline.jpg", "/dp-logo.png", "/KiQ Quantum Logo Final Black Circle Transparent.png"];
 
     let loadedCount = 0;
     const totalImages = imagesToLoad.length;
@@ -122,7 +526,6 @@ export default function HomePage() {
     const handleImageLoad = () => {
       loadedCount++;
       if (loadedCount === totalImages) {
-        // Small delay to ensure smooth transition
         setTimeout(() => {
           setIsLoading(false);
         }, 300);
@@ -138,7 +541,6 @@ export default function HomePage() {
       }
     };
 
-    // Preload all images
     imagesToLoad.forEach((src) => {
       const img = new Image();
       img.onload = handleImageLoad;
@@ -146,17 +548,6 @@ export default function HomePage() {
       img.src = src;
     });
   }, []);
-
-  // Rotate images periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % PREVIEW_IMAGES.length);
-    }, IMAGE_ROTATION_INTERVAL);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const currentImage = PREVIEW_IMAGES[currentImageIndex];
 
   return (
     <div className="min-h-screen">
@@ -223,7 +614,7 @@ export default function HomePage() {
           <div className="h-[50vh] w-[50vh] rounded-full bg-blue-500/10 blur-3xl" />
         </div>
 
-        <div className="relative z-10 mx-auto grid w-full max-w-8xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:pr-0">
+        <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:gap-20 lg:pr-0">
           {/* Left Side - Main Content */}
           {/* 
             Branding and hero text with staggered fade-in animations.
@@ -242,9 +633,60 @@ export default function HomePage() {
               }}
             >
               <div className="space-y-4">
-                <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
-                  KinesisIQ
-                </h1>
+                <motion.h1 
+                  className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl relative"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={isLoading ? { opacity: 0 } : { opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: isLoading ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <span className="inline-block relative">
+                    <span
+                      className="inline-block"
+                      style={{
+                        backgroundImage: "linear-gradient(135deg, #ff9d5c 0%, #ff8c42 25%, #f16609 50%, #ff8c42 75%, #ff9d5c 100%)",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        backgroundClip: "text",
+                      }}
+                    >
+                      KinesisIQ
+                    </span>
+                    <motion.span
+                      className="absolute inset-0 inline-block"
+                      initial={{ opacity: 0 }}
+                      animate={
+                        isLoading
+                          ? { opacity: 0, backgroundPosition: "-50% 0%" }
+                          : {
+                              opacity: 1,
+                              backgroundPosition: ["-50% 0%", "250% 0%"],
+                            }
+                      }
+                      transition={{
+                        opacity: { duration: 0.3, delay: isLoading ? 0 : 1.1 },
+                        backgroundPosition: {
+                          duration: 1.5,
+                          repeat: Infinity,
+                          repeatDelay: 3.5,
+                          ease: [0.25, 0.1, 0.25, 1],
+                          delay: isLoading ? 0 : 1.1,
+                        },
+                      }}
+                      style={{
+                        backgroundImage: "linear-gradient(90deg, transparent 0%, transparent 35%, rgba(255, 255, 255, 0.2) 45%, rgba(255, 255, 255, 0.5) 48%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.5) 52%, rgba(255, 255, 255, 0.2) 55%, transparent 65%, transparent 100%)",
+                        backgroundSize: "300% 100%",
+                        backgroundPosition: "-50% 0%",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        backgroundClip: "text",
+                        willChange: "background-position",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      KinesisIQ
+                    </motion.span>
+                  </span>
+                </motion.h1>
                 {/* Logo and branding - Badge style */}
                 <motion.div
                   className="flex items-center gap-3"
@@ -268,16 +710,43 @@ export default function HomePage() {
                       by Digital Placemaking
                     </span>
                   </div>
+                  {/* KinesisIQ Logo - larger, more prominent */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: 0.3,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    className="ml-3"
+                  >
+                    <img
+                      src="/KiQ Quantum Logo Final Black Circle Transparent.png"
+                      alt="KinesisIQ"
+                      className="h-12 w-12 object-contain opacity-95 hover:opacity-100 transition-all hover:scale-110"
+                    />
+                  </motion.div>
                 </motion.div>
               </div>
-              <p className="text-xl leading-relaxed text-zinc-200 sm:text-2xl">
-                Reading the pulse of humanity—turning insight into foresight.
-              </p>
-              <p className="text-lg leading-relaxed text-zinc-300">
-                KinesisIQ is a Conversational Intelligence and Predictive
-                Insight Platform that transforms real-world interactions into
-                foresight.
-              </p>
+              <motion.p 
+                className="text-xl leading-relaxed text-zinc-200 sm:text-2xl"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              >
+                Reading the pulse of humanity. Turning insight into foresight.
+              </motion.p>
+              <motion.p 
+                className="text-lg leading-relaxed text-zinc-300"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                KinesisIQ combines public data and community inputs to generate
+                early signals and emerging patterns. See what's happening now
+                and anticipate what comes next.
+              </motion.p>
             </motion.div>
 
             {/* CTA Buttons - Third animation (0.2s delay) */}
@@ -294,7 +763,8 @@ export default function HomePage() {
               {/* Primary CTA - Links to contact form */}
               <Link
                 href="/contact"
-                className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                className="inline-flex items-center rounded-lg px-6 py-3 text-sm font-medium text-white transition-colors hover:opacity-90"
+                style={{ backgroundColor: "#f16609" }}
               >
                 Get started
               </Link>
@@ -318,131 +788,358 @@ export default function HomePage() {
             </motion.div>
           </div>
 
-          {/* Right Side - Preview Image */}
-          {/* 
-            Dashboard preview image positioned to extend beyond the grid column.
-            Uses sticky positioning to remain visible while scrolling.
-            Animates in from the right with a slide effect.
-            Images rotate periodically with fade transitions.
-          */}
-          <div className="relative hidden lg:flex flex-col items-center justify-center left-[150px] w-[150%]">
+          {/* Right Side - Abstract Signal Flow Visual */}
+          <div className="relative hidden lg:flex items-center justify-center py-8">
             <motion.div
-              className="sticky top-0 w-full"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
+              className="relative w-full max-w-2xl h-[700px]"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{
-                duration: 0.8,
+                duration: 1.2,
                 delay: 0.3,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <div className="relative w-full select-none aspect-16/10">
-                <AnimatePresence>
-                  <motion.div
-                    key={currentImageIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                      duration: 0.8,
-                      ease: [0.4, 0, 0.2, 1],
-                    }}
-                    className="absolute inset-0 w-full h-full"
-                  >
-                    <img
-                      src={currentImage.url}
-                      alt="KinesisIQ Platform Preview"
-                      className="w-full h-full rounded-l-xl object-cover select-none pointer-events-none"
-                      draggable="false"
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              {/* Subtitle - Left-aligned underneath image */}
-              <motion.p
-                key={`subtitle-${currentImageIndex}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  duration: 0.8,
-                  ease: [0.4, 0, 0.2, 1],
+              {/* Animated gradient glow - cycling orange and blue */}
+              <motion.div
+                className="absolute inset-0 rounded-2xl"
+                animate={{
+                  background: [
+                    "radial-gradient(circle at 40% 40%, rgba(35, 19, 127, 0.25) 0%, transparent 50%), radial-gradient(circle at 60% 60%, rgba(241, 102, 9, 0.15) 0%, transparent 50%)",
+                    "radial-gradient(circle at 60% 60%, rgba(241, 102, 9, 0.25) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(35, 19, 127, 0.15) 0%, transparent 50%)",
+                    "radial-gradient(circle at 40% 40%, rgba(35, 19, 127, 0.25) 0%, transparent 50%), radial-gradient(circle at 60% 60%, rgba(241, 102, 9, 0.15) 0%, transparent 50%)",
+                  ],
                 }}
-                className="mt-4 text-left text-base font-light leading-relaxed text-zinc-400 dark:text-zinc-500 select-none"
-              >
-                {currentImage.subtitle}
-              </motion.p>
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              
+              {/* Signal flow visualization with wave pattern animations */}
+              <div className="absolute inset-0 w-full h-full">
+                <SequentialNetworkVisual className="w-full h-full" />
+              </div>
+              
+              {/* Simplified labels - visually heavy, less text */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-20 pointer-events-none">
+                {/* Top: Community Input */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ 
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{ 
+                    delay: 0.8,
+                    duration: 0.8,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="relative z-20"
+                >
+                  <div className="text-lg font-bold text-white uppercase tracking-wider"
+                    style={{
+                      textShadow: "0 2px 16px rgba(0, 0, 0, 0.95), 0 0 30px rgba(0, 0, 0, 0.8)",
+                    }}
+                  >
+                    Community Input
+                  </div>
+                </motion.div>
+                
+                {/* Center: Early Signals */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ 
+                    opacity: 1,
+                  }}
+                  transition={{ 
+                    delay: 1,
+                    duration: 0.8,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="relative z-20"
+                >
+                  <div className="text-xl font-bold text-white uppercase tracking-wider"
+                    style={{
+                      textShadow: "0 2px 20px rgba(0, 0, 0, 1), 0 0 40px rgba(0, 0, 0, 0.7)",
+                    }}
+                  >
+                    Early Signals
+                  </div>
+                </motion.div>
+                
+                {/* Bottom: Emerging Patterns */}
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ 
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{ 
+                    delay: 1.2,
+                    duration: 0.8,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="relative z-20"
+                >
+                  <div className="text-lg font-bold text-white uppercase tracking-wider"
+                    style={{
+                      textShadow: "0 2px 16px rgba(0, 0, 0, 0.95), 0 0 30px rgba(0, 0, 0, 0.8)",
+                    }}
+                  >
+                    Emerging Patterns
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Details Section - Scrollable Content */}
+      {/* Details Section - Scrollable Content with Smooth Scroll-Responsive Background */}
       {/* 
         Content section below the hero with:
         - Platform description
         - Value proposition tagline
         - Customer testimonials
         All sections use ScrollAnimation for fade-in effects on scroll.
+        Smooth background gradient responds to scroll position.
       */}
-      <section className="min-h-screen bg-white py-24 dark:bg-zinc-950">
+      <section className="relative min-h-screen py-24 overflow-hidden">
+        {/* Smooth scroll-responsive gradient background - earlier orange, smoother blend */}
+        <div
+          className="fixed inset-0 -z-10 pointer-events-none"
+          style={{
+            background: `linear-gradient(to bottom, 
+              rgb(9, 9, 11) 0%, 
+              rgb(9, 9, 11) ${Math.max(5, 15 - scrollProgress * 10)}%, 
+              rgba(35, 19, 127, ${Math.min(0.2, scrollProgress * 0.3)}) ${15 + scrollProgress * 20}%, 
+              rgba(241, 102, 9, ${Math.min(0.18, scrollProgress * 0.25)}) ${35 + scrollProgress * 20}%, 
+              rgba(35, 19, 127, ${Math.min(0.12, scrollProgress * 0.18)}) ${55 + scrollProgress * 15}%, 
+              rgb(9, 9, 11) ${70 + scrollProgress * 15}%, 
+              rgb(9, 9, 11) 100%)`,
+            transition: 'background 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        />
+        
+        {/* Subtle animated orbs in background - smooth and elegant */}
+        <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+          {[...Array(4)].map((_, i) => {
+            const baseX = 15 + (i * 25);
+            const baseY = 20 + (i * 20);
+            const isOrange = i % 2 === 1;
+            return (
+              <motion.div
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: `${100 + i * 30}px`,
+                  height: `${100 + i * 30}px`,
+                  left: `${baseX}%`,
+                  top: `${baseY}%`,
+                  background: `radial-gradient(circle, rgba(${isOrange ? '241, 102, 9' : '35, 19, 127'}, ${0.08 + scrollProgress * 0.05}) 0%, transparent 70%)`,
+                  filter: 'blur(60px)',
+                }}
+                animate={{
+                  x: [0, Math.sin(i * 0.8) * 40, 0],
+                  y: [0, Math.cos(i * 0.8) * 40, 0],
+                }}
+                transition={{
+                  duration: 12 + i * 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: i * 0.8,
+                }}
+              />
+            );
+          })}
+        </div>
+        
+        {/* Smooth scroll indicator line - left side only */}
+        <div
+          className="fixed left-8 top-0 bottom-0 w-0.5 -z-10 transition-all duration-300 ease-out"
+          style={{
+            background: `linear-gradient(to bottom, 
+              transparent 0%, 
+              rgba(241, 102, 9, 0.3) ${scrollProgress * 100}%, 
+              transparent ${scrollProgress * 100}%)`,
+          }}
+        />
+        
+        {/* Orange dot on left - going down */}
+        <motion.div
+          className="fixed left-7 -z-10"
+          style={{
+            top: `${scrollProgress * 100}%`,
+            transform: 'translateY(-50%)',
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 100,
+            damping: 30,
+          }}
+        >
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ 
+              backgroundColor: '#f16609',
+              boxShadow: '0 0 16px rgba(241, 102, 9, 0.7)',
+            }}
+          />
+        </motion.div>
+        
+        <div className="relative z-10">
         <div className="mx-auto max-w-4xl space-y-16 px-8">
           {/* KinesisIQ Description Section */}
           {/* Target for smooth scroll from "Learn more" button */}
           <ScrollAnimation>
-            <div id="what-is-kinesisiq" className="scroll-mt-24 space-y-6">
-              <h2 className="text-3xl font-bold text-black dark:text-zinc-50 sm:text-4xl">
+            <div id="what-is-kinesisiq" className="scroll-mt-24 space-y-8">
+              <motion.h2 
+                className="text-3xl font-bold text-white sm:text-4xl"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              >
                 What is KinesisIQ?
-              </h2>
-              <div className="space-y-4 text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 sm:text-xl">
+              </motion.h2>
+              <motion.div 
+                className="space-y-4 text-lg leading-relaxed text-zinc-300 sm:text-xl"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <p>
-                  KinesisIQ is a Conversational Intelligence and Predictive
-                  Insight Platform that transforms real-world interactions into
-                  foresight.
+                  KinesisIQ transforms real-world interactions into early signals
+                  and emerging patterns. We combine external public data sources—
+                  including city surveys, economic indicators, and official communications—
+                  with lightweight, in-the-moment inputs from your community.
                 </p>
                 <p>
-                  By capturing and analyzing engagement across a network of
-                  businesses, communities, and users, KinesisIQ applies
-                  probabilistic modeling to predict how groups of people will
-                  think, move, and respond — locally or across regions.
+                  This aggregated data flows through our intelligent processing platform
+                  to generate actionable signals about trust, sentiment, intent, behavior,
+                  and stress. These signals enable organizations to see what's happening
+                  now and anticipate what might come next, before change fully unfolds.
                 </p>
                 <p>
-                  It connects conversation, behavior, and place into one dynamic
-                  system of intelligence, empowering organizations to see
-                  emerging patterns, anticipate change, and act with confidence
-                  before the future unfolds.
+                  KinesisIQ is built by Digital Placemaking to help cities, businesses,
+                  and communities make better decisions by reading the pulse of humanity
+                  and turning insight into foresight.
                 </p>
-              </div>
+              </motion.div>
+              
+              {/* Feature Cards */}
+              <motion.div 
+                className="grid gap-6 sm:grid-cols-3 mt-12"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-150px" }}
+                transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {[
+                  {
+                    title: "Multi-Source Data",
+                    description: "Combines public data, surveys, and real-time community inputs",
+                    icon: Database,
+                    iconColor: "text-blue-400",
+                    bgColor: "bg-blue-500/10",
+                  },
+                  {
+                    title: "Intelligent Processing",
+                    description: "Advanced algorithms transform raw data into actionable signals",
+                    icon: Cpu,
+                    iconColor: "text-orange-400",
+                    bgColor: "bg-orange-500/10",
+                  },
+                  {
+                    title: "Predictive Insights",
+                    description: "See what's happening now and anticipate what comes next",
+                    icon: Sparkles,
+                    iconColor: "text-purple-400",
+                    bgColor: "bg-purple-500/10",
+                  },
+                ].map((card, i) => (
+                  <motion.div
+                    key={card.title}
+                    className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm hover:border-zinc-700 transition-all"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-150px" }}
+                    transition={{ duration: 0.6, delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                  >
+                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${card.bgColor} mb-4`}>
+                      <card.icon className={`h-6 w-6 ${card.iconColor}`} />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-2">{card.title}</h3>
+                    <p className="text-sm text-zinc-400 leading-relaxed">{card.description}</p>
+                  </motion.div>
+                ))}
+              </motion.div>
             </div>
           </ScrollAnimation>
 
           {/* Tagline */}
           <ScrollAnimation>
-            <div className="space-y-4 pt-16">
-              <p className="text-2xl leading-relaxed text-zinc-800 dark:text-zinc-200 sm:text-3xl">
-                Reading the pulse of humanity—turning insight into foresight.
-              </p>
-              <p className="text-xl leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-2xl">
-                It lets organizations act before change hits, turning real-world
-                behavior into a strategic advantage.
-              </p>
-            </div>
+            <motion.div 
+              className="space-y-4 pt-16"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <motion.p 
+                className="text-2xl leading-relaxed text-white sm:text-3xl font-medium"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-150px" }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              >
+                Reading the pulse of humanity. Turning insight into foresight.
+              </motion.p>
+              <motion.p 
+                className="text-xl leading-relaxed text-zinc-400 sm:text-2xl"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-150px" }}
+                transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              >
+                KinesisIQ enables organizations to act before change hits, transforming
+                real-world behavior patterns into a strategic advantage through
+                predictive intelligence and early signal detection.
+              </motion.p>
+            </motion.div>
           </ScrollAnimation>
 
           {/* How It Works Preview Section */}
           <ScrollAnimation>
             <div className="pt-16 space-y-6">
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-black dark:text-zinc-50 sm:text-4xl">
+              <motion.div 
+                className="space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-150px" }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <h2 className="text-3xl font-bold text-white sm:text-4xl">
                   How KinesisIQ Works
                 </h2>
-                <p className="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 sm:text-xl">
-                  From data collection to actionable intelligence—KinesisIQ
-                  transforms real-world interactions into foresight through four
-                  core capabilities.
+                <p className="text-lg leading-relaxed text-zinc-300 sm:text-xl">
+                  From multi-source data collection to actionable intelligence,
+                  KinesisIQ transforms real-world interactions into foresight through
+                  four core capabilities that work in concert to deliver predictive insights.
                 </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-8">
+              </motion.div>
+              
+              <motion.div 
+                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-8"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-150px" }}
+                transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              >
                 {[
                   {
                     icon: MessageSquare,
@@ -478,8 +1175,9 @@ export default function HomePage() {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    className="p-6 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/70 transition-colors"
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                    className="p-6 rounded-lg border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900/70 hover:border-zinc-700 transition-all"
+                    whileHover={{ scale: 1.03, y: -4 }}
                   >
                     <div
                       className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${feature.bgColor} mb-3`}
@@ -488,19 +1186,20 @@ export default function HomePage() {
                         className={`h-6 w-6 ${feature.iconColor}`}
                       />
                     </div>
-                    <h3 className="font-semibold text-black dark:text-white mb-2">
+                    <h3 className="font-semibold text-white mb-2">
                       {feature.title}
                     </h3>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <p className="text-sm text-zinc-400">
                       {feature.description}
                     </p>
                   </motion.div>
                 ))}
-              </div>
+              </motion.div>
               <div className="flex flex-wrap gap-4 pt-4">
                 <motion.a
                   href="/how-it-works"
-                  className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
+                  className="inline-flex items-center rounded-lg px-6 py-3 text-sm font-medium text-white transition-all hover:opacity-90 hover:scale-105 hover:shadow-lg"
+                  style={{ backgroundColor: "#f16609", boxShadow: "0 10px 40px -10px rgba(241, 102, 9, 0.3)" }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -513,21 +1212,29 @@ export default function HomePage() {
           {/* Reporting & Analytics Section */}
           <ScrollAnimation>
             <div className="pt-16 space-y-6">
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-black dark:text-zinc-50 sm:text-4xl">
-                  Data Acquisition & Reporting
+              <motion.div 
+                className="space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-150px" }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <h2 className="text-3xl font-bold text-white sm:text-4xl">
+                  Early Signals & Reporting
                 </h2>
-                <p className="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 sm:text-xl">
-                  KinesisIQ transforms real-world interactions into actionable
-                  insights. Our platform provides comprehensive analytics,
-                  engagement funnels, and sentiment analysis—all while
-                  maintaining privacy and consent awareness.
+                <p className="text-lg leading-relaxed text-zinc-300 sm:text-xl">
+                  KinesisIQ transforms real-world interactions into early signals
+                  and emerging patterns. Our comprehensive reporting dashboard
+                  visualizes engagement metrics, sentiment distribution, and
+                  location performance analytics, all while maintaining strict
+                  privacy protocols and consent awareness.
                 </p>
-              </div>
+              </motion.div>
               <div className="flex flex-wrap gap-4 pt-4">
                 <motion.a
                   href="/demo/reporting"
-                  className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
+                  className="inline-flex items-center rounded-lg px-6 py-3 text-sm font-medium text-white transition-all hover:opacity-90 hover:scale-105 hover:shadow-lg"
+                  style={{ backgroundColor: "#f16609", boxShadow: "0 10px 40px -10px rgba(241, 102, 9, 0.3)" }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -545,16 +1252,20 @@ export default function HomePage() {
             </div>
           </ScrollAnimation>
 
-          {/* Scrolling Quotes Section */}
+          {/* Scrolling Quotes Section - Black background */}
           <ScrollAnimation>
-            <div className="flex justify-center pt-16">
+            <div className="flex justify-center pt-16 pb-16 -mx-8 px-8" style={{ 
+              background: 'linear-gradient(to bottom, transparent 0%, rgb(9, 9, 11) 5%, rgb(9, 9, 11) 95%, transparent 100%)',
+              marginTop: '4rem',
+              marginBottom: '4rem',
+            }}>
               <div
                 className="relative overflow-hidden py-6"
                 style={{ width: "90vw", maxWidth: "100%" }}
               >
                 {/* Gradient overlays for fade effect */}
-                <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-32 bg-linear-to-r from-white to-transparent dark:from-zinc-950" />
-                <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-32 bg-linear-to-l from-white to-transparent dark:from-zinc-950" />
+                <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-32 bg-gradient-to-r from-zinc-950 to-transparent" />
+                <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-32 bg-gradient-to-l from-zinc-950 to-transparent" />
 
                 {/* Scrolling quotes */}
                 <div className="flex animate-scroll gap-6">
@@ -624,6 +1335,7 @@ export default function HomePage() {
               </div>
             </div>
           </ScrollAnimation>
+        </div>
         </div>
       </section>
 

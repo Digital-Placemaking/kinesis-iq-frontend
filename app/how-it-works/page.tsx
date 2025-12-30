@@ -89,9 +89,9 @@ const WORKFLOW_STEPS = [
   },
   {
     step: "03",
-    title: "Insight Generation",
+    title: "Signal Generation",
     description:
-      "Transform raw data into foresight. Understand sentiment distribution, engagement funnels, location performance, and time-based trends across your community.",
+      "Transform aggregated data into early signals. Identify sentiment patterns, engagement flows, location performance, and emerging patterns across your community.",
     icon: TrendingUp,
     color: "text-purple-400",
   },
@@ -115,10 +115,29 @@ export default function HowItWorksPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="border-b border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-950 py-20"
+        className="relative border-b border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-950 py-20"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center space-y-6">
+            {/* KinesisIQ Logo - Integrated with title */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="flex justify-center mb-4"
+            >
+              <Link
+                href="/"
+                className="flex items-center hover:opacity-80 transition-opacity"
+                aria-label="KinesisIQ Home"
+              >
+                <img
+                  src="/KiQ Quantum Logo Final Black Circle Transparent.png"
+                  alt="KinesisIQ"
+                  className="h-16 w-16 sm:h-20 sm:w-20 object-contain"
+                />
+              </Link>
+            </motion.div>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -141,16 +160,24 @@ export default function HowItWorksPage() {
               transition={{ delay: 0.4 }}
               className="text-lg text-zinc-400 max-w-2xl mx-auto"
             >
-              KinesisIQ transforms real-world interactions into actionable
-              intelligence, helping organizations see emerging patterns and act
-              with confidence.
+              KinesisIQ transforms real-world interactions into early signals
+              and emerging patterns, helping organizations see what's happening
+              now and anticipate what comes next.
             </motion.p>
           </div>
         </div>
       </motion.section>
 
       {/* Core Capabilities Section */}
-      <section className="py-20">
+      <section className="py-20 relative overflow-hidden">
+        {/* Subtle gradient background */}
+        <div 
+          className="absolute inset-0 opacity-30"
+          style={{
+            background: "linear-gradient(135deg, rgba(35, 19, 127, 0.1) 0%, rgba(9, 9, 11, 0.5) 50%, rgba(241, 102, 9, 0.1) 100%)"
+          }}
+        />
+        <div className="relative z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="max-w-3xl mx-auto text-center mb-16">
@@ -191,12 +218,12 @@ export default function HowItWorksPage() {
                       >
                         <feature.icon className={`h-7 w-7 ${feature.color}`} />
                       </motion.div>
-                      <CardTitle className="text-white text-xl mb-2">
+                      <CardTitle className="text-white text-xl mb-3 font-bold">
                         {feature.title}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 flex flex-col">
-                      <CardDescription className="text-zinc-400 leading-relaxed flex-1">
+                      <CardDescription className="text-zinc-300 text-base leading-relaxed flex-1">
                         {feature.description}
                       </CardDescription>
                     </CardContent>
@@ -206,10 +233,17 @@ export default function HowItWorksPage() {
             ))}
           </div>
         </div>
+        </div>
       </section>
 
       {/* Workflow Section */}
-      <section className="py-20 bg-zinc-900/30">
+      <section 
+        className="py-20 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, rgba(241, 102, 9, 0.08) 0%, rgba(9, 9, 11, 0.9) 50%, rgba(35, 19, 127, 0.08) 100%)"
+        }}
+      >
+        <div className="relative z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="max-w-3xl mx-auto text-center mb-16">
@@ -217,8 +251,8 @@ export default function HowItWorksPage() {
                 The KinesisIQ Process
               </h2>
               <p className="text-lg text-zinc-400">
-                From data collection to actionable intelligence—see how insights
-                flow through our platform.
+                From data collection to early signals—see how patterns emerge
+                through our platform.
               </p>
             </div>
           </ScrollReveal>
@@ -293,12 +327,12 @@ export default function HowItWorksPage() {
                   >
                     <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 transition-all h-full">
                       <CardHeader>
-                        <CardTitle className="text-white text-xl mb-2">
-                          {step.title}
-                        </CardTitle>
+                      <CardTitle className="text-white text-2xl mb-3 font-bold">
+                        {step.title}
+                      </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="text-zinc-400 leading-relaxed">
+                        <CardDescription className="text-zinc-300 text-base leading-relaxed">
                           {step.description}
                         </CardDescription>
                       </CardContent>
@@ -309,10 +343,19 @@ export default function HowItWorksPage() {
             ))}
           </div>
         </div>
+        </div>
       </section>
 
       {/* Key Benefits Section */}
-      <section className="py-20">
+      <section className="py-20 relative overflow-hidden">
+        {/* Subtle gradient background */}
+        <div 
+          className="absolute inset-0 opacity-30"
+          style={{
+            background: "linear-gradient(135deg, rgba(35, 19, 127, 0.1) 0%, rgba(9, 9, 11, 0.5) 50%, rgba(241, 102, 9, 0.1) 100%)"
+          }}
+        />
+        <div className="relative z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <ScrollReveal>
@@ -336,7 +379,7 @@ export default function HowItWorksPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-zinc-400">
+                    <CardDescription className="text-zinc-300 text-base">
                       Understand how different locations perform, identify
                       hotspots, and optimize engagement strategies based on
                       geographic insights.
@@ -354,7 +397,7 @@ export default function HowItWorksPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-zinc-400">
+                    <CardDescription className="text-zinc-300 text-base">
                       Track engagement patterns over time, identify seasonal
                       trends, and predict future behavior with probabilistic
                       modeling.
@@ -370,7 +413,7 @@ export default function HowItWorksPage() {
                     <CardTitle className="text-white">Privacy-First</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-zinc-400">
+                    <CardDescription className="text-zinc-300 text-base">
                       All data is anonymized, aggregated, and consent-aware. We
                       comply with GDPR, CCPA, and other privacy regulations.
                     </CardDescription>
@@ -380,10 +423,17 @@ export default function HowItWorksPage() {
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-zinc-900/30">
+      <section 
+        className="py-20 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, rgba(241, 102, 9, 0.12) 0%, rgba(9, 9, 11, 0.95) 50%, rgba(35, 19, 127, 0.12) 100%)"
+        }}
+      >
+        <div className="relative z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="max-w-3xl mx-auto text-center space-y-6">
@@ -391,13 +441,14 @@ export default function HowItWorksPage() {
                 Ready to Get Started?
               </h2>
               <p className="text-lg text-zinc-400">
-                Experience KinesisIQ and see how predictive intelligence can
-                transform your organization.
+                Experience KinesisIQ and see how early signals and emerging
+                patterns can inform your organization's decisions.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
                 <Button
                   asChild
-                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  className="text-white hover:opacity-90"
+                  style={{ backgroundColor: "#f16609" }}
                   size="lg"
                 >
                   <Link href="/contact">
@@ -416,6 +467,7 @@ export default function HowItWorksPage() {
               </div>
             </div>
           </ScrollReveal>
+        </div>
         </div>
       </section>
 

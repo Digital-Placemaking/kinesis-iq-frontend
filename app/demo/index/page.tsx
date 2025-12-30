@@ -3,7 +3,13 @@
 import { motion } from "framer-motion";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/app/components/ui/scroll-reveal";
 import Link from "next/link";
@@ -64,15 +70,22 @@ export default function DemoIndexPage() {
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                        transition={{
+                          delay: 0.3,
+                          type: "spring",
+                          stiffness: 200,
+                        }}
                         className="rounded-lg bg-blue-500/20 p-3"
                       >
                         <Smartphone className="h-6 w-6 text-blue-400" />
                       </motion.div>
-                      <CardTitle className="text-white">Mobile Survey Experience</CardTitle>
+                      <CardTitle className="text-white">
+                        Mobile Survey Experience
+                      </CardTitle>
                     </div>
                     <CardDescription className="text-zinc-400">
-                      Experience the complete mobile survey flow from landing page to completion
+                      Experience the complete mobile survey flow from landing
+                      page to completion
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -116,15 +129,22 @@ export default function DemoIndexPage() {
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+                        transition={{
+                          delay: 0.4,
+                          type: "spring",
+                          stiffness: 200,
+                        }}
                         className="rounded-lg bg-green-500/20 p-3"
                       >
                         <BarChart3 className="h-6 w-6 text-green-400" />
                       </motion.div>
-                      <CardTitle className="text-white">Data & Analytics Dashboard</CardTitle>
+                      <CardTitle className="text-white">
+                        Data & Analytics Dashboard
+                      </CardTitle>
                     </div>
                     <CardDescription className="text-zinc-400">
-                      Explore our reporting and analytics capabilities with real-time insights
+                      Explore our reporting and analytics capabilities with
+                      real-time insights
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -161,7 +181,8 @@ export default function DemoIndexPage() {
           <ScrollReveal delay={0.3}>
             <div className="mt-12 text-center">
               <p className="text-zinc-400 mb-4">
-                Both demos use simulated data to showcase KinesisIQ's capabilities
+                Both demos use simulated data to showcase KinesisIQ's
+                capabilities
               </p>
               <Button
                 asChild
@@ -179,6 +200,3 @@ export default function DemoIndexPage() {
     </div>
   );
 }
-
-
-

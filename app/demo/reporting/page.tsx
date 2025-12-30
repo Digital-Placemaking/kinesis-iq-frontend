@@ -64,10 +64,10 @@ import {
 
 /**
  * Reporting Demo Page
- * 
+ *
  * Frontend-only prototype for stakeholder demonstrations.
  * All data is mocked and aggregated - designed for backend integration without refactor.
- * 
+ *
  * Backend Integration Notes:
  * - Replace MOCK_DATA with API calls to fetch analytics data
  * - Data structure represents aggregated analytics (counts, rates, trends)
@@ -392,7 +392,7 @@ function SignalsCarousel({
   }, [allSignals.length]);
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
       {displayedSignals.map((signal, index) => (
         <motion.div
           key={`${signal.title}-${currentIndex}-${index}`}
@@ -1244,7 +1244,7 @@ function FeedbackCarousel() {
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
       {displayedFeedback.map((feedback, index) => {
         const config =
           sentimentConfig[feedback.sentiment as keyof typeof sentimentConfig] ||
@@ -1554,12 +1554,12 @@ function FunnelChart({
         </CardHeader>
         <CardContent className="pt-2">
           {isLoading ? (
-            <div className="h-64 flex items-center justify-center">
+            <div className="h-64 lg:h-96 flex items-center justify-center">
               <SkeletonLoader height={200} width="100%" />
             </div>
           ) : (
             <div className="space-y-4">
-              <ChartContainer config={chartConfig} className="h-64">
+              <ChartContainer config={chartConfig} className="h-64 lg:h-96">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={chartData}
@@ -1753,10 +1753,10 @@ function SentimentDistribution({
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-2 flex flex-col flex-1 min-h-0">
-        {isLoading ? (
-          <div className="h-64 flex items-center justify-center">
-            <SkeletonLoader height={200} width={200} variant="circular" />
-          </div>
+          {isLoading ? (
+            <div className="h-48 sm:h-56 lg:h-64 flex items-center justify-center">
+              <SkeletonLoader height={200} width={200} variant="circular" />
+            </div>
         ) : (
           <div className="flex flex-col flex-1 min-h-0 space-y-4">
             <div className="relative flex-1 min-h-0 flex items-center justify-center">
@@ -2053,9 +2053,9 @@ function TimeSeriesChart({
   });
 
   const rangeLabels = {
-    "7d": "Daily trends",
-    "30d": "Weekly trends",
-    "90d": "Monthly trends",
+    "7d": "Daily patterns",
+    "30d": "Weekly patterns",
+    "90d": "Monthly patterns",
   };
 
   const chartConfig = {
@@ -2068,7 +2068,7 @@ function TimeSeriesChart({
       <CardHeader className="pb-4 flex-shrink-0">
         <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
           <Clock className="h-6 w-6 text-orange-400" />
-          Trend Over Time
+          Emerging Patterns Over Time
         </CardTitle>
         <CardDescription className="text-zinc-400 text-sm">
           {rangeLabels[timeRange]} • Page visits and survey responses
@@ -2076,12 +2076,12 @@ function TimeSeriesChart({
       </CardHeader>
       <CardContent className="pt-2 pb-2 flex flex-col flex-1 min-h-0">
         {isLoading ? (
-          <div className="h-64 flex items-center justify-center">
+          <div className="h-48 sm:h-56 lg:h-64 flex items-center justify-center">
             <SkeletonLoader height={200} width="100%" />
           </div>
         ) : (
           <div className="flex flex-col flex-1 min-h-0">
-            <ChartContainer config={chartConfig} className="flex-1 min-h-0">
+            <ChartContainer config={chartConfig} className="flex-1 min-h-[200px] sm:min-h-[240px] lg:min-h-0">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={chartData}
@@ -2247,8 +2247,28 @@ export default function ReportingDemoPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="border-b border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-950 py-12 sm:py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative border-b border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-950 py-12 sm:py-16 overflow-hidden">
+        {/* KinesisIQ Logo - Top Right, Bigger and Centered */}
+        <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20 flex items-center justify-center">
+          <Link
+            href="/"
+            className="flex items-center hover:opacity-80 transition-opacity"
+            aria-label="KinesisIQ Home"
+          >
+            <img
+              src="/KiQ Quantum Logo Final Black Circle Transparent.png"
+              alt="KinesisIQ"
+              className="h-16 w-16 sm:h-20 sm:w-20 object-contain"
+            />
+          </Link>
+        </div>
+        {/* Subtle background effects - only in hero section */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Very subtle gradient orbs */}
+          <div className="absolute top-1/3 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/3 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
+        </div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <ScrollReveal>
             <div className="max-w-4xl mx-auto text-center space-y-5 sm:space-y-6">
               <motion.h1
@@ -2303,13 +2323,13 @@ export default function ReportingDemoPage() {
       </section>
 
       {/* Section 1: Overview Header + KPI Cards */}
-      <section className="py-16 sm:py-20">
+      <section className="py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <ScrollReveal>
             {/* Section Header */}
-            <div className="mb-12 sm:mb-16 mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="mb-8 sm:mb-12 lg:mb-16 mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-4xl font-bold text-white mb-4">Overview</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Overview</h2>
                 <p className="text-base text-zinc-400 mb-6">
                   Real-time metrics and analytics •{" "}
                   {selectedTimeRange === "7d"
@@ -2347,7 +2367,7 @@ export default function ReportingDemoPage() {
           </ScrollReveal>
 
           {/* KPI Cards Grid */}
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <KPICard
               icon={Eye}
               label="Page Visits"
@@ -2397,11 +2417,11 @@ export default function ReportingDemoPage() {
       </section>
 
       {/* Section 2: Charts Grid */}
-      <section className="py-12">
+      <section className="py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <ScrollReveal>
-            <div className="mb-12 mt-4">
-              <h2 className="text-4xl font-bold text-white mb-4">
+            <div className="mb-8 sm:mb-12 mt-4">
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
                 Analytics & Trends
               </h2>
               <p className="text-base text-zinc-400 mb-6">
@@ -2421,10 +2441,10 @@ export default function ReportingDemoPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="space-y-8"
+              className="space-y-6 sm:space-y-8"
             >
               {/* Row 1: Funnel and Sentiment */}
-              <div className="grid gap-12 lg:grid-cols-2">
+              <div className="grid gap-6 sm:gap-8 lg:gap-12 lg:grid-cols-2">
                 <ScrollReveal delay={0.1}>
                   <FunnelChart
                     data={currentData.funnel}
@@ -2440,7 +2460,7 @@ export default function ReportingDemoPage() {
               </div>
 
               {/* Row 2: Time Series and Location */}
-              <div className="grid gap-12 lg:grid-cols-2">
+              <div className="grid gap-6 sm:gap-8 lg:gap-12 lg:grid-cols-2">
                 <ScrollReveal delay={0.3}>
                   <TimeSeriesChart
                     data={currentData.timeSeries}
@@ -2461,11 +2481,11 @@ export default function ReportingDemoPage() {
       </section>
 
       {/* Section 3: User Feedback */}
-      <section className="py-12">
+      <section className="py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <ScrollReveal>
-            <div className="mb-12 mt-4">
-              <h2 className="text-4xl font-bold text-white mb-4 flex items-center gap-3">
+            <div className="mb-8 sm:mb-12 mt-4">
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-3">
                 <MessageSquare className="h-8 w-8 text-blue-400" />
                 Recent User Feedback
               </h2>
@@ -2488,25 +2508,25 @@ export default function ReportingDemoPage() {
       </section>
 
       {/* Section 4: Signals Detected */}
-      <section className="py-12">
+      <section className="py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <ScrollReveal>
-            <div className="mb-12 mt-4">
+            <div className="mb-8 sm:mb-12 mt-4">
               <div className="flex items-center gap-3 mb-4">
                 <motion.div
                   className="p-2 rounded-lg bg-blue-500/10"
                   animate={{ rotate: [0, 5, -5, 0] }}
                   transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                 >
-                  <Zap className="h-7 w-7 text-blue-400" />
+                  <Zap className="h-6 w-6 sm:h-7 sm:w-7 text-blue-400" />
                 </motion.div>
-                <h2 className="text-4xl font-bold text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold text-white">
                   Signals Detected
                 </h2>
               </div>
               <p className="text-base text-zinc-400 max-w-3xl mb-6">
-                Emerging patterns and opportunities identified from aggregated
-                data •{" "}
+                Early signals and emerging patterns identified from aggregated
+                data • These inputs feed future intelligence layers •{" "}
                 {selectedTimeRange === "7d"
                   ? "7-day analysis"
                   : selectedTimeRange === "30d"
@@ -2524,13 +2544,13 @@ export default function ReportingDemoPage() {
       </section>
 
       {/* Section 5: Key Insights & Recommendations */}
-      <section className="py-12">
+      <section className="py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <ScrollReveal>
-            <div className="mb-12 mt-4">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="mb-8 sm:mb-12 mt-4">
+              <div className="flex items-center gap-2 sm:gap-3 mb-4">
                 <motion.div
-                  className="p-3 rounded-xl bg-yellow-500/20 border border-yellow-500/30 relative"
+                  className="p-2 sm:p-3 rounded-xl bg-yellow-500/20 border border-yellow-500/30 relative"
                   animate={{
                     scale: [1, 1.05, 1],
                     rotate: [0, 5, -5, 0],
@@ -2542,16 +2562,22 @@ export default function ReportingDemoPage() {
                     ease: "easeInOut",
                   }}
                 >
-                  <div className="absolute inset-0 bg-yellow-500/10 rounded-xl blur-sm" />
-                  <Lightbulb className="h-8 w-8 text-yellow-300 relative z-10" />
+                  <div className="absolute inset-0 bg-yellow-500/20 rounded-xl blur-sm" />
+                  <div className="absolute inset-0 bg-yellow-400/10 rounded-xl blur-md" />
+                  <Lightbulb 
+                    className="h-6 w-6 sm:h-8 sm:w-8 relative z-10" 
+                    style={{ 
+                      color: '#facc15', 
+                      filter: 'drop-shadow(0 0 8px rgba(250, 204, 21, 0.8))'
+                    }} 
+                  />
                 </motion.div>
-                <h2 className="text-4xl font-bold text-white">
-                  Key Insights & Recommendations
+                <h2 className="text-3xl sm:text-4xl font-bold text-white">
+                  Early Signals & Recommendations
                 </h2>
               </div>
               <p className="text-base text-zinc-400 max-w-3xl mb-6">
-                Actionable intelligence derived from probabilistic modeling and
-                pattern analysis • Based on{" "}
+                Early signals identified from aggregated data patterns • These inputs feed future intelligence layers • Based on{" "}
                 {selectedTimeRange === "7d"
                   ? "7-day"
                   : selectedTimeRange === "30d"
@@ -2566,13 +2592,13 @@ export default function ReportingDemoPage() {
       </section>
 
       {/* Section 6: What KinesisIQ Learns From Your Data */}
-      <section className="py-12">
+      <section className="py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <ScrollReveal>
-            <div className="mb-12 mt-4">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="mb-8 sm:mb-12 mt-4">
+              <div className="flex items-center gap-2 sm:gap-3 mb-4">
                 <motion.div
-                  className="p-3 rounded-xl bg-purple-500/15 border border-purple-500/20 relative"
+                  className="p-2 sm:p-3 rounded-xl bg-purple-500/15 border border-purple-500/20 relative"
                   animate={{
                     scale: [1, 1.05, 1],
                   }}
@@ -2584,14 +2610,14 @@ export default function ReportingDemoPage() {
                   }}
                 >
                   <div className="absolute inset-0 bg-purple-500/10 rounded-xl blur-sm" />
-                  <Brain className="h-8 w-8 text-purple-300 relative z-10" />
+                  <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-purple-300 relative z-10" />
                 </motion.div>
-                <h2 className="text-4xl font-bold text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold text-white">
                   What KinesisIQ Learns From Your Data
                 </h2>
               </div>
               <p className="text-base text-zinc-400 max-w-3xl mb-6">
-                Intelligent insights derived from aggregated patterns •{" "}
+                Early signals and patterns derived from aggregated data • These inputs support future intelligence layers •{" "}
                 {selectedTimeRange === "7d"
                   ? "7-day"
                   : selectedTimeRange === "30d"
@@ -2601,7 +2627,7 @@ export default function ReportingDemoPage() {
               </p>
             </div>
           </ScrollReveal>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
             <LearningCard
               icon={MessageSquare}
               title="Survey Optimization"

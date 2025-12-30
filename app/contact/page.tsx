@@ -7,8 +7,10 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { ScrollReveal } from "../components/ui/scroll-reveal";
 import { Mail, User, MessageSquare, Send, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { submitContactForm } from "@/app/actions/contact";
@@ -45,21 +47,60 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+    <div className="min-h-screen bg-zinc-950 relative overflow-hidden">
       <Navbar />
-      <div className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
-          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-4xl">
-            Contact Us
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Fill out the form below and we'll get back to you soon.
-          </p>
-          <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+      
+      {/* Subtle background effects */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
+      </div>
+      
+      {/* Hero Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative border-b border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-950 py-20"
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white"
+            >
+              Contact Us
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-xl text-zinc-300 leading-relaxed"
+            >
+              Get in touch to learn more about KinesisIQ
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-lg text-zinc-400 max-w-2xl mx-auto"
+            >
+              Fill out the form below and we'll get back to you soon.
+            </motion.p>
+          </div>
+        </div>
+      </motion.section>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-2xl py-20 relative z-10">
+        <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/60 backdrop-blur-sm p-8 shadow-xl">
+          <p className="mb-6 text-sm text-zinc-400">
             Want to learn more about KinesisIQ?{" "}
             <Link
               href="/about-us"
-              className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              className="font-medium transition-colors hover:opacity-80"
+              style={{ color: "#f16609" }}
             >
               Visit our About page
             </Link>
@@ -67,8 +108,8 @@ export default function ContactPage() {
           </p>
 
           {success ? (
-            <div className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-              <p className="text-sm font-medium text-green-800 dark:text-green-200">
+            <div className="mt-6 rounded-lg border border-green-800 bg-green-900/20 p-4">
+              <p className="text-sm font-medium text-green-200">
                 Thank you! Your message has been sent. We'll be in touch soon.
               </p>
             </div>
@@ -78,9 +119,9 @@ export default function ContactPage() {
               <div>
                 <label
                   htmlFor="name"
-                  className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-50"
+                  className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-50"
                 >
-                  <User className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                  <User className="h-4 w-4 text-zinc-400" />
                   Name
                   <span className="text-red-500">*</span>
                 </label>
@@ -92,7 +133,7 @@ export default function ContactPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-400"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-sm text-zinc-50 placeholder-zinc-400 transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                   placeholder="Your name"
                 />
               </div>
@@ -101,9 +142,9 @@ export default function ContactPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-50"
+                  className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-50"
                 >
-                  <Mail className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                  <Mail className="h-4 w-4 text-zinc-400" />
                   Business Email
                   <span className="text-red-500">*</span>
                 </label>
@@ -115,7 +156,7 @@ export default function ContactPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-400"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-sm text-zinc-50 placeholder-zinc-400 transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                   placeholder="your@business.com"
                 />
               </div>
@@ -124,9 +165,9 @@ export default function ContactPage() {
               <div>
                 <label
                   htmlFor="message"
-                  className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-50"
+                  className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-50"
                 >
-                  <MessageSquare className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                  <MessageSquare className="h-4 w-4 text-zinc-400" />
                   Message
                   <span className="text-red-500">*</span>
                 </label>
@@ -138,13 +179,13 @@ export default function ContactPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, message: e.target.value })
                   }
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-400"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-sm text-zinc-50 placeholder-zinc-400 transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
                   placeholder="Tell us about your business and how we can help..."
                 />
               </div>
 
               {error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+                <div className="rounded-lg border border-red-800 bg-red-900/20 p-3 text-sm text-red-200">
                   {error}
                 </div>
               )}
@@ -152,7 +193,8 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600"
+                className="w-full rounded-lg px-6 py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: "#f16609" }}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
