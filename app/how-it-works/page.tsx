@@ -160,23 +160,21 @@ export default function HowItWorksPage() {
               transition={{ delay: 0.4 }}
               className="text-lg text-zinc-400 max-w-2xl mx-auto"
             >
-              KinesisIQ transforms real-world interactions into early signals
-              and emerging patterns, helping organizations see what's happening
-              now and anticipate what comes next.
+              KinesisIQ transforms real-world interactions into early signals and emerging patterns, 
+              helping governments and businesses see what's happening now and anticipate what comes next— 
+              enabling confident decision-making before change fully unfolds.
             </motion.p>
           </div>
         </div>
       </motion.section>
 
       {/* Core Capabilities Section */}
-      <section className="py-20 relative overflow-hidden">
-        {/* Subtle gradient background */}
-        <div 
-          className="absolute inset-0 opacity-30"
-          style={{
-            background: "linear-gradient(135deg, rgba(35, 19, 127, 0.1) 0%, rgba(9, 9, 11, 0.5) 50%, rgba(241, 102, 9, 0.1) 100%)"
-          }}
-        />
+      <section className="py-20 relative overflow-hidden bg-zinc-950">
+        {/* Subtle background effects - consistent pattern */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
+        </div>
         <div className="relative z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
@@ -185,8 +183,8 @@ export default function HowItWorksPage() {
                 Core Capabilities
               </h2>
               <p className="text-lg text-zinc-400">
-                Where mathematics meets humanity. Understand engagement patterns
-                before they fully emerge.
+                Where mathematics meets humanity. Understand engagement patterns before they fully emerge, 
+                enabling governments and businesses to make proactive decisions with confidence.
               </p>
             </div>
           </ScrollReveal>
@@ -198,12 +196,15 @@ export default function HowItWorksPage() {
             {FEATURES.map((feature, index) => (
               <ScrollReveal key={feature.title} delay={index * 0.1}>
                 <motion.div
-                  whileHover={{ scale: 1.02, y: -4 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  whileHover={{ scale: 1.03, y: -6 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   className="h-full"
                 >
                   <Card
-                    className={`border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900/70 transition-all backdrop-blur-sm ${feature.borderColor} hover:border-opacity-40 h-full flex flex-col`}
+                    className={`border-2 ${feature.borderColor} bg-zinc-900/50 hover:bg-zinc-900/70 transition-all duration-300 backdrop-blur-sm hover:border-opacity-60 hover:shadow-lg hover:shadow-${feature.color.replace('text-', '')}/10 h-full flex flex-col group`}
+                    style={{
+                      boxShadow: '0 0 0 0 rgba(0, 0, 0, 0)',
+                    }}
                   >
                     <CardHeader className="flex-shrink-0">
                       <motion.div
@@ -237,12 +238,12 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Workflow Section */}
-      <section 
-        className="py-20 relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, rgba(241, 102, 9, 0.08) 0%, rgba(9, 9, 11, 0.9) 50%, rgba(35, 19, 127, 0.08) 100%)"
-        }}
-      >
+      <section className="py-20 relative overflow-hidden bg-zinc-950">
+        {/* Subtle background effects - consistent pattern */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/3 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/3 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
+        </div>
         <div className="relative z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
@@ -251,8 +252,8 @@ export default function HowItWorksPage() {
                 The KinesisIQ Process
               </h2>
               <p className="text-lg text-zinc-400">
-                From data collection to early signals—see how patterns emerge
-                through our platform.
+                From data collection to early signals—see how patterns emerge through our platform 
+                to help organizations act with foresight, not just hindsight.
               </p>
             </div>
           </ScrollReveal>
@@ -325,7 +326,7 @@ export default function HowItWorksPage() {
                     transition={{ delay: index * 0.15 + 0.5 }}
                     className="flex-1"
                   >
-                    <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 transition-all h-full">
+                    <Card className={`border-2 ${step.color.replace('text-', 'border-').replace('-400', '-500/30')} bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 hover:border-opacity-50 transition-all duration-300 h-full group hover:shadow-lg`}>
                       <CardHeader>
                       <CardTitle className="text-white text-2xl mb-3 font-bold">
                         {step.title}
@@ -347,14 +348,12 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Key Benefits Section */}
-      <section className="py-20 relative overflow-hidden">
-        {/* Subtle gradient background */}
-        <div 
-          className="absolute inset-0 opacity-30"
-          style={{
-            background: "linear-gradient(135deg, rgba(35, 19, 127, 0.1) 0%, rgba(9, 9, 11, 0.5) 50%, rgba(241, 102, 9, 0.1) 100%)"
-          }}
-        />
+      <section className="py-20 relative overflow-hidden bg-zinc-950">
+        {/* Subtle background effects - consistent pattern */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
+        </div>
         <div className="relative z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
@@ -364,16 +363,21 @@ export default function HowItWorksPage() {
                   Why KinesisIQ?
                 </h2>
                 <p className="text-lg text-zinc-400">
-                  Transform how you understand and engage with your community
+                  Transform how you understand and engage with your community—whether you're a city planner, 
+                  business leader, or government decision-maker.
                 </p>
               </div>
             </ScrollReveal>
 
             <div className="grid gap-6 md:grid-cols-3">
               <ScrollReveal delay={0.1}>
-                <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
+                <motion.div
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                >
+                <Card className="border-2 border-blue-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg group">
                   <CardHeader>
-                    <MapPin className="h-8 w-8 text-blue-400 mb-2" />
+                    <MapPin className="h-8 w-8 text-blue-400 mb-2 group-hover:scale-110 transition-transform duration-300" />
                     <CardTitle className="text-white">
                       Location Intelligence
                     </CardTitle>
@@ -386,12 +390,17 @@ export default function HowItWorksPage() {
                     </CardDescription>
                   </CardContent>
                 </Card>
+                </motion.div>
               </ScrollReveal>
 
               <ScrollReveal delay={0.2}>
-                <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
+                <motion.div
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                >
+                <Card className="border-2 border-green-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 hover:border-green-500/50 transition-all duration-300 hover:shadow-lg group">
                   <CardHeader>
-                    <Clock className="h-8 w-8 text-green-400 mb-2" />
+                    <Clock className="h-8 w-8 text-green-400 mb-2 group-hover:scale-110 transition-transform duration-300" />
                     <CardTitle className="text-white">
                       Time-Based Trends
                     </CardTitle>
@@ -404,12 +413,17 @@ export default function HowItWorksPage() {
                     </CardDescription>
                   </CardContent>
                 </Card>
+                </motion.div>
               </ScrollReveal>
 
               <ScrollReveal delay={0.3}>
-                <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
+                <motion.div
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                >
+                <Card className="border-2 border-purple-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg group">
                   <CardHeader>
-                    <Shield className="h-8 w-8 text-purple-400 mb-2" />
+                    <Shield className="h-8 w-8 text-purple-400 mb-2 group-hover:scale-110 transition-transform duration-300" />
                     <CardTitle className="text-white">Privacy-First</CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -419,6 +433,7 @@ export default function HowItWorksPage() {
                     </CardDescription>
                   </CardContent>
                 </Card>
+                </motion.div>
               </ScrollReveal>
             </div>
           </div>
@@ -427,12 +442,12 @@ export default function HowItWorksPage() {
       </section>
 
       {/* CTA Section */}
-      <section 
-        className="py-20 relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, rgba(241, 102, 9, 0.12) 0%, rgba(9, 9, 11, 0.95) 50%, rgba(35, 19, 127, 0.12) 100%)"
-        }}
-      >
+      <section className="py-20 relative overflow-hidden bg-zinc-950">
+        {/* Subtle background effects - consistent pattern */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/3 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/3 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
+        </div>
         <div className="relative z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
@@ -441,8 +456,8 @@ export default function HowItWorksPage() {
                 Ready to Get Started?
               </h2>
               <p className="text-lg text-zinc-400">
-                Experience KinesisIQ and see how early signals and emerging
-                patterns can inform your organization's decisions.
+                Experience KinesisIQ and see how early signals and emerging patterns can inform your 
+                organization's decisions—helping governments and businesses act before change hits.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
                 <Button

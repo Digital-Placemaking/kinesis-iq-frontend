@@ -75,7 +75,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-10">
             <Link
               href="/how-it-works"
               className={`text-sm sm:text-base font-medium transition-colors relative ${
@@ -104,6 +104,24 @@ export default function Navbar() {
             >
               Demo
               {isActive("/demo") && (
+                <motion.div
+                  layoutId="navbarActiveIndicator"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+            </Link>
+            <Link
+              href="/about-us"
+              className={`text-sm sm:text-base font-medium transition-colors relative ${
+                isActive("/about-us")
+                  ? "text-white"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              About
+              {isActive("/about-us") && (
                 <motion.div
                   layoutId="navbarActiveIndicator"
                   className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent"
@@ -186,6 +204,17 @@ export default function Navbar() {
               }`}
             >
               Demo
+            </Link>
+            <Link
+              href="/about-us"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`block text-sm font-medium transition-colors ${
+                isActive("/about-us")
+                  ? "text-white"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              About
             </Link>
             <Link
               href="/contact"

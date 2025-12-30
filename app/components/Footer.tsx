@@ -1,84 +1,132 @@
 /**
  * app/components/Footer.tsx
  * Site-wide footer component.
- * Provides navigation links, theme toggle, and branding for all pages.
- * - Logo linking to homepage
- * - Centered navigation links (About Us, Contact, Privacy Policy, Terms of Service)
- * - Admin access button
- * - Theme toggle
- * - Copyright notice
- *
- * Used across all pages for consistent navigation and branding.
+ * Provides navigation links, branding, and additional information.
+ * Modern design with improved spacing and visual hierarchy.
  *
  * @component
  */
 
 import Link from "next/link";
-import { Settings } from "lucide-react";
+import { Settings, Mail, ExternalLink } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-zinc-800 bg-zinc-950 py-8">
-      <div className="mx-auto max-w-7xl px-4 sm:px-8">
-        <div className="flex flex-col items-center gap-6 sm:relative sm:flex-row sm:items-center">
-          {/* Logo Section */}
-          <Link
-            href="/"
-            className="flex items-center transition-opacity hover:opacity-80 sm:shrink-0"
-          >
-            <img
-              src="/dp-logo.png"
-              alt="Digital Placemaking"
-              className="h-10 w-10 rounded-lg object-contain"
-            />
-          </Link>
-
-          {/* Navigation Links - Centered on mobile, absolutely centered on desktop */}
-          <nav className="flex flex-wrap items-center justify-center gap-4 text-sm sm:absolute sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:gap-6">
+    <footer className="border-t border-zinc-800/50 bg-zinc-950">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+          {/* Brand Section */}
+          <div className="space-y-4">
             <Link
-              href="/about-us"
-              className="text-zinc-400 transition-colors hover:text-zinc-100"
+              href="/"
+              className="flex items-center gap-3 transition-opacity hover:opacity-80"
             >
-              About Us
+              <img
+                src="/dp-logo.png"
+                alt="Digital Placemaking"
+                className="h-10 w-10 rounded-lg object-contain"
+              />
+              <div>
+                <div className="text-sm font-semibold text-white">KinesisIQ</div>
+                <div className="text-xs text-zinc-400">by Digital Placemaking</div>
+              </div>
             </Link>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              Reading the pulse of humanity. Turning insight into foresight.
+            </p>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-white">Navigation</h3>
+            <nav className="flex flex-col gap-3">
+              <Link
+                href="/how-it-works"
+                className="text-sm text-zinc-400 transition-colors hover:text-white"
+              >
+                How It Works
+              </Link>
+              <Link
+                href="/demo/reporting"
+                className="text-sm text-zinc-400 transition-colors hover:text-white"
+              >
+                Demo
+              </Link>
+              <Link
+                href="/about-us"
+                className="text-sm text-zinc-400 transition-colors hover:text-white"
+              >
+                About Us
+              </Link>
+              <Link
+                href="/contact"
+                className="text-sm text-zinc-400 transition-colors hover:text-white"
+              >
+                Contact
+              </Link>
+            </nav>
+          </div>
+
+          {/* Legal & Resources */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-white">Resources</h3>
+            <nav className="flex flex-col gap-3">
+              <a
+                href="#"
+                className="text-sm text-zinc-400 transition-colors hover:text-white flex items-center gap-1"
+              >
+                Privacy Policy
+                <ExternalLink className="h-3 w-3" />
+              </a>
+              <a
+                href="#"
+                className="text-sm text-zinc-400 transition-colors hover:text-white flex items-center gap-1"
+              >
+                Terms of Service
+                <ExternalLink className="h-3 w-3" />
+              </a>
+              <Link
+                href="/contact"
+                className="text-sm text-zinc-400 transition-colors hover:text-white flex items-center gap-1"
+              >
+                <Mail className="h-3 w-3" />
+                Get in Touch
+              </Link>
+            </nav>
+          </div>
+
+          {/* CTA Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-white">Get Started</h3>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              Ready to transform real-world interactions into actionable signals?
+            </p>
             <Link
               href="/contact"
-              className="text-zinc-400 transition-colors hover:text-zinc-100"
+              className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white transition-all hover:opacity-90 hover:scale-105"
+              style={{ backgroundColor: "#f16609" }}
             >
-              Contact
-            </Link>
-            <a
-              href="#"
-              className="text-zinc-400 transition-colors hover:text-zinc-100"
-            >
-              Privacy Policy
-            </a>
-            <a
-              href="#"
-              className="text-zinc-400 transition-colors hover:text-zinc-100"
-            >
-              Terms of Service
-            </a>
-          </nav>
-
-          {/* Right Side Actions */}
-          <div className="flex items-center gap-4 sm:ml-auto sm:shrink-0">
-            <Link
-              href="/admin/login"
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
-            >
-              <Settings className="h-4 w-4" />
-              Admin
+              Contact Us
             </Link>
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="mt-6 border-t border-zinc-800 pt-6">
-          <p className="text-center text-xs text-zinc-400">
-            © {new Date().getFullYear()} KinesisIQ by Digital Placemaking. All
-            rights reserved.
-          </p>
+        {/* Bottom Bar */}
+        <div className="mt-12 border-t border-zinc-800/50 pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <p className="text-xs text-zinc-500 text-center sm:text-left">
+              © {new Date().getFullYear()} KinesisIQ by Digital Placemaking. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/admin/login"
+                className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900/50 px-3 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
+              >
+                <Settings className="h-3 w-3" />
+                Admin
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
