@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
@@ -16,23 +16,49 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
   const pathname = usePathname();
-  const { scrollY } = useScroll();
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 20);
+  // Reliable scroll detection that works on all pages
+  useEffect(() => {
+    let ticking = false;
     
-    // Hide navbar on scroll down, show on scroll up
-    if (latest < 10) {
-      setIsVisible(true);
-    } else if (latest > lastScrollY && latest > 100) {
-      setIsVisible(false);
-    } else if (latest < lastScrollY) {
-      setIsVisible(true);
-    }
-    setLastScrollY(latest);
-  });
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+          const lastScroll = lastScrollYRef.current;
+          const scrollDelta = currentScroll - lastScroll;
+          
+          setIsScrolled(currentScroll > 20);
+          
+          // Always show navbar at top
+          if (currentScroll < 10) {
+            setIsVisible(true);
+            lastScrollYRef.current = currentScroll;
+            ticking = false;
+            return;
+          }
+          
+          // Hide navbar on scroll down, show on scroll up with threshold
+          if (scrollDelta > 5 && currentScroll > 100) {
+            setIsVisible(false);
+          } else if (scrollDelta < -5) {
+            setIsVisible(true);
+          }
+          
+          lastScrollYRef.current = currentScroll;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
@@ -47,8 +73,8 @@ export default function Navbar() {
         opacity: isVisible ? 1 : 0
       }}
       transition={{ 
-        duration: 0.3,
-        ease: [0.4, 0, 0.2, 1]
+        duration: 0.4,
+        ease: [0.25, 0.1, 0.25, 1]
       }}
       className="sticky top-0 z-50 w-full border-b border-zinc-800/40 bg-zinc-950/70 backdrop-blur-md transition-all"
       style={{
@@ -59,7 +85,7 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo - Digital Placemaking as home link */}
+          {/* Logo */}
           <Link
             href="/"
             className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
@@ -74,7 +100,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Navigation Links */}
+          {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-10">
             <Link
               href="/how-it-works"
@@ -87,10 +113,11 @@ export default function Navbar() {
               How It Works
               {isActive("/how-it-works") && (
                 <motion.div
-                  layoutId="navbarActiveIndicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-orange-500"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  exit={{ scaleX: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
                 />
               )}
             </Link>
@@ -105,10 +132,11 @@ export default function Navbar() {
               Demo
               {isActive("/demo") && (
                 <motion.div
-                  layoutId="navbarActiveIndicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-orange-500"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  exit={{ scaleX: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
                 />
               )}
             </Link>
@@ -123,10 +151,11 @@ export default function Navbar() {
               About
               {isActive("/about-us") && (
                 <motion.div
-                  layoutId="navbarActiveIndicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-orange-500"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  exit={{ scaleX: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
                 />
               )}
             </Link>
@@ -141,17 +170,30 @@ export default function Navbar() {
               Contact
               {isActive("/contact") && (
                 <motion.div
-                  layoutId="navbarActiveIndicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-orange-500"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  exit={{ scaleX: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
                 />
               )}
             </Link>
           </div>
 
-          {/* Desktop CTA Button */}
+          {/* CTA and Logo */}
           <div className="hidden md:flex items-center gap-4">
+            {/* KinesisIQ Logo */}
+            <Link
+              href="/"
+              className="flex items-center hover:opacity-80 transition-opacity"
+              aria-label="KinesisIQ"
+            >
+              <img
+                src="/KiQ Quantum Logo Final Black Circle Transparent.png"
+                alt="KinesisIQ"
+                className="h-8 w-8 object-contain opacity-90"
+              />
+            </Link>
             <Link href="/contact">
               <Button
                 variant="default"
@@ -228,6 +270,19 @@ export default function Navbar() {
               Contact
             </Link>
             <div className="flex items-center gap-3 pt-2">
+              {/* KinesisIQ Logo */}
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center hover:opacity-80 transition-opacity"
+                aria-label="KinesisIQ"
+              >
+                <img
+                  src="/KiQ Quantum Logo Final Black Circle Transparent.png"
+                  alt="KinesisIQ"
+                  className="h-7 w-7 object-contain opacity-90"
+                />
+              </Link>
               <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="flex-1">
                 <Button
                   variant="default"

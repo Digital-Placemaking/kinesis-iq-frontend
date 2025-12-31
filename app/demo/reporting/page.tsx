@@ -3,14 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/app/components/ui/scroll-reveal";
 import {
@@ -64,60 +57,72 @@ export default function ReportingDemoPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
+      {/* Background orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -left-32 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-3/4 -right-32 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
       </div>
-      <Navbar />
 
       <section className="relative border-b border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-950 py-12 sm:py-16 overflow-hidden">
-        <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20 flex items-center justify-center">
-          <Link
-            href="/"
-            className="flex items-center hover:opacity-80 transition-opacity"
-            aria-label="KinesisIQ Home"
-          >
-            <img
-              src="/KiQ Quantum Logo Final Black Circle Transparent.png"
-              alt="KinesisIQ"
-              className="h-16 w-16 sm:h-20 sm:w-20 object-contain"
-            />
-          </Link>
-        </div>
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/3 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/3 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
-        </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <ScrollReveal>
             <div className="max-w-4xl mx-auto text-center space-y-5 sm:space-y-6">
+              {/* KinesisIQ Logo */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  delay: 0.1,
+                  duration: 0.5,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="flex justify-center mb-2 sm:mb-4"
+              >
+                <Link
+                  href="/"
+                  className="flex items-center hover:opacity-80 transition-all duration-300 hover:scale-105"
+                  aria-label="KinesisIQ Home"
+                >
+                  <img
+                    src="/KiQ Quantum Logo Final Black Circle Transparent.png"
+                    alt="KinesisIQ"
+                    className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 object-contain drop-shadow-lg"
+                  />
+                </Link>
+              </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.6,
+                  delay: 0.2,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight"
               >
-                Data Acquisition & Reporting
+                Community Intelligence Dashboard
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
                   duration: 0.6,
-                  delay: 0.1,
+                  delay: 0.3,
                   ease: [0.22, 1, 0.36, 1],
                 }}
                 className="text-base sm:text-lg lg:text-xl text-zinc-300 leading-relaxed max-w-3xl mx-auto"
               >
                 See how KinesisIQ transforms real-world interactions into
-                actionable signals
+                actionable signals and emerging patterns
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
                   duration: 0.6,
-                  delay: 0.2,
+                  delay: 0.4,
                   ease: [0.22, 1, 0.36, 1],
                 }}
                 className="flex items-center justify-center gap-2.5 text-sm sm:text-base text-zinc-400 pt-1"
@@ -143,15 +148,13 @@ export default function ReportingDemoPage() {
       </section>
 
       <section className="relative py-12 sm:py-16 lg:py-20">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
-        </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
           <ScrollReveal>
             <div className="mb-8 sm:mb-12 lg:mb-16 mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Overview</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
+                  Overview
+                </h2>
                 <p className="text-base text-zinc-400 mb-6">
                   Real-time metrics and analytics •{" "}
                   {selectedTimeRange === "7d"
@@ -238,10 +241,6 @@ export default function ReportingDemoPage() {
       </section>
 
       <section className="relative py-8 sm:py-12">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
-        </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
           <ScrollReveal>
             <div className="mb-8 sm:mb-12 mt-4">
@@ -303,10 +302,6 @@ export default function ReportingDemoPage() {
       </section>
 
       <section className="relative py-8 sm:py-12">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
-        </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
           <ScrollReveal>
             <div className="mb-8 sm:mb-12 mt-4">
@@ -333,10 +328,6 @@ export default function ReportingDemoPage() {
       </section>
 
       <section className="relative py-8 sm:py-12">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
-        </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
           <ScrollReveal>
             <div className="mb-8 sm:mb-12 mt-4">
@@ -372,10 +363,6 @@ export default function ReportingDemoPage() {
       </section>
 
       <section className="relative py-8 sm:py-12">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
-        </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
           <ScrollReveal>
             <div className="mb-8 sm:mb-12 mt-4">
@@ -395,12 +382,12 @@ export default function ReportingDemoPage() {
                 >
                   <div className="absolute inset-0 bg-yellow-500/20 rounded-xl blur-sm" />
                   <div className="absolute inset-0 bg-yellow-400/10 rounded-xl blur-md" />
-                  <Lightbulb 
-                    className="h-6 w-6 sm:h-8 sm:w-8 relative z-10" 
-                    style={{ 
-                      color: '#facc15', 
-                      filter: 'drop-shadow(0 0 8px rgba(250, 204, 21, 0.8))'
-                    }} 
+                  <Lightbulb
+                    className="h-6 w-6 sm:h-8 sm:w-8 relative z-10"
+                    style={{
+                      color: "#facc15",
+                      filter: "drop-shadow(0 0 8px rgba(250, 204, 21, 0.8))",
+                    }}
                   />
                 </motion.div>
                 <h2 className="text-3xl sm:text-4xl font-bold text-white">
@@ -408,7 +395,8 @@ export default function ReportingDemoPage() {
                 </h2>
               </div>
               <p className="text-base text-zinc-400 max-w-3xl mb-6">
-                Early signals identified from aggregated data patterns • These inputs feed future intelligence layers • Based on{" "}
+                Early signals identified from aggregated data patterns • These
+                inputs feed future intelligence layers • Based on{" "}
                 {selectedTimeRange === "7d"
                   ? "7-day"
                   : selectedTimeRange === "30d"
@@ -423,10 +411,6 @@ export default function ReportingDemoPage() {
       </section>
 
       <section className="relative py-8 sm:py-12">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl" />
-        </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
           <ScrollReveal>
             <div className="mb-8 sm:mb-12 mt-4">
@@ -451,7 +435,8 @@ export default function ReportingDemoPage() {
                 </h2>
               </div>
               <p className="text-base text-zinc-400 max-w-3xl mb-6">
-                Early signals and patterns derived from aggregated data • These inputs support future intelligence layers •{" "}
+                Early signals and patterns derived from aggregated data • These
+                inputs support future intelligence layers •{" "}
                 {selectedTimeRange === "7d"
                   ? "7-day"
                   : selectedTimeRange === "30d"
@@ -570,13 +555,13 @@ export default function ReportingDemoPage() {
                     >
                       <p>
                         <strong className="text-white text-lg">
-                          How insights are generated:
+                          How signals are generated:
                         </strong>{" "}
                         <span className="leading-relaxed">
                           Our platform uses probabilistic modeling and machine
-                          learning to identify patterns, detect emerging patterns, and
-                          generate actionable signals from aggregated data
-                          streams.
+                          learning to identify patterns, detect emerging
+                          patterns, and generate actionable signals from
+                          aggregated data streams.
                         </span>
                       </p>
                     </motion.div>
@@ -675,8 +660,6 @@ export default function ReportingDemoPage() {
           </ScrollReveal>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }

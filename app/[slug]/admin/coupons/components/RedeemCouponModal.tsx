@@ -34,7 +34,7 @@ export default function RedeemCouponModal({
   const scanAreaRef = useRef<HTMLDivElement>(null);
   const [shouldStartScanning, setShouldStartScanning] = useState(false);
 
-  // Cleanup scanner on unmount or close
+  // Cleanup scanner on unmount
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
@@ -142,7 +142,7 @@ export default function RedeemCouponModal({
         const errorMessage =
           err instanceof Error ? err.message : "Unknown error";
 
-        // Provide user-friendly error messages
+          // Error messages
         if (
           errorMessage.includes("Permission denied") ||
           errorMessage.includes("NotAllowedError")
@@ -171,7 +171,7 @@ export default function RedeemCouponModal({
 
     initializeScanner();
 
-    // Cleanup timeout on unmount or when dependencies change
+    // Cleanup timeout on unmount
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);

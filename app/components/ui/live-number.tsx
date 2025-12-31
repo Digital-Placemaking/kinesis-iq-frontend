@@ -34,7 +34,7 @@ export function LiveNumber({
   }, [value]);
 
   useEffect(() => {
-    // Create subtle live updates
+    // Live number updates
     const interval = setInterval(() => {
       const variation = value * variance * (Math.random() * 2 - 1); // -variance to +variance
       const newValue = Math.max(0, value + variation);

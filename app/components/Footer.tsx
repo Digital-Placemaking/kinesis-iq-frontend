@@ -2,7 +2,6 @@
  * app/components/Footer.tsx
  * Site-wide footer component.
  * Provides navigation links, branding, and additional information.
- * Modern design with improved spacing and visual hierarchy.
  *
  * @component
  */
