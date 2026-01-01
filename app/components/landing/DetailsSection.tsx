@@ -8,8 +8,6 @@
 
 import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MessageSquare, TrendingUp, Users, Brain, Database, Cpu, Sparkles } from "lucide-react";
-import { ScrollAnimation } from "./ScrollAnimation";
 import { PlatformDescriptionSection } from "./PlatformDescriptionSection";
 import { TaglineSection } from "./TaglineSection";
 import { HowItWorksPreviewSection } from "./HowItWorksPreviewSection";

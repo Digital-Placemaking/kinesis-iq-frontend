@@ -6,7 +6,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { ScrollAnimation } from "./ScrollAnimation";
 
 export function ReportingSection() {

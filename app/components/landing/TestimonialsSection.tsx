@@ -5,7 +5,6 @@
 
 "use client";
 
-import { motion } from "framer-motion";
 import { ScrollAnimation } from "./ScrollAnimation";
 import { QUOTES } from "./constants";
 

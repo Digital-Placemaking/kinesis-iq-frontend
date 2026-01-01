@@ -6,7 +6,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { MessageSquare, TrendingUp, Users, Brain } from "lucide-react";
 import { ScrollAnimation } from "./ScrollAnimation";
 
