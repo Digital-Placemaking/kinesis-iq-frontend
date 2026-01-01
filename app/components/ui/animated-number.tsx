@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, useSpring, useTransform, animate } from "framer-motion";
+import { motion, animate } from "framer-motion";
 
 interface AnimatedNumberProps {
   value: number;

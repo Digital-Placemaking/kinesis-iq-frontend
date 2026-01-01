@@ -8,7 +8,6 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ScrollReveal } from "../components/ui/scroll-reveal";
 import { Mail, User, MessageSquare, Send, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { submitContactForm } from "@/app/actions/contact";
