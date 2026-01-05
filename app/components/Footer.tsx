@@ -7,7 +7,13 @@
  */
 
 import Link from "next/link";
-import { Settings, Mail, ExternalLink } from "lucide-react";
+import {
+  Settings,
+  Mail,
+  ExternalLink,
+  Linkedin,
+  Instagram,
+} from "lucide-react";
 
 export default function Footer() {
   return (
@@ -26,13 +32,35 @@ export default function Footer() {
                 className="h-10 w-10 rounded-lg object-contain"
               />
               <div>
-                <div className="text-sm font-semibold text-white">KinesisIQ</div>
-                <div className="text-xs text-zinc-400">by Digital Placemaking</div>
+                <div className="text-sm font-semibold text-white">
+                  KinesisIQ
+                </div>
+                <div className="text-xs text-zinc-400">
+                  by Digital Placemaking
+                </div>
               </div>
             </Link>
             <p className="text-sm text-zinc-400 leading-relaxed">
               Reading the pulse of humanity. Turning insight into foresight.
             </p>
+            <div className="flex items-center gap-4 pt-2">
+              <a
+                href="https://www.linkedin.com/company/digital-placemaking-canada/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-zinc-400 transition-colors hover:text-white"
+                aria-label="Visit Digital Placemaking on LinkedIn"
+              >
+                <Linkedin className="h-6 w-6" />
+              </a>
+              <a
+                href="#"
+                className="inline-flex items-center text-zinc-400 transition-colors hover:text-white"
+                aria-label="Follow us on Instagram"
+              >
+                <Instagram className="h-6 w-6" />
+              </a>
+            </div>
           </div>
 
           {/* Navigation Links */}
@@ -98,7 +126,8 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-white">Get Started</h3>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              Ready to transform real-world interactions into actionable signals?
+              Ready to transform real-world interactions into actionable
+              signals?
             </p>
             <Link
               href="/contact"
@@ -114,7 +143,8 @@ export default function Footer() {
         <div className="mt-12 border-t border-zinc-800/50 pt-8">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             <p className="text-xs text-zinc-500 text-center sm:text-left">
-              © {new Date().getFullYear()} KinesisIQ by Digital Placemaking. All rights reserved.
+              © {new Date().getFullYear()} KinesisIQ by Digital Placemaking. All
+              rights reserved.
             </p>
             <div className="flex items-center gap-4">
               <Link

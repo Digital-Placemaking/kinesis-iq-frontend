@@ -63,8 +63,8 @@ export function PlatformDescriptionSection() {
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
             KinesisIQ transforms real-world interactions into early signals and emerging patterns. 
-            We combine public data sources—city surveys, economic indicators, and official communications—with 
-            real-time community inputs to help governments and businesses understand what&apos;s happening now 
+            We combine public data sources, including city surveys, economic indicators, and official communications, 
+            with real-time community inputs to help governments and businesses understand what&apos;s happening now 
             and anticipate what comes next.
           </motion.p>
           <motion.p
@@ -75,7 +75,7 @@ export function PlatformDescriptionSection() {
           >
             Our intelligent platform processes aggregated data to generate actionable signals about 
             sentiment, intent, behavior, and emerging patterns. These signals enable organizations to make 
-            confident decisions before change fully unfolds—turning insight into strategic advantage.
+            confident decisions before change fully unfolds, turning insight into strategic advantage.
           </motion.p>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

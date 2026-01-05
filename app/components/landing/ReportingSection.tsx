@@ -37,7 +37,7 @@ export function ReportingSection() {
           >
             KinesisIQ transforms real-world interactions into early signals and emerging patterns. 
             Our comprehensive reporting dashboard visualizes engagement metrics, sentiment distribution, 
-            and location performance analytics—helping governments and businesses make data-driven decisions 
+            and location performance analytics, helping governments and businesses make data-driven decisions 
             while maintaining strict privacy protocols and consent awareness.
           </motion.p>
         </motion.div>

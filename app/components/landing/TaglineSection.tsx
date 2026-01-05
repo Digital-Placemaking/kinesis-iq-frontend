@@ -19,7 +19,7 @@ export function TaglineSection() {
         transition={{ duration: 0.5 }}
       >
         <motion.p 
-          className="text-2xl leading-relaxed text-white sm:text-3xl font-medium"
+          className="text-xl leading-relaxed text-white sm:text-2xl font-medium"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -28,7 +28,7 @@ export function TaglineSection() {
           Reading the pulse of humanity. Turning insight into foresight.
         </motion.p>
         <motion.p 
-          className="text-xl leading-relaxed text-zinc-400 sm:text-2xl"
+          className="text-lg leading-relaxed text-zinc-300 sm:text-xl"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}

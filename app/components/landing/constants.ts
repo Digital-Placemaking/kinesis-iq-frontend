@@ -15,7 +15,7 @@ export const QUOTES: Quote[] = [
     role: "Program Manager, Ontario Centre of Innovation",
   },
   {
-    text: "We had a chance to review Digital Placemaking and we're genuinely impressed by what you're building. The vision of transforming physical spaces into AI smart hubs—making the physical world as measurable and responsive as the digital one—is a sophisticated approach to bridging the gap between our physical and digital environments.",
+    text: "We had a chance to review Digital Placemaking and we're genuinely impressed by what you're building. The vision of transforming physical spaces into AI smart hubs, making the physical world as measurable and responsive as the digital one, is a sophisticated approach to bridging the gap between our physical and digital environments.",
     author: "Tessa Clarance",
     role: "Chief of Staff, GetFresh Ventures",
   },
