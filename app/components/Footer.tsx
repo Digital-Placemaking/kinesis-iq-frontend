@@ -6,6 +6,8 @@
  * @component
  */
 
+"use client";
+
 import Link from "next/link";
 import {
   Settings,
@@ -55,7 +57,8 @@ export default function Footer() {
               </a>
               <a
                 href="#"
-                className="inline-flex items-center text-zinc-400 transition-colors hover:text-white"
+                onClick={(e) => e.preventDefault()}
+                className="inline-flex items-center text-zinc-400 transition-colors hover:text-white cursor-default"
                 aria-label="Follow us on Instagram"
               >
                 <Instagram className="h-6 w-6" />
