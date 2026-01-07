@@ -202,11 +202,39 @@ export default function HowItWorksPage() {
                     <Card
                       className={`group relative border-2 ${
                         feature.borderColor
-                      } bg-zinc-900/50 hover:bg-zinc-900/80 backdrop-blur-sm hover:border-opacity-100 h-full flex flex-col overflow-hidden cursor-pointer`}
+                      } bg-zinc-900/50 hover:bg-zinc-900/80 backdrop-blur-sm hover:border-opacity-100 h-full flex flex-col overflow-hidden cursor-pointer shadow-lg hover:shadow-xl`}
                       style={{
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                        boxShadow: (() => {
+                          if (feature.color.includes("blue"))
+                            return "0 10px 40px -10px rgba(59, 130, 246, 0.2), 0 0 0 1px rgba(59, 130, 246, 0.1)";
+                          if (feature.color.includes("green"))
+                            return "0 10px 40px -10px rgba(34, 197, 94, 0.2), 0 0 0 1px rgba(34, 197, 94, 0.1)";
+                          if (feature.color.includes("purple"))
+                            return "0 10px 40px -10px rgba(168, 85, 247, 0.2), 0 0 0 1px rgba(168, 85, 247, 0.1)";
+                          return "0 10px 40px -10px rgba(241, 102, 9, 0.2), 0 0 0 1px rgba(241, 102, 9, 0.1)";
+                        })(),
                       }}
                     >
+                      {/* Subtle glow gradient background */}
+                      {(() => {
+                        const getGlowGradient = () => {
+                          if (feature.color.includes("blue"))
+                            return "radial-gradient(circle at center, rgba(59, 130, 246, 0.05), transparent 70%)";
+                          if (feature.color.includes("green"))
+                            return "radial-gradient(circle at center, rgba(34, 197, 94, 0.05), transparent 70%)";
+                          if (feature.color.includes("purple"))
+                            return "radial-gradient(circle at center, rgba(168, 85, 247, 0.05), transparent 70%)";
+                          return "radial-gradient(circle at center, rgba(241, 102, 9, 0.05), transparent 70%)";
+                        };
+                        return (
+                          <div
+                            className="absolute inset-0 pointer-events-none z-0 opacity-50"
+                            style={{
+                              background: getGlowGradient(),
+                            }}
+                          />
+                        );
+                      })()}
                       {/* Hover glow effect */}
                       {(() => {
                         const glowColors = {
@@ -221,7 +249,7 @@ export default function HowItWorksPage() {
                                          glowColors.orange;
                         return (
                           <div 
-                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl z-[1]"
                             style={{
                               background: `radial-gradient(circle at center, ${glowColor} 0%, transparent 70%)`,
                               filter: "blur(20px)",
@@ -423,10 +451,21 @@ export default function HowItWorksPage() {
                     whileHover={{ y: -4, scale: 1.02 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
                   >
-                    <Card className="group relative border-2 border-blue-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-blue-500/100 transition-all duration-150 hover:shadow-lg overflow-hidden cursor-pointer">
+                    <Card className="group relative border-2 border-blue-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-blue-500/100 transition-all duration-150 shadow-lg hover:shadow-xl overflow-hidden cursor-pointer"
+                      style={{
+                        boxShadow: "0 10px 40px -10px rgba(59, 130, 246, 0.2), 0 0 0 1px rgba(59, 130, 246, 0.1)",
+                      }}
+                    >
+                      {/* Subtle glow gradient background */}
+                      <div
+                        className="absolute inset-0 pointer-events-none z-0 opacity-50"
+                        style={{
+                          background: "radial-gradient(circle at center, rgba(59, 130, 246, 0.05), transparent 70%)",
+                        }}
+                      />
                       {/* Hover glow effect */}
                       <div 
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl z-[1]"
                         style={{
                           background: "radial-gradient(circle at center, rgba(59, 130, 246, 0.3) 0%, transparent 70%)",
                           filter: "blur(20px)",
@@ -458,10 +497,21 @@ export default function HowItWorksPage() {
                     whileHover={{ y: -4, scale: 1.02 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
                   >
-                    <Card className="group relative border-2 border-green-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-green-500/100 transition-all duration-150 hover:shadow-lg overflow-hidden cursor-pointer">
+                    <Card className="group relative border-2 border-green-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-green-500/100 transition-all duration-150 shadow-lg hover:shadow-xl overflow-hidden cursor-pointer"
+                      style={{
+                        boxShadow: "0 10px 40px -10px rgba(34, 197, 94, 0.2), 0 0 0 1px rgba(34, 197, 94, 0.1)",
+                      }}
+                    >
+                      {/* Subtle glow gradient background */}
+                      <div
+                        className="absolute inset-0 pointer-events-none z-0 opacity-50"
+                        style={{
+                          background: "radial-gradient(circle at center, rgba(34, 197, 94, 0.05), transparent 70%)",
+                        }}
+                      />
                       {/* Hover glow effect */}
                       <div 
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl z-[1]"
                         style={{
                           background: "radial-gradient(circle at center, rgba(34, 197, 94, 0.3) 0%, transparent 70%)",
                           filter: "blur(20px)",
@@ -493,10 +543,21 @@ export default function HowItWorksPage() {
                     whileHover={{ y: -4, scale: 1.02 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
                   >
-                    <Card className="group relative border-2 border-purple-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-purple-500/100 transition-all duration-150 hover:shadow-lg overflow-hidden cursor-pointer">
+                    <Card className="group relative border-2 border-purple-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-purple-500/100 transition-all duration-150 shadow-lg hover:shadow-xl overflow-hidden cursor-pointer"
+                      style={{
+                        boxShadow: "0 10px 40px -10px rgba(168, 85, 247, 0.2), 0 0 0 1px rgba(168, 85, 247, 0.1)",
+                      }}
+                    >
+                      {/* Subtle glow gradient background */}
+                      <div
+                        className="absolute inset-0 pointer-events-none z-0 opacity-50"
+                        style={{
+                          background: "radial-gradient(circle at center, rgba(168, 85, 247, 0.05), transparent 70%)",
+                        }}
+                      />
                       {/* Hover glow effect */}
                       <div 
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl z-[1]"
                         style={{
                           background: "radial-gradient(circle at center, rgba(168, 85, 247, 0.3) 0%, transparent 70%)",
                           filter: "blur(20px)",

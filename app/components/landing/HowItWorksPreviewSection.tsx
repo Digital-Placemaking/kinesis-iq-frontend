@@ -98,6 +98,26 @@ export function HowItWorksPreviewSection() {
                              feature.iconColor.includes("green") ? glowColors.green :
                              feature.iconColor.includes("purple") ? glowColors.purple : 
                              glowColors.orange;
+
+            const getBoxShadow = () => {
+              if (feature.iconColor.includes("blue"))
+                return "0 10px 40px -10px rgba(59, 130, 246, 0.2), 0 0 0 1px rgba(59, 130, 246, 0.1)";
+              if (feature.iconColor.includes("green"))
+                return "0 10px 40px -10px rgba(34, 197, 94, 0.2), 0 0 0 1px rgba(34, 197, 94, 0.1)";
+              if (feature.iconColor.includes("purple"))
+                return "0 10px 40px -10px rgba(168, 85, 247, 0.2), 0 0 0 1px rgba(168, 85, 247, 0.1)";
+              return "0 10px 40px -10px rgba(241, 102, 9, 0.2), 0 0 0 1px rgba(241, 102, 9, 0.1)";
+            };
+
+            const getGlowGradient = () => {
+              if (feature.iconColor.includes("blue"))
+                return "radial-gradient(circle at center, rgba(59, 130, 246, 0.05), transparent 70%)";
+              if (feature.iconColor.includes("green"))
+                return "radial-gradient(circle at center, rgba(34, 197, 94, 0.05), transparent 70%)";
+              if (feature.iconColor.includes("purple"))
+                return "radial-gradient(circle at center, rgba(168, 85, 247, 0.05), transparent 70%)";
+              return "radial-gradient(circle at center, rgba(241, 102, 9, 0.05), transparent 70%)";
+            };
             
             return (
               <motion.div
@@ -106,15 +126,22 @@ export function HowItWorksPreviewSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className={`group relative p-8 rounded-xl border-2 ${feature.borderColor} bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-opacity-100 cursor-pointer overflow-hidden min-h-[280px]`}
+                className={`group relative p-8 rounded-xl border-2 ${feature.borderColor} bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-opacity-100 cursor-pointer overflow-hidden min-h-[280px] shadow-lg hover:shadow-xl`}
                 whileHover={{ y: -4, scale: 1.02 }}
                 style={{
-                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  boxShadow: getBoxShadow(),
                 }}
               >
+                {/* Subtle glow gradient background */}
+                <div
+                  className="absolute inset-0 pointer-events-none z-0 opacity-50"
+                  style={{
+                    background: getGlowGradient(),
+                  }}
+                />
                 {/* Hover glow effect - fast and responsive */}
                 <div 
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl z-[1]"
                   style={{
                     background: `radial-gradient(circle at center, ${glowColor} 0%, transparent 70%)`,
                     filter: "blur(20px)",
