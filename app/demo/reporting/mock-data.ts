@@ -1,0 +1,205 @@
+import type { ReportingData, FeedbackItem } from "./types";
+
+export const MOCK_DATA: Record<"7d" | "30d" | "90d", ReportingData> = {
+  "7d": {
+    pageVisits: 1247,
+    surveyResponses: 892,
+    uniqueSessions: 634,
+    conversionRate: 71.5,
+    engagementActions: 523,
+    happinessScore: 82.3,
+    happyResponses: 734,
+    trends: {
+      pageVisits: { direction: "up", value: 12.3 },
+      surveyResponses: { direction: "up", value: 8.7 },
+      happinessScore: { direction: "up", value: 2.1 },
+      engagementActions: { direction: "up", value: 15.4 },
+    },
+    funnel: [
+      { label: "Page Visits", value: 1247, color: "bg-blue-500" },
+      { label: "Survey Started", value: 1034, color: "bg-indigo-500" },
+      { label: "Survey Completed", value: 892, color: "bg-green-500" },
+      { label: "Coupon Code Copied", value: 456, color: "bg-purple-500" },
+      { label: "Coupon Downloaded", value: 312, color: "bg-orange-500" },
+      { label: "Added to Wallet", value: 189, color: "bg-yellow-500" },
+    ],
+    sentiment: [
+      { label: "Happy", value: 734, percentage: 82.3, color: "bg-green-500" },
+      {
+        label: "Neutral",
+        value: 112,
+        percentage: 12.6,
+        color: "bg-yellow-500",
+      },
+      { label: "Concerned", value: 46, percentage: 5.1, color: "bg-red-500" },
+    ],
+    locations: [
+      { name: "Yonge-Dundas Square", responses: 342, sentiment: 85.2 },
+      { name: "Harbourfront Centre", responses: 289, sentiment: 78.9 },
+      { name: "Distillery District", responses: 156, sentiment: 81.4 },
+      { name: "Kensington Market", responses: 105, sentiment: 79.2 },
+    ],
+    timeSeries: [
+      { date: "2025-01-01", visits: 45, responses: 32 },
+      { date: "2025-01-02", visits: 52, responses: 35 },
+      { date: "2025-01-03", visits: 48, responses: 36 },
+      { date: "2025-01-04", visits: 61, responses: 41 },
+      { date: "2025-01-05", visits: 56, responses: 42 },
+      { date: "2025-01-06", visits: 65, responses: 44 },
+      { date: "2025-01-07", visits: 72, responses: 52 },
+    ],
+  },
+  "30d": {
+    pageVisits: 5421,
+    surveyResponses: 3892,
+    uniqueSessions: 2834,
+    conversionRate: 71.8,
+    engagementActions: 2123,
+    happinessScore: 83.1,
+    happyResponses: 3234,
+    trends: {
+      pageVisits: { direction: "up", value: 18.5 },
+      surveyResponses: { direction: "up", value: 14.2 },
+      happinessScore: { direction: "up", value: 3.8 },
+      engagementActions: { direction: "up", value: 22.1 },
+    },
+    funnel: [
+      { label: "Page Visits", value: 5421, color: "bg-blue-500" },
+      { label: "Survey Started", value: 4534, color: "bg-indigo-500" },
+      { label: "Survey Completed", value: 3892, color: "bg-green-500" },
+      { label: "Coupon Code Copied", value: 1956, color: "bg-purple-500" },
+      { label: "Coupon Downloaded", value: 1312, color: "bg-orange-500" },
+      { label: "Added to Wallet", value: 789, color: "bg-yellow-500" },
+    ],
+    sentiment: [
+      { label: "Happy", value: 3234, percentage: 83.1, color: "bg-green-500" },
+      {
+        label: "Neutral",
+        value: 512,
+        percentage: 13.2,
+        color: "bg-yellow-500",
+      },
+      { label: "Concerned", value: 146, percentage: 3.7, color: "bg-red-500" },
+    ],
+    locations: [
+      { name: "Yonge-Dundas Square", responses: 1542, sentiment: 86.2 },
+      { name: "Harbourfront Centre", responses: 1289, sentiment: 79.9 },
+      { name: "Distillery District", responses: 756, sentiment: 82.4 },
+      { name: "Kensington Market", responses: 305, sentiment: 80.2 },
+    ],
+    timeSeries: [
+      { date: "2024-12-08", visits: 145, responses: 132 },
+      { date: "2024-12-15", visits: 152, responses: 135 },
+      { date: "2024-12-22", visits: 148, responses: 137 },
+      { date: "2024-12-29", visits: 161, responses: 140 },
+      { date: "2025-01-05", visits: 156, responses: 143 },
+      { date: "2025-01-12", visits: 165, responses: 141 },
+      { date: "2025-01-19", visits: 172, responses: 152 },
+    ],
+  },
+  "90d": {
+    pageVisits: 16247,
+    surveyResponses: 11892,
+    uniqueSessions: 8634,
+    conversionRate: 73.2,
+    engagementActions: 6523,
+    happinessScore: 84.5,
+    happyResponses: 10034,
+    trends: {
+      pageVisits: { direction: "up", value: 24.3 },
+      surveyResponses: { direction: "up", value: 19.8 },
+      happinessScore: { direction: "up", value: 5.2 },
+      engagementActions: { direction: "up", value: 28.7 },
+    },
+    funnel: [
+      { label: "Page Visits", value: 16247, color: "bg-blue-500" },
+      { label: "Survey Started", value: 14034, color: "bg-indigo-500" },
+      { label: "Survey Completed", value: 11892, color: "bg-green-500" },
+      { label: "Coupon Code Copied", value: 5956, color: "bg-purple-500" },
+      { label: "Coupon Downloaded", value: 4312, color: "bg-orange-500" },
+      { label: "Added to Wallet", value: 2789, color: "bg-yellow-500" },
+    ],
+    sentiment: [
+      { label: "Happy", value: 10034, percentage: 84.5, color: "bg-green-500" },
+      {
+        label: "Neutral",
+        value: 1512,
+        percentage: 12.7,
+        color: "bg-yellow-500",
+      },
+      { label: "Concerned", value: 346, percentage: 2.8, color: "bg-red-500" },
+    ],
+    locations: [
+      { name: "Yonge-Dundas Square", responses: 4542, sentiment: 87.2 },
+      { name: "Harbourfront Centre", responses: 3289, sentiment: 81.9 },
+      { name: "Distillery District", responses: 2256, sentiment: 83.4 },
+      { name: "Kensington Market", responses: 1805, sentiment: 81.2 },
+    ],
+    timeSeries: [
+      { date: "2024-10-20", visits: 445, responses: 332 },
+      { date: "2024-10-27", visits: 438, responses: 328 },
+      { date: "2024-11-03", visits: 452, responses: 335 },
+      { date: "2024-11-10", visits: 448, responses: 337 },
+      { date: "2024-11-17", visits: 455, responses: 340 },
+      { date: "2024-11-24", visits: 450, responses: 338 },
+      { date: "2024-12-01", visits: 461, responses: 342 },
+      { date: "2024-12-08", visits: 458, responses: 345 },
+      { date: "2024-12-15", visits: 465, responses: 343 },
+      { date: "2024-12-22", visits: 462, responses: 347 },
+      { date: "2024-12-29", visits: 470, responses: 350 },
+      { date: "2025-01-05", visits: 467, responses: 348 },
+      { date: "2025-01-12", visits: 472, responses: 352 },
+    ],
+  },
+};
+
+export const ALL_FEEDBACK: FeedbackItem[] = [
+  {
+    text: "I feel good about the community here",
+    sentiment: "Happy",
+    date: "2 days ago",
+  },
+  {
+    text: "Toronto has a great music scene",
+    sentiment: "Happy",
+    date: "3 days ago",
+  },
+  {
+    text: "It's beautiful and welcoming",
+    sentiment: "Happy",
+    date: "4 days ago",
+  },
+  {
+    text: "Could use more public spaces",
+    sentiment: "Neutral",
+    date: "5 days ago",
+  },
+  {
+    text: "Love the diversity and culture",
+    sentiment: "Happy",
+    date: "6 days ago",
+  },
+  {
+    text: "Traffic can be challenging",
+    sentiment: "Neutral",
+    date: "1 week ago",
+  },
+  {
+    text: "The waterfront area needs better maintenance",
+    sentiment: "Concerned",
+    date: "1 week ago",
+  },
+  {
+    text: "Great events happening downtown",
+    sentiment: "Happy",
+    date: "1 week ago",
+  },
+  {
+    text: "Wish there were more bike lanes",
+    sentiment: "Neutral",
+    date: "2 weeks ago",
+  },
+];
+
+
+
