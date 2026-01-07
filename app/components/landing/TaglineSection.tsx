@@ -27,17 +27,20 @@ export function TaglineSection() {
         >
           Reading the pulse of humanity. Turning insight into foresight.
         </motion.p>
-        <motion.p 
-          className="text-lg leading-relaxed text-zinc-300 sm:text-xl"
+        <motion.div 
+          className="space-y-4 text-lg leading-relaxed text-zinc-300 sm:text-xl"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
         >
-          KinesisIQ enables governments and businesses to act before change hits, 
-          transforming real-world behavior patterns into strategic advantage through 
-          predictive intelligence and early signal detection.
-        </motion.p>
+          <p>
+            KinesisIQ enables governments and businesses to act before change hits. We transform real-world behavior patterns into strategic advantage through predictive intelligence and early signal detection.
+          </p>
+          <p>
+            Instead of reacting to events after they happen, you can anticipate shifts in community sentiment, identify emerging needs, and allocate resources where they&apos;ll have the greatest impact. This proactive approach leads to better outcomes for communities and more efficient use of resources.
+          </p>
+        </motion.div>
       </motion.div>
     </ScrollAnimation>
   );

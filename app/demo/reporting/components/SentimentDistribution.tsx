@@ -62,7 +62,7 @@ export function SentimentDistribution({
             <div className="relative flex-1 min-h-0 flex items-center justify-center">
               <ChartContainer
                 config={chartConfig}
-                className="w-full h-full max-w-md max-h-md"
+                className="w-full h-full min-h-[240px] sm:min-h-[320px] lg:min-h-[360px]"
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
@@ -69,21 +69,21 @@ export default function Navbar() {
     <motion.nav
       initial={{ y: 0 }}
       animate={{ 
-        y: isVisible ? 0 : -100,
-        opacity: isVisible ? 1 : 0
+        y: (isVisible || mobileMenuOpen) ? 0 : -100,
+        opacity: (isVisible || mobileMenuOpen) ? 1 : 0
       }}
       transition={{ 
         duration: 0.4,
         ease: [0.25, 0.1, 0.25, 1]
       }}
-      className="sticky top-0 z-50 w-full border-b border-zinc-800/40 bg-zinc-950/70 backdrop-blur-md transition-all"
+      className="sticky top-0 z-50 w-full border-b border-zinc-800/40 bg-zinc-950/70 backdrop-blur-md transition-all relative"
       style={{
         backgroundColor: isScrolled
           ? "rgba(9, 9, 11, 0.85)"
           : "rgba(9, 9, 11, 0.65)",
       }}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link
@@ -223,79 +223,131 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-zinc-800/50 py-4 space-y-4">
-            <Link
-              href="/how-it-works"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block text-sm font-medium transition-colors ${
-                isActive("/how-it-works")
-                  ? "text-white"
-                  : "text-zinc-400 hover:text-white"
-              }`}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{
+                duration: 0.3,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="md:hidden overflow-hidden"
             >
-              How It Works
-            </Link>
-            <Link
-              href="/demo/reporting"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block text-sm font-medium transition-colors ${
-                isActive("/demo")
-                  ? "text-white"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Demo
-            </Link>
-            <Link
-              href="/about-us"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block text-sm font-medium transition-colors ${
-                isActive("/about-us")
-                  ? "text-white"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              About
-            </Link>
-            <Link
-              href="/contact"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block text-sm font-medium transition-colors ${
-                isActive("/contact")
-                  ? "text-white"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Contact
-            </Link>
-            <div className="flex items-center gap-3 pt-2">
-              {/* KinesisIQ Logo */}
-              <Link
-                href="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center hover:opacity-80 transition-opacity"
-                aria-label="KinesisIQ"
+              <motion.div
+                initial={{ y: -10 }}
+                animate={{ y: 0 }}
+                exit={{ y: -10 }}
+                transition={{
+                  duration: 0.3,
+                  ease: [0.22, 1, 0.36, 1],
+                  delay: 0.05,
+                }}
+                className="border-t border-zinc-800/50 py-4 space-y-4"
               >
-                <img
-                  src="/KiQ Quantum Logo Final Black Circle Transparent.png"
-                  alt="KinesisIQ"
-                  className="h-7 w-7 object-contain opacity-90"
-                />
-              </Link>
-              <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="flex-1">
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="w-full text-white hover:opacity-90"
-                style={{ backgroundColor: "#f16609" }}
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
                 >
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
+                  <Link
+                    href="/how-it-works"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block text-sm font-medium transition-colors ${
+                      isActive("/how-it-works")
+                        ? "text-white"
+                        : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    How It Works
+                  </Link>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: 0.15 }}
+                >
+                  <Link
+                    href="/demo/reporting"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block text-sm font-medium transition-colors ${
+                      isActive("/demo")
+                        ? "text-white"
+                        : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    Demo
+                  </Link>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: 0.2 }}
+                >
+                  <Link
+                    href="/about-us"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block text-sm font-medium transition-colors ${
+                      isActive("/about-us")
+                        ? "text-white"
+                        : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    About
+                  </Link>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: 0.25 }}
+                >
+                  <Link
+                    href="/contact"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block text-sm font-medium transition-colors ${
+                      isActive("/contact")
+                        ? "text-white"
+                        : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    Contact
+                  </Link>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: 0.3 }}
+                  className="flex items-center gap-3 pt-2"
+                >
+                  {/* KinesisIQ Logo */}
+                  <Link
+                    href="/"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center hover:opacity-80 transition-opacity"
+                    aria-label="KinesisIQ"
+                  >
+                    <img
+                      src="/KiQ Quantum Logo Final Black Circle Transparent.png"
+                      alt="KinesisIQ"
+                      className="h-7 w-7 object-contain opacity-90"
+                    />
+                  </Link>
+                  <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="flex-1">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="w-full text-white hover:opacity-90"
+                      style={{ backgroundColor: "#f16609" }}
+                    >
+                      Get Started
+                    </Button>
+                  </Link>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.nav>
   );

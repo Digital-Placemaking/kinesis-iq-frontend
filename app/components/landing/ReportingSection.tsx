@@ -28,18 +28,20 @@ export function ReportingSection() {
           >
             Early Signals & Reporting
           </motion.h2>
-          <motion.p 
-            className="text-lg leading-relaxed text-zinc-300 sm:text-xl"
+          <motion.div 
+            className="space-y-4 text-lg leading-relaxed text-zinc-300 sm:text-xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           >
-            KinesisIQ transforms real-world interactions into early signals and emerging patterns. 
-            Our comprehensive reporting dashboard visualizes engagement metrics, sentiment distribution, 
-            and location performance analytics, helping governments and businesses make data-driven decisions 
-            while maintaining strict privacy protocols and consent awareness.
-          </motion.p>
+            <p>
+              Our comprehensive reporting dashboard visualizes <strong className="text-blue-400">engagement metrics</strong>, <strong className="text-green-400">sentiment distribution</strong>, and <strong className="text-purple-400">location performance</strong> in clear, intuitive formats. These insights help you make data-driven decisions while maintaining strict privacy protocols and consent awareness.
+            </p>
+            <p>
+              Explore interactive charts, trend analyses, and detailed breakdowns that reveal what&apos;s happening in your community. Every visualization is designed to be accessible to both technical and non-technical stakeholders, ensuring everyone can understand and act on the insights.
+            </p>
+          </motion.div>
         </motion.div>
         <div className="flex flex-wrap gap-4 pt-4">
           <motion.a

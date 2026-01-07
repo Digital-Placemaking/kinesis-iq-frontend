@@ -109,26 +109,26 @@ export function FunnelChart({ data, isLoading = false }: FunnelChartProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              <ChartContainer config={chartConfig} className="h-64 lg:h-96">
+              <ChartContainer config={chartConfig} className="h-64 sm:h-80 lg:h-96 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={chartData}
                     layout="vertical"
-                    margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                     barCategoryGap="10%"
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
                     <XAxis
                       type="number"
                       domain={[0, maxValue]}
-                      tick={{ fill: "#a1a1aa", fontSize: 12 }}
+                      tick={{ fill: "#a1a1aa", fontSize: 11 }}
                       axisLine={{ stroke: "#3f3f46" }}
                     />
                     <YAxis
                       dataKey="name"
                       type="category"
-                      width={110}
-                      tick={{ fill: "#a1a1aa", fontSize: 12 }}
+                      width={100}
+                      tick={{ fill: "#a1a1aa", fontSize: 11 }}
                       axisLine={false}
                       tickLine={false}
                     />
@@ -200,17 +200,17 @@ export function FunnelChart({ data, isLoading = false }: FunnelChartProps) {
                       key={item.name}
                       className="flex items-center justify-between py-1"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                         <Icon
                           className="h-4 w-4 shrink-0"
                           style={{ color: item.color }}
                         />
-                        <span className="text-white font-medium text-sm">
+                        <span className="text-white font-medium text-sm truncate">
                           {item.name}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-zinc-300 font-semibold text-sm min-w-[60px] text-right">
+                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                        <span className="text-zinc-300 font-semibold text-sm min-w-[50px] sm:min-w-[60px] text-right">
                           {item.value.toLocaleString()}
                         </span>
                         {index > 0 && (

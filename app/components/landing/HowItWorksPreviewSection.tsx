@@ -17,7 +17,7 @@ export function HowItWorksPreviewSection() {
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/30",
       title: "Conversational Intelligence",
-      description: "Capture and analyze real-world conversations",
+      description: "Capture and analyze real-world conversations to understand community sentiment, concerns, and priorities through natural language processing.",
     },
     {
       icon: TrendingUp,
@@ -25,7 +25,7 @@ export function HowItWorksPreviewSection() {
       bgColor: "bg-green-500/10",
       borderColor: "border-green-500/30",
       title: "Emerging Patterns",
-      description: "Identify how groups will think and respond",
+      description: "Identify how groups will think and respond by detecting subtle shifts in behavior and sentiment before they become obvious trends.",
     },
     {
       icon: Users,
@@ -33,7 +33,7 @@ export function HowItWorksPreviewSection() {
       bgColor: "bg-purple-500/10",
       borderColor: "border-purple-500/30",
       title: "Behavior Modeling",
-      description: "Track engagement patterns across communities",
+      description: "Track engagement patterns across communities to understand interactions with services, spaces, and initiatives for optimized outreach.",
     },
     {
       icon: Brain,
@@ -41,7 +41,7 @@ export function HowItWorksPreviewSection() {
       bgColor: "bg-orange-500/10",
       borderColor: "border-orange-500/30",
       title: "Adaptive Intelligence",
-      description: "Combine conversation, behavior, and place",
+      description: "Combine conversation, behavior, and place data to create a comprehensive understanding that evolves with your community's changing needs.",
     },
   ];
 
@@ -64,56 +64,84 @@ export function HowItWorksPreviewSection() {
           >
             How KinesisIQ Works
           </motion.h2>
-          <motion.p 
-            className="text-lg leading-relaxed text-zinc-300 sm:text-xl"
+          <motion.div 
+            className="space-y-3 text-lg leading-relaxed text-zinc-300 sm:text-xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           >
-            From multi-source data collection to actionable intelligence,
-            KinesisIQ transforms real-world interactions into foresight through
-            four core capabilities that work in concert to generate early signals and emerging patterns 
-            for governments and businesses.
-          </motion.p>
+            <p>
+              Four core capabilities work together to transform real-world interactions into <span className="text-orange-400 font-medium">actionable intelligence</span>. Each capability builds on the others, creating a comprehensive system that generates early signals and emerging patterns for governments and businesses.
+            </p>
+            <p>
+              Whether you&apos;re tracking community sentiment, modeling behavior patterns, or identifying emerging trends, KinesisIQ provides the tools and insights you need to make informed decisions with confidence.
+            </p>
+          </motion.div>
         </motion.div>
         
         <motion.div 
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-8"
+          className="grid gap-6 sm:grid-cols-2 mt-8"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
         >
-          {features.map((feature, index) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.7, delay: 0.3 + index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className={`p-6 rounded-lg border-2 ${feature.borderColor} bg-zinc-900/50 hover:bg-zinc-900/70 hover:border-opacity-50 transition-all duration-300 group`}
-              whileHover={{ scale: 1.03, y: -4 }}
-            >
+          {features.map((feature, index) => {
+            const glowColors = {
+              blue: "rgba(59, 130, 246, 0.3)",
+              green: "rgba(34, 197, 94, 0.3)",
+              purple: "rgba(168, 85, 247, 0.3)",
+              orange: "rgba(241, 102, 9, 0.3)",
+            };
+            const glowColor = feature.iconColor.includes("blue") ? glowColors.blue : 
+                             feature.iconColor.includes("green") ? glowColors.green :
+                             feature.iconColor.includes("purple") ? glowColors.purple : 
+                             glowColors.orange;
+            
+            return (
               <motion.div
-                className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${feature.bgColor} mb-3 group-hover:scale-110 transition-transform duration-300`}
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.4 + index * 0.1, type: "spring", stiffness: 200 }}
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className={`group relative p-8 rounded-xl border-2 ${feature.borderColor} bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-opacity-100 cursor-pointer overflow-hidden min-h-[280px]`}
+                whileHover={{ y: -4, scale: 1.02 }}
+                style={{
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                }}
               >
-                <feature.icon
-                  className={`h-6 w-6 ${feature.iconColor}`}
+                {/* Hover glow effect - fast and responsive */}
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                  style={{
+                    background: `radial-gradient(circle at center, ${glowColor} 0%, transparent 70%)`,
+                    filter: "blur(20px)",
+                  }}
                 />
+                {/* Content */}
+                <div className="relative z-10">
+                  <div
+                    className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${feature.bgColor} mb-4 transition-all duration-150 ease-out group-hover:scale-110 group-hover:rotate-3`}
+                    style={{
+                      boxShadow: `0 0 20px ${glowColor}`,
+                    }}
+                  >
+                    <feature.icon
+                      className={`h-7 w-7 ${feature.iconColor} transition-transform duration-150 ease-out group-hover:scale-110`}
+                    />
+                  </div>
+                  <h3 className="font-bold text-white mb-3 group-hover:text-white transition-colors duration-150">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed group-hover:text-zinc-300 transition-colors duration-150">
+                    {feature.description}
+                  </p>
+                </div>
               </motion.div>
-              <h3 className="font-semibold text-white mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-sm text-zinc-400">
-                {feature.description}
-              </p>
-            </motion.div>
-          ))}
+            );
+          })}
         </motion.div>
         <div className="flex flex-wrap gap-4 pt-4">
           <motion.a

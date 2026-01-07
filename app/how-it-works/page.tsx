@@ -149,7 +149,7 @@ export default function HowItWorksPage() {
               transition={{ delay: 0.3 }}
               className="text-xl text-zinc-300 leading-relaxed"
             >
-              Reading the pulse of humanity—turning insight into foresight.
+              Reading the pulse of humanity. Turning insight into foresight.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -159,7 +159,7 @@ export default function HowItWorksPage() {
             >
               KinesisIQ transforms real-world interactions into early signals
               and emerging patterns, helping governments and businesses see
-              what&apos;s happening now and anticipate what comes next— enabling
+              what&apos;s happening now and anticipate what comes next. This enables
               confident decision-making before change fully unfolds.
             </motion.p>
           </div>
@@ -195,22 +195,41 @@ export default function HowItWorksPage() {
               {FEATURES.map((feature, index) => (
                 <ScrollReveal key={feature.title} delay={index * 0.1}>
                   <motion.div
-                    whileHover={{ scale: 1.03, y: -6 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                     className="h-full"
                   >
                     <Card
-                      className={`border-2 ${
+                      className={`group relative border-2 ${
                         feature.borderColor
-                      } bg-zinc-900/50 hover:bg-zinc-900/70 transition-all duration-300 backdrop-blur-sm hover:border-opacity-60 hover:shadow-lg hover:shadow-${feature.color.replace(
-                        "text-",
-                        ""
-                      )}/10 h-full flex flex-col group`}
+                      } bg-zinc-900/50 hover:bg-zinc-900/80 backdrop-blur-sm hover:border-opacity-100 h-full flex flex-col overflow-hidden cursor-pointer`}
                       style={{
-                        boxShadow: "0 0 0 0 rgba(0, 0, 0, 0)",
+                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
                       }}
                     >
-                      <CardHeader className="flex-shrink-0">
+                      {/* Hover glow effect */}
+                      {(() => {
+                        const glowColors = {
+                          blue: "rgba(59, 130, 246, 0.3)",
+                          green: "rgba(34, 197, 94, 0.3)",
+                          purple: "rgba(168, 85, 247, 0.3)",
+                          orange: "rgba(241, 102, 9, 0.3)",
+                        };
+                        const glowColor = feature.color.includes("blue") ? glowColors.blue : 
+                                         feature.color.includes("green") ? glowColors.green :
+                                         feature.color.includes("purple") ? glowColors.purple : 
+                                         glowColors.orange;
+                        return (
+                          <div 
+                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                            style={{
+                              background: `radial-gradient(circle at center, ${glowColor} 0%, transparent 70%)`,
+                              filter: "blur(20px)",
+                            }}
+                          />
+                        );
+                      })()}
+                      <CardHeader className="flex-shrink-0 relative z-10">
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
@@ -219,18 +238,32 @@ export default function HowItWorksPage() {
                             type: "spring",
                             stiffness: 200,
                           }}
-                          className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${feature.bgColor} mb-4`}
+                          className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${feature.bgColor} mb-4 transition-all duration-150 ease-out group-hover:scale-110 group-hover:rotate-3`}
+                          style={{
+                            boxShadow: `0 0 20px ${(() => {
+                              const glowColors = {
+                                blue: "rgba(59, 130, 246, 0.3)",
+                                green: "rgba(34, 197, 94, 0.3)",
+                                purple: "rgba(168, 85, 247, 0.3)",
+                                orange: "rgba(241, 102, 9, 0.3)",
+                              };
+                              return feature.color.includes("blue") ? glowColors.blue : 
+                                     feature.color.includes("green") ? glowColors.green :
+                                     feature.color.includes("purple") ? glowColors.purple : 
+                                     glowColors.orange;
+                            })()}`,
+                          }}
                         >
                           <feature.icon
-                            className={`h-7 w-7 ${feature.color}`}
+                            className={`h-7 w-7 ${feature.color} transition-transform duration-150 ease-out group-hover:scale-110`}
                           />
                         </motion.div>
-                        <CardTitle className="text-white text-xl mb-3 font-bold">
+                        <CardTitle className="text-white text-xl mb-3 font-bold group-hover:text-white transition-colors duration-150">
                           {feature.title}
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="flex-1 flex flex-col">
-                        <CardDescription className="text-zinc-300 text-base leading-relaxed flex-1">
+                      <CardContent className="flex-1 flex flex-col relative z-10">
+                        <CardDescription className="text-zinc-300 text-base leading-relaxed flex-1 group-hover:text-zinc-200 transition-colors duration-150">
                           {feature.description}
                         </CardDescription>
                       </CardContent>
@@ -258,7 +291,7 @@ export default function HowItWorksPage() {
                   The KinesisIQ Process
                 </h2>
                 <p className="text-lg text-zinc-400">
-                  From data collection to early signals—see how patterns emerge
+                  From data collection to early signals, see how patterns emerge
                   through our platform to help organizations act with foresight,
                   not just hindsight.
                 </p>
@@ -378,8 +411,8 @@ export default function HowItWorksPage() {
                   </h2>
                   <p className="text-lg text-zinc-400">
                     Transform how you understand and engage with your
-                    community—whether you&apos;re a city planner, business leader, or
-                    government decision-maker.
+                    community. Whether you&apos;re a city planner, business leader, or
+                    government decision-maker, KinesisIQ provides the insights you need.
                   </p>
                 </div>
               </ScrollReveal>
@@ -387,69 +420,105 @@ export default function HowItWorksPage() {
               <div className="grid gap-6 md:grid-cols-3">
                 <ScrollReveal delay={0.1}>
                   <motion.div
-                    whileHover={{ scale: 1.03, y: -4 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                   >
-                    <Card className="border-2 border-blue-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg group">
+                    <Card className="group relative border-2 border-blue-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-blue-500/100 transition-all duration-150 hover:shadow-lg overflow-hidden cursor-pointer">
+                      {/* Hover glow effect */}
+                      <div 
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                        style={{
+                          background: "radial-gradient(circle at center, rgba(59, 130, 246, 0.3) 0%, transparent 70%)",
+                          filter: "blur(20px)",
+                        }}
+                      />
+                      <div className="relative z-10">
                       <CardHeader>
-                        <MapPin className="h-8 w-8 text-blue-400 mb-2 group-hover:scale-110 transition-transform duration-300" />
-                        <CardTitle className="text-white">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-blue-500/10 mb-4 transition-all duration-150 ease-out group-hover:scale-110 group-hover:rotate-3" style={{ boxShadow: "0 0 20px rgba(59, 130, 246, 0.3)" }}>
+                          <MapPin className="h-7 w-7 text-blue-400 transition-transform duration-150 ease-out group-hover:scale-110" />
+                        </div>
+                        <CardTitle className="text-white group-hover:text-white transition-colors duration-150">
                           Location Intelligence
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="text-zinc-300 text-base">
+                        <CardDescription className="text-zinc-300 text-base group-hover:text-zinc-200 transition-colors duration-150">
                           Understand how different locations perform, identify
                           hotspots, and optimize engagement strategies based on
                           geographic insights.
                         </CardDescription>
                       </CardContent>
+                      </div>
                     </Card>
                   </motion.div>
                 </ScrollReveal>
 
                 <ScrollReveal delay={0.2}>
                   <motion.div
-                    whileHover={{ scale: 1.03, y: -4 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                   >
-                    <Card className="border-2 border-green-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 hover:border-green-500/50 transition-all duration-300 hover:shadow-lg group">
+                    <Card className="group relative border-2 border-green-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-green-500/100 transition-all duration-150 hover:shadow-lg overflow-hidden cursor-pointer">
+                      {/* Hover glow effect */}
+                      <div 
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                        style={{
+                          background: "radial-gradient(circle at center, rgba(34, 197, 94, 0.3) 0%, transparent 70%)",
+                          filter: "blur(20px)",
+                        }}
+                      />
+                      <div className="relative z-10">
                       <CardHeader>
-                        <Clock className="h-8 w-8 text-green-400 mb-2 group-hover:scale-110 transition-transform duration-300" />
-                        <CardTitle className="text-white">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-green-500/10 mb-4 transition-all duration-150 ease-out group-hover:scale-110 group-hover:rotate-3" style={{ boxShadow: "0 0 20px rgba(34, 197, 94, 0.3)" }}>
+                          <Clock className="h-7 w-7 text-green-400 transition-transform duration-150 ease-out group-hover:scale-110" />
+                        </div>
+                        <CardTitle className="text-white group-hover:text-white transition-colors duration-150">
                           Time-Based Trends
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="text-zinc-300 text-base">
+                        <CardDescription className="text-zinc-300 text-base group-hover:text-zinc-200 transition-colors duration-150">
                           Track engagement patterns over time, identify seasonal
                           trends, and predict future behavior with probabilistic
                           modeling.
                         </CardDescription>
                       </CardContent>
+                      </div>
                     </Card>
                   </motion.div>
                 </ScrollReveal>
 
                 <ScrollReveal delay={0.3}>
                   <motion.div
-                    whileHover={{ scale: 1.03, y: -4 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                   >
-                    <Card className="border-2 border-purple-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/70 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg group">
+                    <Card className="group relative border-2 border-purple-500/30 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-purple-500/100 transition-all duration-150 hover:shadow-lg overflow-hidden cursor-pointer">
+                      {/* Hover glow effect */}
+                      <div 
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out rounded-xl"
+                        style={{
+                          background: "radial-gradient(circle at center, rgba(168, 85, 247, 0.3) 0%, transparent 70%)",
+                          filter: "blur(20px)",
+                        }}
+                      />
+                      <div className="relative z-10">
                       <CardHeader>
-                        <Shield className="h-8 w-8 text-purple-400 mb-2 group-hover:scale-110 transition-transform duration-300" />
-                        <CardTitle className="text-white">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-purple-500/10 mb-4 transition-all duration-150 ease-out group-hover:scale-110 group-hover:rotate-3" style={{ boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)" }}>
+                          <Shield className="h-7 w-7 text-purple-400 transition-transform duration-150 ease-out group-hover:scale-110" />
+                        </div>
+                        <CardTitle className="text-white group-hover:text-white transition-colors duration-150">
                           Privacy-First
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="text-zinc-300 text-base">
+                        <CardDescription className="text-zinc-300 text-base group-hover:text-zinc-200 transition-colors duration-150">
                           All data is anonymized, aggregated, and consent-aware.
                           We comply with GDPR, CCPA, and other privacy
                           regulations.
                         </CardDescription>
                       </CardContent>
+                      </div>
                     </Card>
                   </motion.div>
                 </ScrollReveal>
@@ -469,7 +538,7 @@ export default function HowItWorksPage() {
               </h2>
               <p className="text-lg text-zinc-400">
                 Experience KinesisIQ and see how early signals and emerging
-                patterns can inform your organization&apos;s decisions—helping
+                patterns can inform your organization&apos;s decisions. This helps
                 governments and businesses act before change hits.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4 pt-4">

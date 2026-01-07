@@ -102,9 +102,9 @@ export function DetailsSection() {
         })}
       </div>
       
-      {/* Scroll indicator line */}
+      {/* Scroll indicator line - hidden on mobile */}
       <div
-        className="fixed left-8 top-0 bottom-0 w-0.5 -z-10 transition-opacity duration-700 ease-out"
+        className="hidden md:block fixed left-8 top-0 bottom-0 w-0.5 -z-10 transition-opacity duration-700 ease-out"
         style={{
           opacity: scrollProgress > 0.02 ? Math.min(1, scrollProgress * 5) : 0,
           background: `linear-gradient(to bottom, 
@@ -114,10 +114,10 @@ export function DetailsSection() {
         }}
       />
       
-      {/* Orange dot on left */}
+      {/* Orange dot on left - hidden on mobile */}
       {scrollProgress > 0.02 && (
         <motion.div
-          className="fixed left-7 -z-10"
+          className="hidden md:block fixed left-7 -z-10"
           style={{
             top: `${Math.min(100, scrollProgress * 100)}%`,
             transform: 'translateY(-50%)',

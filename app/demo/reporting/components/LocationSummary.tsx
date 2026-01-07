@@ -57,13 +57,13 @@ export function LocationSummary({
           </div>
         ) : (
           <div className="flex flex-col flex-1 min-h-0 space-y-2.5">
-            <div className="h-40">
-              <ChartContainer config={chartConfig} className="h-full">
+            <div className="h-48 sm:h-56 lg:h-64">
+              <ChartContainer config={chartConfig} className="h-full w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={chartData}
                     layout="vertical"
-                    margin={{ top: 5, right: 10, left: 45, bottom: 5 }}
+                    margin={{ top: 5, right: 10, left: 50, bottom: 5 }}
                     barCategoryGap="12%"
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
@@ -71,9 +71,9 @@ export function LocationSummary({
                     <YAxis
                       dataKey="name"
                       type="category"
-                      width={45}
-                      tick={{ fill: "#a1a1aa", fontSize: 11 }}
-                      tickMargin={3}
+                      width={50}
+                      tick={{ fill: "#a1a1aa", fontSize: 10 }}
+                      tickMargin={4}
                       interval={0}
                     />
                     <ChartTooltip
