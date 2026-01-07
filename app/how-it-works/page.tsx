@@ -286,7 +286,7 @@ export default function HowItWorksPage() {
                             className={`h-7 w-7 ${feature.color} transition-transform duration-150 ease-out group-hover:scale-110`}
                           />
                         </motion.div>
-                        <CardTitle className="text-white text-xl mb-3 font-bold group-hover:text-white transition-colors duration-150">
+                        <CardTitle className="text-white text-xl mb-4 font-bold group-hover:text-white transition-colors duration-150">
                           {feature.title}
                         </CardTitle>
                       </CardHeader>

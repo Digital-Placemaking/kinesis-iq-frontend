@@ -183,10 +183,10 @@ export function PlatformDescriptionSection() {
                       className={`h-7 w-7 ${card.iconColor} transition-transform duration-150 ease-out group-hover:scale-110`}
                     />
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-3 group-hover:text-white transition-colors duration-150">
+                  <h3 className="text-xl font-bold text-white mb-4 group-hover:text-white transition-colors duration-150">
                     {card.title}
                   </h3>
-                  <p className="text-sm text-zinc-400 leading-relaxed group-hover:text-zinc-300 transition-colors duration-150">
+                  <p className="text-base text-zinc-400 leading-relaxed group-hover:text-zinc-300 transition-colors duration-150">
                     {card.description}
                   </p>
                 </div>
