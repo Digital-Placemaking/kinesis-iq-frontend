@@ -62,7 +62,46 @@ export function RotatingCenterMessage() {
               textShadow: "0 2px 20px rgba(0, 0, 0, 1), 0 0 40px rgba(0, 0, 0, 0.7)",
             }}
           >
-            {messagePairs[currentIndex].primary}
+            {(() => {
+              const primary = messagePairs[currentIndex].primary;
+              // Add color to key phrases
+              if (primary.includes("Move before")) {
+                return (
+                  <>
+                    Move before <span className="text-orange-400">change hits</span>
+                  </>
+                );
+              }
+              if (primary.includes("Turn signals")) {
+                return (
+                  <>
+                    Turn <span className="text-blue-400">signals</span> into decisions
+                  </>
+                );
+              }
+              if (primary.includes("Community Inputs")) {
+                return (
+                  <>
+                    <span className="text-purple-400">Community Inputs</span>
+                  </>
+                );
+              }
+              if (primary.includes("Emerging Patterns")) {
+                return (
+                  <>
+                    <span className="text-orange-400">Emerging Patterns</span>
+                  </>
+                );
+              }
+              if (primary.includes("See what's coming")) {
+                return (
+                  <>
+                    See what&apos;s <span className="text-orange-400">coming next</span>
+                  </>
+                );
+              }
+              return primary;
+            })()}
           </div>
           <div
             className="text-lg font-semibold text-white/90 uppercase tracking-wide"
@@ -70,7 +109,39 @@ export function RotatingCenterMessage() {
               textShadow: "0 2px 16px rgba(0, 0, 0, 0.95), 0 0 30px rgba(0, 0, 0, 0.8)",
             }}
           >
-            {messagePairs[currentIndex].secondary}
+            {(() => {
+              const secondary = messagePairs[currentIndex].secondary;
+              // Add color to key phrases
+              if (secondary.includes("See tomorrow")) {
+                return (
+                  <>
+                    See <span className="text-orange-400">tomorrow</span>, today
+                  </>
+                );
+              }
+              if (secondary.includes("Anticipate")) {
+                return (
+                  <>
+                    <span className="text-blue-400">Anticipate</span>, don&apos;t react
+                  </>
+                );
+              }
+              if (secondary.includes("Early Signals")) {
+                return (
+                  <>
+                    <span className="text-orange-400">Early Signals</span>
+                  </>
+                );
+              }
+              if (secondary.includes("Turn signals")) {
+                return (
+                  <>
+                    Turn <span className="text-blue-400">signals</span> into strategy
+                  </>
+                );
+              }
+              return secondary;
+            })()}
           </div>
         </motion.div>
       </AnimatePresence>
