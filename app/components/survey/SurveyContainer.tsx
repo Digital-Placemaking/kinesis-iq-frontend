@@ -181,7 +181,7 @@ export default function SurveyContainer({
         setIsSubmitting(false);
       } else {
         // Redirect to completion page using window.location to preserve theme
-        // This ensures a full navigation that applies theme from localStorage
+        // Full navigation to apply theme from localStorage
         if (couponId) {
           // Coupon survey - redirect to coupon completion
           const redirectUrl = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
