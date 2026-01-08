@@ -4,7 +4,7 @@
  * Provides global styles, fonts, and metadata configuration.
  */
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import PublicLayout from "./components/PublicLayout";
@@ -38,6 +38,13 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
   },
   manifest: "/site.webmanifest",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({

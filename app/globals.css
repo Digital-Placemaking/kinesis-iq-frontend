@@ -118,6 +118,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Font rendering improvements for better readability */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html {
+    /* Prevent iOS Safari text size adjustment issues */
+    -webkit-text-size-adjust: 100%;
+    /* Smooth scrolling for better UX */
+    scroll-behavior: smooth;
   }
 }
 
@@ -128,6 +137,26 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* Fallback for backdrop-blur on older browsers (iOS Safari < 14) */
+  @supports not (backdrop-filter: blur(4px)) {
+    /* Provide solid background fallback when backdrop-blur is not supported */
+    .backdrop-blur-sm,
+    .backdrop-blur-md {
+      background-color: rgba(24, 24, 27, 0.95);
+      backdrop-filter: none;
+    }
+  }
+  
+  /* iOS Safari touch interaction improvements */
+  @supports (-webkit-touch-callout: none) {
+    /* Subtle tap highlight for better touch feedback */
+    button,
+    a,
+    [role="button"] {
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
   }
 }
 
