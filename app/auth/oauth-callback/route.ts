@@ -4,27 +4,24 @@
  * Handles OAuth callbacks from Google and Apple for tenant email collection.
  * This route is separate from admin authentication flows.
  *
- * OAuth Flow (Different from email flow):
+ * OAuth Flow (Same as email sign-in flow):
  * 1. User clicks "Continue with Google" on landing page
  * 2. Redirects to Google OAuth consent screen
  * 3. User authorizes → Google redirects here with authorization code
  * 4. Exchange code for access token
  * 5. Fetch user email from Google API
- * 6. Store email in email_opt_ins table IMMEDIATELY
- * 7. Track analytics event
- * 8. Redirect to tenant coupons page
+ * 6. Check if email is in email_opt_ins:
+ *    - If YES (returning user) → redirect to coupons page
+ *    - If NO (new user) → redirect to survey page with returnTo=coupons
+ * 7. After survey completion → email is stored, redirect to coupons
  *
- * IMPORTANT: OAuth users have their email stored immediately (unlike email users).
- * This means when they click a coupon, the survey page will detect their email
- * is already in the table and skip the survey, going directly to coupon completion.
- *
- * This is intentional - OAuth users have already authenticated, so we trust
- * their email and skip the survey requirement.
+ * Note: OAuth users go through the same flow as email sign-in users.
+ * They must complete survey before seeing coupons (unless already in opt-in list).
  */
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getEmailFromGoogleCode } from "@/lib/google/oauth-direct";
-import { storeOAuthEmail } from "@/app/actions/google/oauth";
+import { verifyEmailOptIn, submitEmail } from "@/app/actions/emails";
 
 export async function GET(request: NextRequest) {
   // Get the correct origin from request headers (handles localhost, production, etc.)
@@ -107,34 +104,36 @@ export async function GET(request: NextRequest) {
     }
 
     // ============================================================================
-    // STORE EMAIL IN email_opt_ins TABLE
+    // CHECK IF EMAIL IS IN email_opt_ins TABLE
     // ============================================================================
-    // OAuth users have their email stored immediately (unlike email users who
-    // must complete survey first). This means they'll skip surveys on future
-    // coupon claims since their email is already in the opt-in table.
-    const storeResult = await storeOAuthEmail(tenantSlug, email);
+    // OAuth users go through the same flow as email sign-in users.
+    // Check if already in opt-in list to determine redirect destination.
+    const optInCheck = await verifyEmailOptIn(tenantSlug, email);
 
-    if (!storeResult.success && storeResult.error) {
-      console.error("Failed to store OAuth email:", storeResult.error);
-      // Continue anyway - redirect to coupons even if storage fails
-      // User can still browse coupons, but may need to complete survey
-    }
-
-    // Build redirect URL based on returnTo or default to coupons page
-    // Always use path-based routing with tenant slug to ensure consistency
-    // The subdomain routing is handled by the proxy/middleware layer
+    // Build redirect URL based on opt-in status and returnTo
     let redirectPath: string;
-    if (returnTo) {
-      // Use the returnTo path (e.g., "/survey/completed")
+    if (returnTo?.includes("survey/completed")) {
+      // Coming from survey completion page - user was subscribing to mailing list
+      // Store email in opt-in list NOW since they're subscribing
+      await submitEmail(tenantSlug, email).catch((err) => {
+        console.warn("Failed to store OAuth email from survey completion:", err);
+      });
+      // Redirect back to survey completed page
       redirectPath = `/${tenantSlug}${returnTo}`;
-    } else {
-      // Default to coupons page
+    } else if (optInCheck.valid) {
+      // Returning user - already in opt-in list, go directly to coupons
       redirectPath = `/${tenantSlug}/coupons`;
+    } else {
+      // New user - not in opt-in list, go to survey first
+      redirectPath = `/${tenantSlug}/survey`;
     }
+    
     const targetUrl = new URL(redirectPath, origin);
-
-    if (storeResult.email) {
-      targetUrl.searchParams.set("email", storeResult.email);
+    targetUrl.searchParams.set("email", email);
+    
+    // Add returnTo=coupons for new users going to survey
+    if (!optInCheck.valid && !returnTo?.includes("survey/completed")) {
+      targetUrl.searchParams.set("returnTo", "coupons");
     }
     
     // Mark as subscribed if coming from survey completion

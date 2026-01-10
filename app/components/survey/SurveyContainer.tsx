@@ -19,6 +19,7 @@ interface SurveyContainerProps {
   tenantSlug: string;
   couponId: string | null;
   email: string | null;
+  returnTo?: string | null;
 }
 
 export default function SurveyContainer({
@@ -26,6 +27,7 @@ export default function SurveyContainer({
   tenantSlug,
   couponId,
   email,
+  returnTo,
 }: SurveyContainerProps) {
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -40,6 +42,9 @@ export default function SurveyContainer({
         window.location.href = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
           email || ""
         )}`;
+      } else if (returnTo === "coupons" && email) {
+        // Sign-in flow with no survey questions - go to coupons
+        window.location.href = `/${tenantSlug}/coupons?email=${encodeURIComponent(email)}`;
       } else {
         window.location.href = `/${tenantSlug}/survey/completed`;
       }
@@ -121,10 +126,10 @@ export default function SurveyContainer({
    * 1. Validates all questions have answers
    * 2. Submits answers to survey_responses table
    * 3. submitSurveyAnswers stores email in email_opt_ins table (if provided)
-   * 4. Redirects to coupon completion page
-   *
-   * Note: After submission, the user's email is stored in email_opt_ins,
-   * making them a "returning user" for future coupon claims.
+   * 4. Redirects based on context:
+   *    - couponId: redirect to coupon completion
+   *    - returnTo=coupons: redirect to coupons list (sign-in flow)
+   *    - else: redirect to survey completion (anonymous poll)
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,19 +185,18 @@ export default function SurveyContainer({
         setError(result.error);
         setIsSubmitting(false);
       } else {
-        // Redirect to completion page using window.location to preserve theme
-        // This ensures a full navigation that applies theme from localStorage
-        if (couponId) {
-          // Coupon survey - redirect to coupon completion
-          const redirectUrl = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
-            email || ""
-          )}`;
-          if (typeof window !== "undefined") {
-            window.location.href = redirectUrl;
-          }
-        } else {
-          // Anonymous survey - redirect to survey completion
-          if (typeof window !== "undefined") {
+        // Redirect based on context using window.location to preserve theme
+        if (typeof window !== "undefined") {
+          if (couponId) {
+            // Coupon survey - redirect to coupon completion
+            window.location.href = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
+              email || ""
+            )}`;
+          } else if (returnTo === "coupons" && email) {
+            // Sign-in flow - survey completed, email stored, go to coupons
+            window.location.href = `/${tenantSlug}/coupons?email=${encodeURIComponent(email)}`;
+          } else {
+            // Anonymous survey - redirect to survey completion
             window.location.href = `/${tenantSlug}/survey/completed`;
           }
         }

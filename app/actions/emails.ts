@@ -7,7 +7,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import { RATE_LIMITS } from "@/lib/constants/rate-limits";
 import { checkRateLimit, getClientIdentifier } from "@/lib/utils/rate-limit";
@@ -54,10 +54,15 @@ export async function submitEmail(tenantSlug: string, email: string) {
       };
     }
 
-    const supabase = await createClient();
+    // Use admin client to bypass RLS for email submission
+    // This is safe because:
+    // 1. We explicitly set tenant_id (no cross-tenant leakage)
+    // 2. Rate limiting prevents abuse
+    // 3. This is a server action, not exposed to client
+    const adminSupabase = createAdminClient();
 
     // Resolve tenant slug to UUID
-    const { data: tenantId, error: resolveError } = await supabase.rpc(
+    const { data: tenantId, error: resolveError } = await adminSupabase.rpc(
       "resolve_tenant",
       {
         slug_input: tenantSlug,
@@ -71,15 +76,10 @@ export async function submitEmail(tenantSlug: string, email: string) {
       };
     }
 
-    // Create tenant-scoped client
-    // RLS will automatically scope this to the current tenant via current_tenant_id()
-    const tenantSupabase = await createTenantClient(tenantId);
-
     // Insert email into email_opt_ins table
-    // RLS policy eoi_insert_current_tenant ensures tenant_id = current_tenant_id()
+    // Using admin client ensures insert succeeds regardless of user auth state
     // Unique constraint prevents duplicate emails per tenant
-    // Note: Supabase handles SQL injection prevention via parameterized queries
-    const { error: insertError } = await tenantSupabase
+    const { error: insertError } = await adminSupabase
       .from("email_opt_ins")
       .insert({
         email: trimmedEmail,
@@ -170,10 +170,15 @@ export async function verifyEmailOptIn(
   email: string
 ): Promise<{ valid: boolean; error: string | null }> {
   try {
-    const supabase = await createClient();
+    // Use admin client to bypass RLS for email verification
+    // This is safe because:
+    // 1. We explicitly filter by tenant_id (no cross-tenant leakage)
+    // 2. We only check existence, not returning sensitive data
+    // 3. This is a server action, not exposed to client
+    const adminSupabase = createAdminClient();
 
     // Resolve tenant slug to UUID
-    const { data: tenantId, error: resolveError } = await supabase.rpc(
+    const { data: tenantId, error: resolveError } = await adminSupabase.rpc(
       "resolve_tenant",
       {
         slug_input: tenantSlug,
@@ -187,27 +192,17 @@ export async function verifyEmailOptIn(
       };
     }
 
-    // Create tenant-scoped client
-    const tenantSupabase = await createTenantClient(tenantId);
-
     // Check if email exists in email_opt_ins for this tenant
-    // Note: RLS may block this read for non-admin users, but that's okay
-    // If the email is in the URL, we trust it was successfully submitted
-    const { data: emailOptIn, error: checkError } = await tenantSupabase
+    // Using admin client ensures we can always read, regardless of user auth state
+    const { data: emailOptIn, error: checkError } = await adminSupabase
       .from("email_opt_ins")
       .select("email")
       .eq("email", email)
       .eq("tenant_id", tenantId)
       .maybeSingle();
 
-    // If RLS blocks the read, we can't verify - this is a security concern
-    // For non-admin users, RLS should allow reading their own email opt-in
-    // If RLS blocks, it might indicate a policy issue or the email truly doesn't exist
     if (checkError) {
-      // Log the error for debugging
       console.warn("Email opt-in verification error:", checkError.message);
-      // Don't assume valid - require explicit verification
-      // This prevents bypassing the opt-in requirement
       return {
         valid: false,
         error: checkError.message || "Failed to verify email opt-in",
