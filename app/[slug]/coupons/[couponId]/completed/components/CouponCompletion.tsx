@@ -8,6 +8,10 @@
 
 import { useState } from "react";
 import { Copy, Share2, Download, Bell, Info } from "lucide-react";
+import { FaWhatsapp, FaFacebook, FaEnvelope, FaQrcode } from "react-icons/fa";
+import { QRCodeSVG } from "qrcode.react";
+import SocialLoginButton from "@/app/[slug]/components/ui/SocialLoginButton";
+import SectionSeparator from "@/app/components/ui/SectionSeparator";
 import type { TenantDisplay } from "@/lib/types/tenant";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
@@ -16,7 +20,8 @@ import InfoBox from "@/app/components/ui/InfoBox";
 import ActionButton from "@/app/components/ui/ActionButton";
 import VisitWebsiteButton from "@/app/components/ui/VisitWebsiteButton";
 import CouponCodeDisplay from "./CouponCodeDisplay";
-import { generateGoogleWalletPass } from "@/app/actions";
+import { generateGoogleWalletPass, submitEmail } from "@/app/actions";
+import { getGoogleOAuthUrl } from "@/app/actions/google/oauth-url";
 import {
   trackCodeCopy,
   trackCouponDownload,
@@ -57,6 +62,123 @@ export default function CouponCompletion({
   const [copied, setCopied] = useState(false);
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
+  const [showShareQR, setShowShareQR] = useState(false);
+  const [qrValue, setQrValue] = useState<string | null>(null);
+  const [shareError, setShareError] = useState<string | null>(null);
+  const [emailOptIn, setEmailOptIn] = useState("");
+  const [loadingOptIn, setLoadingOptIn] = useState(false);
+  const [submittedOptIn, setSubmittedOptIn] = useState(false);
+  const [optInError, setOptInError] = useState<string | null>(null);
+  const [showOptInForm, setShowOptInForm] = useState(false);
+
+  /**
+   * Handles social login (Google/Apple OAuth)
+   * Similar to SurveyCompletion but redirects back to coupon completion
+   */
+  const handleSocialLogin = async (provider: "apple" | "google") => {
+    // Only Google is currently implemented
+    if (provider !== "google") {
+      setOptInError("Apple login is not yet available. Please use Google or email.");
+      return;
+    }
+
+    setLoadingOptIn(true);
+    setOptInError(null);
+
+    try {
+      // Generate Google OAuth authorization URL with returnTo parameter
+      const result = await getGoogleOAuthUrl(
+        tenantSlug,
+        typeof window !== "undefined" ? window.location.origin : "",
+        `/coupons/${coupon.id}/completed` // Return to coupon completion page after OAuth
+      );
+
+      if (result.error || !result.url) {
+        setOptInError(
+          result.error || "Failed to initiate Google login. Please try again."
+        );
+        setLoadingOptIn(false);
+        return;
+      }
+
+      // Redirect to Google OAuth
+      window.location.href = result.url;
+      // No need to set loading to false - user is being redirected
+    } catch (err) {
+      console.error("Error initiating Google OAuth:", err);
+      setOptInError(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again."
+      );
+      setLoadingOptIn(false);
+    }
+  };
+
+  /**
+   * Handles email opt-in form submission
+   */
+  const handleEmailOptInSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!emailOptIn || !emailOptIn.trim()) {
+      setOptInError("Please enter a valid email address");
+      return;
+    }
+
+    setLoadingOptIn(true);
+    setOptInError(null);
+
+    try {
+      const result = await submitEmail(tenantSlug, emailOptIn.trim());
+
+      if (result && typeof result.success === "boolean") {
+        if (result.success === true) {
+          setSubmittedOptIn(true);
+          setEmailOptIn("");
+        } else if (result.error) {
+          setOptInError(result.error);
+        } else {
+          setOptInError("Failed to submit email. Please try again.");
+        }
+      } else {
+        setOptInError("An unexpected error occurred");
+      }
+    } catch (err) {
+      setOptInError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoadingOptIn(false);
+    }
+  };
+
+  // Social share handlers
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareText = `Check out this coupon: ${couponCode || ""}`;
+
+  const handleWhatsAppShare = () => {
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      "_blank"
+    );
+    setShowShareQR(true);
+    setQrValue(shareUrl + "?src=whatsapp");
+  };
+  const handleFacebookShare = () => {
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      "_blank"
+    );
+    setShowShareQR(true);
+    setQrValue(shareUrl + "?src=facebook");
+  };
+  const handleGmailShare = () => {
+    window.open(
+      `https://mail.google.com/mail/?view=cm&fs=1&to=&su=Coupon&body=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      "_blank"
+    );
+    setShowShareQR(true);
+    setQrValue(shareUrl + "?src=gmail");
+  };
 
   const handleCopyCode = async () => {
     if (!couponCode) return;
@@ -236,6 +358,18 @@ export default function CouponCompletion({
             <p className="text-center text-xs font-semibold text-green-700 dark:text-green-300">
               Send to family, friends and colleagues.
             </p>
+            <div className="flex justify-center gap-3 mt-2">
+              <button title="WhatsApp" onClick={handleWhatsAppShare} className="text-green-600 hover:text-green-800"><FaWhatsapp size={22} /></button>
+              <button title="Facebook" onClick={handleFacebookShare} className="text-blue-600 hover:text-blue-800"><FaFacebook size={22} /></button>
+              <button title="Gmail" onClick={handleGmailShare} className="text-red-600 hover:text-red-800"><FaEnvelope size={22} /></button>
+            </div>
+            {showShareQR && qrValue && (
+              <div className="flex flex-col items-center mt-3">
+                <span className="text-xs mb-1">Scan to claim/download:</span>
+                <QRCodeSVG value={qrValue} size={96} />
+              </div>
+            )}
+            {shareError && <div className="text-xs text-red-600 mt-2">{shareError}</div>}
           </InfoBox>
 
           {/* Important Information */}
@@ -284,13 +418,79 @@ export default function CouponCompletion({
           </ActionButton>
         </div>
 
-        {/* Footer Options */}
+        {/* Footer Options - Email/Social Opt-in */}
         <div className="space-y-2 text-center">
-          <div className="flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-            <Bell className="h-3 w-3" />
-            <span>Want to hear about more offers?</span>
-          </div>
-
+          {!showOptInForm && !submittedOptIn && (
+            <div className="flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+              <Bell className="h-3 w-3" />
+              <span>
+                <a
+                  href="#"
+                  onClick={e => {
+                    e.preventDefault();
+                    setShowOptInForm(true);
+                  }}
+                  className="text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  Want to hear about more offers?
+                </a>
+              </span>
+            </div>
+          )}
+          {/* Opt-in UI (similar to SurveyCompletion) */}
+          {showOptInForm && !submittedOptIn && (
+            <div className="space-y-3">
+              <p className="text-center text-xs font-medium text-zinc-700 dark:text-zinc-300 sm:text-sm">
+                Want to stay updated with exclusive offers?
+              </p>
+              {/* Social Login Buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Apple login - Coming soon */}
+                <SocialLoginButton
+                  provider="apple"
+                  onClick={() => handleSocialLogin("apple")}
+                  disabled
+                />
+                {/* Google OAuth - Active */}
+                <SocialLoginButton
+                  provider="google"
+                  onClick={() => handleSocialLogin("google")}
+                  disabled={loadingOptIn}
+                />
+              </div>
+              <SectionSeparator text="Or continue with email" />
+              <form onSubmit={handleEmailOptInSubmit} className="space-y-2">
+                <input
+                  type="email"
+                  value={emailOptIn}
+                  onChange={e => setEmailOptIn(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  disabled={loadingOptIn}
+                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-black placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                />
+                <button
+                  type="submit"
+                  disabled={loadingOptIn}
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loadingOptIn ? "Submitting..." : "Get Updates"}
+                </button>
+              </form>
+              {optInError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+                  {optInError}
+                </div>
+              )}
+            </div>
+          )}
+          {submittedOptIn && (
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center dark:border-green-800 dark:bg-green-900/20 sm:p-4">
+              <p className="text-xs font-semibold text-green-800 dark:text-green-200 sm:text-sm">
+                Thank you! You've been added to our mailing list.
+              </p>
+            </div>
+          )}
           <VisitWebsiteButton tenant={tenant} />
         </div>
       </div>
