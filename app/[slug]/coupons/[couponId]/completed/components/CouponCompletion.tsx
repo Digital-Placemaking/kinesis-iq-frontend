@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import { Copy, Share2, Download, Bell, Info } from "lucide-react";
-import { FaWhatsapp, FaFacebook, FaEnvelope, FaQrcode } from "react-icons/fa";
+import { FaWhatsapp, FaFacebook, FaEnvelope, FaTwitter, FaLinkedin, FaSms, FaLink } from "react-icons/fa";
 import { QRCodeSVG } from "qrcode.react";
 import SocialLoginButton from "@/app/[slug]/components/ui/SocialLoginButton";
 import SectionSeparator from "@/app/components/ui/SectionSeparator";
@@ -152,32 +152,106 @@ export default function CouponCompletion({
   };
 
   // Social share handlers
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const baseShareUrl = typeof window !== "undefined" ? window.location.href.split("?")[0] : "";
   const shareText = `Check out this coupon: ${couponCode || ""}`;
 
+  /**
+   * Generate a unique share ID for tracking viral reach
+   * Format: timestamp_randomString_source
+   * This allows admin to see unique shares and their sources
+   */
+  const generateUniqueShareId = (source: string) => {
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    return `${timestamp}_${randomStr}_${source}`;
+  };
+
+  /**
+   * Create a unique share URL with tracking parameters
+   * Each share action gets a unique ID for tracking viral reach
+   */
+  const createShareUrl = (source: string) => {
+    const shareId = generateUniqueShareId(source);
+    const url = new URL(baseShareUrl || window.location.href);
+    url.searchParams.set("src", source);
+    url.searchParams.set("share_id", shareId);
+    if (email) url.searchParams.set("shared_by", btoa(email)); // Base64 encode sharer email
+    return url.toString();
+  };
+
   const handleWhatsAppShare = () => {
+    const uniqueShareUrl = createShareUrl("whatsapp");
     window.open(
-      `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      `https://wa.me/?text=${encodeURIComponent(shareText + " " + uniqueShareUrl)}`,
       "_blank"
     );
     setShowShareQR(true);
-    setQrValue(shareUrl + "?src=whatsapp");
+    setQrValue(uniqueShareUrl);
   };
+
   const handleFacebookShare = () => {
+    const uniqueShareUrl = createShareUrl("facebook");
     window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(uniqueShareUrl)}`,
       "_blank"
     );
     setShowShareQR(true);
-    setQrValue(shareUrl + "?src=facebook");
+    setQrValue(uniqueShareUrl);
   };
+
   const handleGmailShare = () => {
+    const uniqueShareUrl = createShareUrl("gmail");
     window.open(
-      `https://mail.google.com/mail/?view=cm&fs=1&to=&su=Coupon&body=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      `https://mail.google.com/mail/?view=cm&fs=1&to=&su=Coupon&body=${encodeURIComponent(shareText + " " + uniqueShareUrl)}`,
       "_blank"
     );
     setShowShareQR(true);
-    setQrValue(shareUrl + "?src=gmail");
+    setQrValue(uniqueShareUrl);
+  };
+
+  const handleTwitterShare = () => {
+    const uniqueShareUrl = createShareUrl("twitter");
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(uniqueShareUrl)}`,
+      "_blank"
+    );
+    setShowShareQR(true);
+    setQrValue(uniqueShareUrl);
+  };
+
+  const handleLinkedInShare = () => {
+    const uniqueShareUrl = createShareUrl("linkedin");
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(uniqueShareUrl)}`,
+      "_blank"
+    );
+    setShowShareQR(true);
+    setQrValue(uniqueShareUrl);
+  };
+
+  const handleSmsShare = () => {
+    const uniqueShareUrl = createShareUrl("sms");
+    // SMS link format works on both iOS and Android
+    window.open(
+      `sms:?body=${encodeURIComponent(shareText + " " + uniqueShareUrl)}`,
+      "_blank"
+    );
+    setShowShareQR(true);
+    setQrValue(uniqueShareUrl);
+  };
+
+  const handleCopyShareLink = async () => {
+    const uniqueShareUrl = createShareUrl("link");
+    try {
+      await navigator.clipboard.writeText(uniqueShareUrl);
+      setShowShareQR(true);
+      setQrValue(uniqueShareUrl);
+      // Show brief feedback
+      setShareError("Link copied to clipboard!");
+      setTimeout(() => setShareError(null), 2000);
+    } catch (err) {
+      setShareError("Failed to copy link");
+    }
   };
 
   const handleCopyCode = async () => {
@@ -201,18 +275,26 @@ export default function CouponCompletion({
 
   const handleShare = async () => {
     if (!couponCode) return;
+    const uniqueShareUrl = createShareUrl("native_share");
     if (navigator.share) {
       try {
         await navigator.share({
           title: `Coupon: ${coupon.title}`,
           text: `Check out this coupon: ${couponCode}`,
+          url: uniqueShareUrl,
         });
+        // Show QR code after sharing
+        setShowShareQR(true);
+        setQrValue(uniqueShareUrl);
       } catch (err) {
-        console.error("Failed to share:", err);
+        // User cancelled or error
+        if ((err as Error).name !== "AbortError") {
+          console.error("Failed to share:", err);
+        }
       }
     } else {
-      // Fallback: copy to clipboard
-      handleCopyCode();
+      // Fallback: copy to clipboard with unique link
+      await handleCopyShareLink();
     }
   };
 
@@ -358,18 +440,48 @@ export default function CouponCompletion({
             <p className="text-center text-xs font-semibold text-green-700 dark:text-green-300">
               Send to family, friends and colleagues.
             </p>
+            {/* Primary sharing options - first row */}
             <div className="flex justify-center gap-3 mt-2">
-              <button title="WhatsApp" onClick={handleWhatsAppShare} className="text-green-600 hover:text-green-800"><FaWhatsapp size={22} /></button>
-              <button title="Facebook" onClick={handleFacebookShare} className="text-blue-600 hover:text-blue-800"><FaFacebook size={22} /></button>
-              <button title="Gmail" onClick={handleGmailShare} className="text-red-600 hover:text-red-800"><FaEnvelope size={22} /></button>
+              <button title="WhatsApp" onClick={handleWhatsAppShare} className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                <FaWhatsapp size={22} className="text-green-600" />
+              </button>
+              <button title="Facebook" onClick={handleFacebookShare} className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                <FaFacebook size={22} className="text-blue-600" />
+              </button>
+              <button title="Email" onClick={handleGmailShare} className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+                <FaEnvelope size={22} className="text-red-500" />
+              </button>
+              <button title="Twitter/X" onClick={handleTwitterShare} className="p-2 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors">
+                <FaTwitter size={22} className="text-sky-500" />
+              </button>
             </div>
+            {/* Secondary sharing options - second row */}
+            <div className="flex justify-center gap-3 mt-1">
+              <button title="LinkedIn" onClick={handleLinkedInShare} className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                <FaLinkedin size={22} className="text-blue-700" />
+              </button>
+              <button title="SMS/Text" onClick={handleSmsShare} className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                <FaSms size={22} className="text-green-600" />
+              </button>
+              <button title="Copy Link" onClick={handleCopyShareLink} className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
+                <FaLink size={22} className="text-zinc-600 dark:text-zinc-400" />
+              </button>
+            </div>
+            {/* QR Code - unique per share action */}
             {showShareQR && qrValue && (
-              <div className="flex flex-col items-center mt-3">
-                <span className="text-xs mb-1">Scan to claim/download:</span>
-                <QRCodeSVG value={qrValue} size={96} />
+              <div className="flex flex-col items-center mt-3 p-3 bg-white dark:bg-zinc-800 rounded-lg">
+                <span className="text-xs mb-2 text-zinc-600 dark:text-zinc-400">Unique QR code for this share:</span>
+                <QRCodeSVG value={qrValue} size={120} />
+                <span className="text-[10px] mt-2 text-zinc-500 dark:text-zinc-500 text-center max-w-[200px] break-all">
+                  {qrValue.length > 60 ? qrValue.substring(0, 60) + "..." : qrValue}
+                </span>
               </div>
             )}
-            {shareError && <div className="text-xs text-red-600 mt-2">{shareError}</div>}
+            {shareError && (
+              <div className={`text-xs mt-2 text-center ${shareError.includes("copied") ? "text-green-600" : "text-red-600"}`}>
+                {shareError}
+              </div>
+            )}
           </InfoBox>
 
           {/* Important Information */}
