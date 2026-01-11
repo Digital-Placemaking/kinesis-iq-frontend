@@ -9,7 +9,7 @@
 import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { submitEmail } from "@/app/actions";
+import { verifyEmailOptIn } from "@/app/actions";
 import { getGoogleOAuthUrl } from "@/app/actions/google/oauth-url";
 import { trackPageVisit } from "@/lib/analytics/events";
 import Footer from "@/app/components/Footer";
@@ -49,19 +49,15 @@ export default function TenantLanding({
   }, [tenant.slug]);
 
   /**
-   * Handles email form submission
+   * Handles email form submission (Sign-in flow)
    *
    * Flow:
    * 1. User enters email and submits
    * 2. Email is validated (format check)
-   * 3. Email is passed as query parameter to coupons page (NOT stored yet)
-   * 4. When user clicks a coupon, survey page checks if email exists in email_opt_ins
-   * 5. If email NOT in table → show survey (first-time user)
-   * 6. If email IS in table → skip survey, go to coupon (returning user)
-   * 7. After survey completion → email is stored in email_opt_ins
-   *
-   * Note: Email is NOT stored here to ensure first-time users see the survey.
-   * Only after completing the survey will their email be added to email_opt_ins.
+   * 3. Check if email exists in email_opt_ins table:
+   *    - If YES (returning user) → redirect to coupons page
+   *    - If NO (new user) → redirect to survey page with returnTo=coupons
+   * 4. After survey completion → email is stored in email_opt_ins → redirect to coupons
    */
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,13 +81,19 @@ export default function TenantLanding({
         return;
       }
 
-      // Redirect to coupons page with email as query parameter
-      // IMPORTANT: Email is NOT stored in email_opt_ins at this point
-      // It will be stored after survey completion (see submitSurveyAnswers)
-      const couponsPath = getTenantPath(tenant.slug, "/coupons");
-      const redirectUrl = `${couponsPath}?email=${encodeURIComponent(
-        trimmedEmail
-      )}`;
+      // Check if email is already in email_opt_ins (returning user)
+      const optInCheck = await verifyEmailOptIn(tenant.slug, trimmedEmail);
+
+      let redirectUrl: string;
+      if (optInCheck.valid) {
+        // Returning user - go directly to coupons
+        const couponsPath = getTenantPath(tenant.slug, "/coupons");
+        redirectUrl = `${couponsPath}?email=${encodeURIComponent(trimmedEmail)}`;
+      } else {
+        // New user - go to survey first, then coupons after completion
+        const surveyPath = getTenantPath(tenant.slug, "/survey");
+        redirectUrl = `${surveyPath}?email=${encodeURIComponent(trimmedEmail)}&returnTo=coupons`;
+      }
 
       // Force full page redirect to ensure clean navigation
       if (typeof window !== "undefined") {
@@ -107,17 +109,15 @@ export default function TenantLanding({
   /**
    * Handles social login (Google/Apple OAuth)
    *
-   * OAuth Flow (Different from email flow):
+   * OAuth Flow (Same as email flow now):
    * 1. User clicks "Continue with Google/Apple"
    * 2. Redirects to OAuth provider consent screen
    * 3. User authorizes → Provider redirects to /auth/oauth-callback with code
    * 4. Callback route exchanges code for email
-   * 5. Email is stored in email_opt_ins table IMMEDIATELY (OAuth users skip survey)
-   * 6. User redirected to tenant coupons page
-   *
-   * Note: OAuth users have their email stored immediately because they've already
-   * authenticated with the provider. When they click a coupon, they'll skip the
-   * survey and go directly to coupon completion (since email is already in table).
+   * 5. Callback checks if email is in email_opt_ins:
+   *    - If YES (returning user) → redirect to coupons page
+   *    - If NO (new user) → redirect to survey page with returnTo=coupons
+   * 6. After survey completion → email is stored, redirect to coupons
    *
    * @param provider - The OAuth provider ("google" or "apple")
    */
@@ -265,7 +265,7 @@ export default function TenantLanding({
           {/* Feedback Section */}
           <div className="space-y-2 border-t border-zinc-200 pt-6 dark:border-zinc-800">
             <p className="text-center text-xs font-medium text-zinc-700 dark:text-zinc-300 sm:text-sm">
-              Just want to share feedback?
+              Take the 20-Second Poll
             </p>
             <button
               type="button"

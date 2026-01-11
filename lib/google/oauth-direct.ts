@@ -30,13 +30,18 @@
  */
 export function generateGoogleAuthUrl(
   tenantSlug: string,
-  redirectUri: string
+  redirectUri: string,
+  returnTo?: string
 ): string {
   // Client ID is accessed server-side via server actions
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
   if (!clientId) {
     throw new Error("GOOGLE_OAUTH_CLIENT_ID environment variable is not set");
   }
+
+  // Encode tenant slug and optional returnTo path in state parameter
+  // Format: "tenantSlug" or "tenantSlug|returnTo"
+  const stateValue = returnTo ? `${tenantSlug}|${returnTo}` : tenantSlug;
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -45,7 +50,7 @@ export function generateGoogleAuthUrl(
     scope: "openid email profile",
     access_type: "offline",
     prompt: "consent",
-    state: tenantSlug, // Store tenant slug in state for callback
+    state: stateValue, // Store tenant slug and optional returnTo in state for callback
   });
 
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
