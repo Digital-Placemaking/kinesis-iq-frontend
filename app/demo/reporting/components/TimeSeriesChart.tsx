@@ -74,16 +74,16 @@ export function TimeSeriesChart({
 
   return (
     <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm h-full flex flex-col">
-      <CardHeader className="pb-4 flex-shrink-0">
-        <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
-          <Clock className="h-6 w-6 text-orange-400" />
-          Emerging Patterns Over Time
+      <CardHeader className="pb-2 lg:pb-4 flex-shrink-0 px-2.5 lg:px-6">
+        <CardTitle className="text-lg lg:text-xl font-bold text-white flex items-center gap-2 lg:gap-3">
+          <Clock className="h-5 w-5 lg:h-6 lg:w-6 text-orange-400 shrink-0" />
+          <span className="truncate">Emerging Patterns Over Time</span>
         </CardTitle>
-        <CardDescription className="text-zinc-400 text-sm">
+        <CardDescription className="text-zinc-400 text-xs lg:text-sm">
           {rangeLabels[timeRange]} • Page visits and survey responses
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-2 pb-2 flex flex-col flex-1 min-h-0">
+      <CardContent className="pt-2 pb-2 flex flex-col flex-1 min-h-0 px-2.5 lg:px-6">
         {isLoading ? (
           <div className="h-48 sm:h-56 lg:h-64 flex items-center justify-center">
             <SkeletonLoader height={200} width="100%" />
@@ -97,7 +97,7 @@ export function TimeSeriesChart({
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={chartData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
+                  margin={{ top: 10, right: 5, left: 0, bottom: 5 }}
                 >
                   <defs>
                     <linearGradient
@@ -132,12 +132,18 @@ export function TimeSeriesChart({
                   <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fill: "#a1a1aa", fontSize: 12 }}
+                    tick={{ fill: "#a1a1aa", fontSize: 9 }}
                     axisLine={{ stroke: "#3f3f46" }}
+                    tickMargin={2}
+                    angle={-45}
+                    textAnchor="end"
+                    height={50}
                   />
                   <YAxis
-                    tick={{ fill: "#a1a1aa", fontSize: 12 }}
+                    tick={{ fill: "#a1a1aa", fontSize: 9 }}
                     axisLine={{ stroke: "#3f3f46" }}
+                    tickMargin={2}
+                    width={35}
                   />
                   <ChartTooltip
                     content={({ active, payload }) => {
@@ -204,16 +210,16 @@ export function TimeSeriesChart({
                 </AreaChart>
               </ResponsiveContainer>
             </ChartContainer>
-            <div className="flex items-center justify-center gap-16 pt-2 pb-1 border-t border-zinc-800 mt-auto flex-shrink-0">
-              <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-zinc-900/50 hover:bg-zinc-900/70 transition-colors">
-                <div className="h-4 w-4 rounded-full bg-blue-500 shrink-0 ring-2 ring-blue-500/20" />
-                <span className="text-sm text-zinc-200 font-semibold">
+            <div className="flex items-center justify-center gap-4 lg:gap-16 pt-2 pb-1 border-t border-zinc-800 mt-auto flex-shrink-0">
+              <div className="flex items-center gap-1.5 lg:gap-3 px-2 lg:px-4 py-1 lg:py-2 rounded-lg bg-zinc-900/50 hover:bg-zinc-900/70 transition-colors">
+                <div className="h-3 w-3 lg:h-4 lg:w-4 rounded-full bg-blue-500 shrink-0 ring-2 ring-blue-500/20" />
+                <span className="text-xs lg:text-sm text-zinc-200 font-semibold">
                   Page Visits
                 </span>
               </div>
-              <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-zinc-900/50 hover:bg-zinc-900/70 transition-colors">
-                <div className="h-4 w-4 rounded-full bg-green-500 shrink-0 ring-2 ring-green-500/20" />
-                <span className="text-sm text-zinc-200 font-semibold">
+              <div className="flex items-center gap-1.5 lg:gap-3 px-2 lg:px-4 py-1 lg:py-2 rounded-lg bg-zinc-900/50 hover:bg-zinc-900/70 transition-colors">
+                <div className="h-3 w-3 lg:h-4 lg:w-4 rounded-full bg-green-500 shrink-0 ring-2 ring-green-500/20" />
+                <span className="text-xs lg:text-sm text-zinc-200 font-semibold">
                   Survey Responses
                 </span>
               </div>

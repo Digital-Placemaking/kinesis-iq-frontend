@@ -42,30 +42,30 @@ export function SentimentDistribution({
   }));
 
   return (
-    <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm h-full flex flex-col">
-      <CardHeader className="pb-4 flex-shrink-0">
-        <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
-          <TrendingUp className="h-6 w-6 text-green-400" />
-          Sentiment Distribution
+    <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm h-full flex flex-col w-full max-w-full">
+        <CardHeader className="pb-2 lg:pb-4 flex-shrink-0 px-2.5 lg:px-6">
+        <CardTitle className="text-lg lg:text-xl font-bold text-white flex items-center gap-2 lg:gap-3">
+          <TrendingUp className="h-5 w-5 lg:h-6 lg:w-6 text-green-400 shrink-0" />
+          <span className="truncate">Sentiment Distribution</span>
         </CardTitle>
-        <CardDescription className="text-zinc-400 text-sm">
+        <CardDescription className="text-zinc-400 text-xs lg:text-sm">
           How people are feeling • Visual breakdown by sentiment
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-2 flex flex-col flex-1 min-h-0">
+      <CardContent className="pt-2 flex flex-col flex-1 min-h-0 px-2.5 lg:px-6">
         {isLoading ? (
           <div className="h-48 sm:h-56 lg:h-64 flex items-center justify-center">
             <SkeletonLoader height={200} width={200} variant="circular" />
           </div>
         ) : (
-          <div className="flex flex-col flex-1 min-h-0 space-y-4">
-            <div className="relative flex-1 min-h-0 flex items-center justify-center">
+          <div className="flex flex-col flex-1 min-h-0 space-y-2 lg:space-y-4">
+            <div className="relative flex-1 min-h-0 flex items-center justify-center w-full max-w-full overflow-hidden">
               <ChartContainer
                 config={chartConfig}
-                className="w-full h-full min-h-[240px] sm:min-h-[320px] lg:min-h-[360px]"
+                className="w-full h-full min-h-[200px] sm:min-h-[280px] lg:min-h-[360px] max-w-full"
               >
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                  <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                     <Pie
                       data={chartData}
                       cx="50%"
@@ -138,7 +138,7 @@ export function SentimentDistribution({
                 </div>
               </div>
             </div>
-            <div className="space-y-2.5 pt-2 flex-shrink-0">
+            <div className="space-y-1.5 lg:space-y-2.5 pt-2 flex-shrink-0">
               {data.map((item) => {
                 const ringColorMap: Record<string, string> = {
                   "bg-green-500": "ring-green-500/20",
@@ -151,20 +151,20 @@ export function SentimentDistribution({
                 return (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between py-3.5 px-3 rounded-lg bg-zinc-900/30 hover:bg-zinc-900/50 transition-colors"
+                    className="flex items-center justify-between py-2 lg:py-3.5 px-2 lg:px-3 rounded-lg bg-zinc-900/30 hover:bg-zinc-900/50 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 lg:gap-3 min-w-0 flex-1">
                       <div
-                        className={`h-4 w-4 rounded-full ${item.color} shrink-0 ring-2 ${ringColor}`}
+                        className={`h-3 w-3 lg:h-4 lg:w-4 rounded-full ${item.color} shrink-0 ring-2 ${ringColor}`}
                       />
-                      <span className="text-white font-semibold text-sm">
+                      <span className="text-white font-semibold text-xs lg:text-sm truncate">
                         {item.label}
                       </span>
-                      <span className="text-zinc-400 font-medium text-sm">
+                      <span className="text-zinc-400 font-medium text-xs lg:text-sm">
                         {item.percentage}%
                       </span>
                     </div>
-                    <span className="text-2xl font-bold text-zinc-500/60">
+                    <span className="text-lg lg:text-2xl font-bold text-zinc-500/60 shrink-0 ml-2">
                       {item.value.toLocaleString()}
                     </span>
                   </div>
