@@ -92,45 +92,48 @@ export function FunnelChart({ data, isLoading = false }: FunnelChartProps) {
       animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm h-full">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
-            <BarChart3 className="h-6 w-6 text-blue-400" />
-            User Engagement Funnel
+      <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-sm h-full w-full max-w-full">
+        <CardHeader className="pb-2 lg:pb-4 px-2.5 lg:px-6">
+          <CardTitle className="text-lg lg:text-xl font-bold text-white flex items-center gap-2 lg:gap-3">
+            <BarChart3 className="h-5 w-5 lg:h-6 lg:w-6 text-blue-400 shrink-0" />
+            <span className="truncate">User Engagement Funnel</span>
           </CardTitle>
-          <CardDescription className="text-zinc-400 text-sm">
+          <CardDescription className="text-zinc-400 text-xs lg:text-sm">
             User journey through the experience • Conversion rates shown
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-2">
+        <CardContent className="pt-2 px-2.5 lg:px-6">
           {isLoading ? (
             <div className="h-64 lg:h-96 flex items-center justify-center">
               <SkeletonLoader height={200} width="100%" />
             </div>
           ) : (
-            <div className="space-y-4">
-              <ChartContainer config={chartConfig} className="h-64 sm:h-80 lg:h-96 w-full">
+            <div className="space-y-2 lg:space-y-4">
+              <ChartContainer config={chartConfig} className="h-64 sm:h-80 lg:h-96 w-full max-w-full overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={chartData}
                     layout="vertical"
-                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    margin={{ top: 5, right: 2, left: 0, bottom: 5 }}
                     barCategoryGap="10%"
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
                     <XAxis
                       type="number"
                       domain={[0, maxValue]}
-                      tick={{ fill: "#a1a1aa", fontSize: 11 }}
+                      tick={{ fill: "#a1a1aa", fontSize: 9 }}
                       axisLine={{ stroke: "#3f3f46" }}
+                      tickMargin={2}
+                      width={30}
                     />
                     <YAxis
                       dataKey="name"
                       type="category"
-                      width={100}
-                      tick={{ fill: "#a1a1aa", fontSize: 11 }}
+                      width={65}
+                      tick={{ fill: "#a1a1aa", fontSize: 9 }}
                       axisLine={false}
                       tickLine={false}
+                      tickMargin={2}
                     />
                     <ChartTooltip
                       content={({ active, payload }) => {
@@ -185,7 +188,7 @@ export function FunnelChart({ data, isLoading = false }: FunnelChartProps) {
                 </ResponsiveContainer>
               </ChartContainer>
 
-              <div className="space-y-1.5 pt-4 border-t border-zinc-800">
+              <div className="space-y-1 lg:space-y-1.5 pt-2 lg:pt-4 border-t border-zinc-800">
                 {chartData.map((item, index) => {
                   const Icon = item.icon;
                   const previousValue =
@@ -198,36 +201,36 @@ export function FunnelChart({ data, isLoading = false }: FunnelChartProps) {
                   return (
                     <div
                       key={item.name}
-                      className="flex items-center justify-between py-1"
+                      className="flex items-center justify-between py-0.5 lg:py-1"
                     >
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 lg:gap-3 min-w-0 flex-1">
                         <Icon
-                          className="h-4 w-4 shrink-0"
+                          className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0"
                           style={{ color: item.color }}
                         />
-                        <span className="text-white font-medium text-sm truncate">
+                        <span className="text-white font-medium text-xs lg:text-sm truncate">
                           {item.name}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                        <span className="text-zinc-300 font-semibold text-sm min-w-[50px] sm:min-w-[60px] text-right">
+                      <div className="flex items-center gap-1.5 lg:gap-3 shrink-0">
+                        <span className="text-zinc-300 font-semibold text-xs lg:text-sm min-w-[40px] lg:min-w-[60px] text-right">
                           {item.value.toLocaleString()}
                         </span>
                         {index > 0 && (
                           <div
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border ${getConversionBg(
+                            className={`inline-flex items-center gap-1 lg:gap-1.5 px-1.5 lg:px-2.5 py-0.5 lg:py-1 rounded-md border ${getConversionBg(
                               parseFloat(conversionRate)
                             )}`}
                           >
                             {parseFloat(conversionRate) >= 80 ? (
-                              <TrendingUp className="h-3.5 w-3.5 text-green-400" />
+                              <TrendingUp className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-green-400" />
                             ) : parseFloat(conversionRate) >= 50 ? (
-                              <TrendingUp className="h-3.5 w-3.5 text-yellow-400" />
+                              <TrendingUp className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-yellow-400" />
                             ) : (
-                              <TrendingDown className="h-3.5 w-3.5 text-red-400" />
+                              <TrendingDown className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-red-400" />
                             )}
                             <span
-                              className={`text-xs font-semibold ${getConversionColor(
+                              className={`text-[10px] lg:text-xs font-semibold ${getConversionColor(
                                 parseFloat(conversionRate)
                               )}`}
                             >

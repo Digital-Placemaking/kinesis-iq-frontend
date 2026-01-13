@@ -241,7 +241,7 @@ export default function ReportingDemoPage() {
       </section>
 
       <section className="relative py-8 sm:py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
+        <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl relative z-10">
           <ScrollReveal>
             <div className="mb-8 sm:mb-12 mt-4">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
@@ -264,9 +264,9 @@ export default function ReportingDemoPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="space-y-6 sm:space-y-8"
+              className="space-y-4 sm:space-y-6 lg:space-y-8"
             >
-              <div className="grid gap-6 sm:gap-8 lg:gap-12 lg:grid-cols-2">
+              <div className="grid gap-4 sm:gap-6 lg:gap-12 lg:grid-cols-2">
                 <ScrollReveal delay={0.1}>
                   <FunnelChart
                     data={currentData.funnel}

@@ -60,6 +60,18 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Prevent body scroll when mobile menu is open (standard practice)
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      // Store original overflow value
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [mobileMenuOpen]);
+
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
     return pathname?.startsWith(path);
@@ -209,16 +221,41 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-white hover:text-blue-400 transition-colors"
+            className="md:hidden p-2 text-white hover:text-blue-400 transition-colors relative"
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
             type="button"
           >
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6" aria-hidden="true" />
-            ) : (
-              <Menu className="h-6 w-6" aria-hidden="true" />
-            )}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              initial={false}
+              animate={{ rotate: mobileMenuOpen ? 90 : 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
+              <AnimatePresence mode="wait">
+                {mobileMenuOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ opacity: 0, rotate: -90 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    exit={{ opacity: 0, rotate: 90 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                  >
+                    <X className="h-6 w-6" aria-hidden="true" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ opacity: 0, rotate: 90 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    exit={{ opacity: 0, rotate: -90 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                  >
+                    <Menu className="h-6 w-6" aria-hidden="true" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </button>
         </div>
 
@@ -226,35 +263,38 @@ export default function Navbar() {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
+              initial={{ opacity: 0, maxHeight: 0 }}
+              animate={{ opacity: 1, maxHeight: 500 }}
+              exit={{ opacity: 0, maxHeight: 0 }}
               transition={{
                 duration: 0.3,
-                ease: [0.22, 1, 0.36, 1],
+                ease: [0.4, 0, 0.2, 1], // Standard material design easing
               }}
               className="md:hidden overflow-hidden"
             >
               <motion.div
-                initial={{ y: -10 }}
+                initial={{ y: -20 }}
                 animate={{ y: 0 }}
-                exit={{ y: -10 }}
+                exit={{ y: -20 }}
                 transition={{
                   duration: 0.3,
-                  ease: [0.22, 1, 0.36, 1],
-                  delay: 0.05,
+                  ease: [0.4, 0, 0.2, 1],
                 }}
-                className="border-t border-zinc-800/50 py-4 space-y-4"
+                className="border-t border-zinc-800/50 py-4 space-y-3"
               >
                 <motion.div
-                  initial={{ opacity: 0, x: -10 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.2, delay: 0.1 }}
+                  transition={{ 
+                    duration: 0.25, 
+                    delay: 0.05,
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
                 >
                   <Link
                     href="/how-it-works"
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block text-sm font-medium transition-colors ${
+                    className={`block text-sm font-medium transition-colors py-2 ${
                       isActive("/how-it-works")
                         ? "text-white"
                         : "text-zinc-400 hover:text-white"
@@ -264,14 +304,18 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
                 <motion.div
-                  initial={{ opacity: 0, x: -10 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.2, delay: 0.15 }}
+                  transition={{ 
+                    duration: 0.25, 
+                    delay: 0.1,
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
                 >
                   <Link
                     href="/demo/reporting"
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block text-sm font-medium transition-colors ${
+                    className={`block text-sm font-medium transition-colors py-2 ${
                       isActive("/demo")
                         ? "text-white"
                         : "text-zinc-400 hover:text-white"
@@ -281,14 +325,18 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
                 <motion.div
-                  initial={{ opacity: 0, x: -10 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.2, delay: 0.2 }}
+                  transition={{ 
+                    duration: 0.25, 
+                    delay: 0.15,
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
                 >
                   <Link
                     href="/about-us"
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block text-sm font-medium transition-colors ${
+                    className={`block text-sm font-medium transition-colors py-2 ${
                       isActive("/about-us")
                         ? "text-white"
                         : "text-zinc-400 hover:text-white"
@@ -298,14 +346,18 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
                 <motion.div
-                  initial={{ opacity: 0, x: -10 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.2, delay: 0.25 }}
+                  transition={{ 
+                    duration: 0.25, 
+                    delay: 0.2,
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
                 >
                   <Link
                     href="/contact"
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block text-sm font-medium transition-colors ${
+                    className={`block text-sm font-medium transition-colors py-2 ${
                       isActive("/contact")
                         ? "text-white"
                         : "text-zinc-400 hover:text-white"
@@ -315,9 +367,13 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
                 <motion.div
-                  initial={{ opacity: 0, y: 5 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2, delay: 0.3 }}
+                  transition={{ 
+                    duration: 0.25, 
+                    delay: 0.25,
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
                   className="flex items-center gap-3 pt-2"
                 >
                   {/* KinesisIQ Logo */}
