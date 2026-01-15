@@ -36,13 +36,10 @@ export default function SurveyContainer({
   // Guard against empty survey
   if (!survey.questions || survey.questions.length === 0) {
     if (typeof window !== "undefined") {
-      if (couponId) {
-        window.location.href = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
-          email || ""
-        )}`;
-      } else {
-        window.location.href = `/${tenantSlug}/survey/completed`;
-      }
+      // Redirect to coupons page
+      window.location.href = `/${tenantSlug}/coupons${
+        email ? `?email=${encodeURIComponent(email)}` : ""
+      }`;
     }
     return null;
   }
@@ -180,21 +177,10 @@ export default function SurveyContainer({
         setError(result.error);
         setIsSubmitting(false);
       } else {
-        // Redirect to completion page using window.location to preserve theme
-        // This ensures a full navigation that applies theme from localStorage
-        if (couponId) {
-          // Coupon survey - redirect to coupon completion
-          const redirectUrl = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
-            email || ""
-          )}`;
-          if (typeof window !== "undefined") {
-            window.location.href = redirectUrl;
-          }
-        } else {
-          // Anonymous survey - redirect to survey completion
-          if (typeof window !== "undefined") {
-            window.location.href = `/${tenantSlug}/survey/completed`;
-          }
+        // Redirect to coupons page after successful survey completion
+        if (typeof window !== "undefined") {
+          const emailParam = email ? `?email=${encodeURIComponent(email)}` : "";
+          window.location.href = `/${tenantSlug}/coupons${emailParam}`;
         }
       }
     } catch (err) {

@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireBusinessOwnerAccess } from "@/lib/auth/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
+import { getTemplateQuestionsForTenant } from "@/lib/constants/template-questions";
 import QuestionsClient from "./components/QuestionsClient";
 
 interface QuestionsPageProps {
@@ -42,11 +43,17 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
 
   const tenantSupabase = await createTenantClient(tenantId);
 
-  // Fetch survey questions
+  // Get template questions (system-wide mandatory questions)
+  const templateQuestions = getTemplateQuestionsForTenant(tenantId);
+
+  // Fetch tenant-specific survey questions
   const { data: questions, error } = await tenantSupabase
     .from("survey_questions")
     .select("*")
     .order("order_index", { ascending: true });
+
+  // Combine template questions (first) with tenant questions
+  const allQuestions = [...templateQuestions, ...(questions || [])];
 
   // Map question types to display names
   const questionTypeNames: Record<string, string> = {
@@ -68,7 +75,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
 
   return (
     <QuestionsClient
-      questions={questions || []}
+      questions={allQuestions}
       tenantSlug={slug}
       questionTypeNames={questionTypeNames}
     />

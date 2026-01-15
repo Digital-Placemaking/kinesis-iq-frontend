@@ -16,6 +16,10 @@ import {
   markSurveyCompleted,
 } from "@/lib/utils/rate-limit";
 import { trackSurveyCompletion } from "@/lib/analytics/events";
+import {
+  getTemplateQuestionsForTenant,
+  isTemplateQuestion,
+} from "@/lib/constants/template-questions";
 import type {
   SurveyResponse,
   SurveySubmissionResponse,
@@ -73,30 +77,24 @@ export async function getSurveyForTenant(
       };
     }
 
-    // Return survey even if no questions - let the page component decide what to do
-    if (!questions || questions.length === 0) {
-      return {
-        survey: {
-          tenant_id: tenantId,
-          coupon_id: null,
-          questions: [],
-        },
-        error: null,
-      };
-    }
+    // Get template questions (mandatory for all tenants)
+    const templateQuestions = getTemplateQuestionsForTenant(tenantId);
 
-    // Transform the data to match our Survey interface
+    // Transform tenant-specific questions to match our Survey interface
+    const tenantQuestions = (questions || []).map((q: SurveyQuestion) => ({
+      id: q.id,
+      tenant_id: q.tenant_id,
+      question: q.question,
+      type: q.type,
+      options: Array.isArray(q.options) ? q.options : [],
+      order_index: q.order_index,
+    }));
+
+    // Combine template questions (first) with tenant questions
     const survey: Survey = {
       tenant_id: tenantId,
       coupon_id: null,
-      questions: questions.map((q: SurveyQuestion) => ({
-        id: q.id,
-        tenant_id: q.tenant_id,
-        question: q.question,
-        type: q.type,
-        options: Array.isArray(q.options) ? q.options : [],
-        order_index: q.order_index,
-      })),
+      questions: [...templateQuestions, ...tenantQuestions],
     };
 
     return {
@@ -155,30 +153,24 @@ export async function getSurveyForCoupon(
       };
     }
 
-    // Return survey even if no questions - let the page component decide what to do
-    if (!questions || questions.length === 0) {
-      return {
-        survey: {
-          tenant_id: tenantId,
-          coupon_id: couponId,
-          questions: [],
-        },
-        error: null,
-      };
-    }
+    // Get template questions (mandatory for all tenants)
+    const templateQuestions = getTemplateQuestionsForTenant(tenantId);
 
-    // Transform the data to match our Survey interface
+    // Transform tenant-specific questions to match our Survey interface
+    const tenantQuestions = (questions || []).map((q: SurveyQuestion) => ({
+      id: q.id,
+      tenant_id: q.tenant_id,
+      question: q.question,
+      type: q.type,
+      options: Array.isArray(q.options) ? q.options : [],
+      order_index: q.order_index,
+    }));
+
+    // Combine template questions (first) with tenant questions
     const survey: Survey = {
       tenant_id: tenantId,
       coupon_id: couponId,
-      questions: questions.map((q: SurveyQuestion) => ({
-        id: q.id,
-        tenant_id: q.tenant_id,
-        question: q.question,
-        type: q.type,
-        options: Array.isArray(q.options) ? q.options : [],
-        order_index: q.order_index,
-      })),
+      questions: [...templateQuestions, ...tenantQuestions],
     };
 
     return {
@@ -249,8 +241,14 @@ export async function submitSurveyAnswers(
         ? `${submission.coupon_id}-${submission.email}`
         : `session-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-    // Insert one row per question answer
-    const responsesToInsert = submission.answers.map((answer) => {
+    // Filter out template question answers since they don't exist in the database
+    // Template questions are for user experience only and don't need to be stored
+    const answersToStore = submission.answers.filter(
+      (answer) => !isTemplateQuestion(answer.question_id)
+    );
+
+    // Insert one row per question answer (excluding template questions)
+    const responsesToInsert = answersToStore.map((answer) => {
       // Convert answer to JSONB format
       let answerJsonb: SurveyAnswer | null = null;
 

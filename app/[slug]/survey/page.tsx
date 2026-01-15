@@ -83,7 +83,7 @@ export default async function SurveyPage({
           survey={survey}
           tenantSlug={slug}
           couponId={null}
-          email={null}
+          email={email || null}
         />
       </div>
     </div>

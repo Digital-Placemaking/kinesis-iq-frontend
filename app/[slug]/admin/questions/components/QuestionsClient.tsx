@@ -9,7 +9,8 @@ import Card from "@/app/components/ui/Card";
 import ActionButton from "@/app/components/ui/ActionButton";
 import QuestionActions from "./QuestionActions";
 import AddQuestionModal from "./AddQuestionModal";
-import { Plus } from "lucide-react";
+import { Plus, Lock } from "lucide-react";
+import { isTemplateQuestion } from "@/lib/constants/template-questions";
 
 interface Question {
   id: string;
@@ -63,6 +64,7 @@ export default function QuestionsClient({
               const typeName =
                 questionTypeNames[question.type] || question.type;
               const isActive = question.is_active ?? true;
+              const isTemplate = isTemplateQuestion(question.id);
 
               return (
                 <Card
@@ -73,6 +75,12 @@ export default function QuestionsClient({
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex flex-wrap items-center gap-2 sm:mb-2">
+                        {isTemplate && (
+                          <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                            <Lock className="mr-1 h-3 w-3" />
+                            System Question
+                          </span>
+                        )}
                         <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                           {typeName}
                         </span>
@@ -88,17 +96,24 @@ export default function QuestionsClient({
                       <p className="wrap-break-word text-sm font-medium leading-relaxed text-black dark:text-zinc-50 sm:text-base">
                         {question.question}
                       </p>
+                      {isTemplate && (
+                        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
+                          This question appears for all tenants and cannot be modified
+                        </p>
+                      )}
                     </div>
                     <div className="shrink-0 self-end sm:self-auto">
-                      <QuestionActions
-                        tenantSlug={tenantSlug}
-                        questionId={question.id}
-                        questionIndex={index}
-                        totalQuestions={questions.length}
-                        isActive={isActive}
-                        questionText={question.question}
-                        questionType={question.type}
-                      />
+                      {!isTemplate && (
+                        <QuestionActions
+                          tenantSlug={tenantSlug}
+                          questionId={question.id}
+                          questionIndex={index}
+                          totalQuestions={questions.length}
+                          isActive={isActive}
+                          questionText={question.question}
+                          questionType={question.type}
+                        />
+                      )}
                     </div>
                   </div>
                 </Card>
