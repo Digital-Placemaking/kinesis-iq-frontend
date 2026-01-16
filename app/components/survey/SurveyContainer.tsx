@@ -273,18 +273,19 @@ export default function SurveyContainer({
         setError(result.error);
         setIsSubmitting(false);
       } else {
-        // Redirect based on context using window.location to preserve theme
-        if (typeof window !== "undefined") {
-          if (couponId) {
-            // Coupon survey - redirect to coupon completion
-            window.location.href = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
-              email || ""
-            )}`;
-          } else if (returnTo === "coupons" && email) {
-            // Sign-in flow - survey completed, email stored, go to coupons
-            window.location.href = `/${tenantSlug}/coupons?email=${encodeURIComponent(email)}`;
-          } else {
-            // Anonymous survey - redirect to survey completion
+        // Redirect to completion page using window.location to preserve theme
+        // Full navigation to apply theme from localStorage
+        if (couponId) {
+          // Coupon survey - redirect to coupon completion
+          const redirectUrl = `/${tenantSlug}/coupons/${couponId}/completed?email=${encodeURIComponent(
+            email || ""
+          )}`;
+          if (typeof window !== "undefined") {
+            window.location.href = redirectUrl;
+          }
+        } else {
+          // Anonymous survey - redirect to survey completion
+          if (typeof window !== "undefined") {
             window.location.href = `/${tenantSlug}/survey/completed`;
           }
         }

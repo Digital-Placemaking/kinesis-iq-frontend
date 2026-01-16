@@ -94,7 +94,7 @@ export default function TenantLanding({
         trimmedEmail
       )}`;
 
-      // Force full page redirect to ensure clean navigation
+      // Full page redirect
       if (typeof window !== "undefined") {
         window.location.replace(redirectUrl);
       }

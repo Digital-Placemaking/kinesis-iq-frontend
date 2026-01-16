@@ -71,7 +71,7 @@ export default function AuthCallbackHandler() {
           errorCode = "oauth_access_denied";
         }
         // Redirect to admin login page instead of homepage
-        // This ensures errors are displayed properly
+        // Display errors
         router.push(`/admin/login?error=${encodeURIComponent(errorCode)}`);
         return;
       }
@@ -92,7 +92,7 @@ export default function AuthCallbackHandler() {
               return;
             }
 
-            // Clear hash from URL (clean up the URL for better UX)
+            // Remove hash from URL after processing
             window.history.replaceState(
               null,
               "",
