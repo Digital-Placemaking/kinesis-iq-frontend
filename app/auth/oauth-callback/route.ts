@@ -131,17 +131,18 @@ export async function GET(request: NextRequest) {
       // User can still browse coupons, but may need to complete survey
     }
 
-    // Build redirect URL to tenant's survey page
+    // Build redirect URL to tenant's coupons page
+    // OAuth users skip survey since their email is already stored in email_opt_ins
     // Always use path-based routing with tenant slug to ensure consistency
     // The subdomain routing is handled by the proxy/middleware layer
-    const redirectPath = `/${tenantSlug}/survey`;
-    const surveyUrl = new URL(redirectPath, origin);
+    const redirectPath = `/${tenantSlug}/coupons`;
+    const couponsUrl = new URL(redirectPath, origin);
 
     if (storeResult.email) {
-      surveyUrl.searchParams.set("email", storeResult.email);
+      couponsUrl.searchParams.set("email", storeResult.email);
     }
 
-    return NextResponse.redirect(surveyUrl);
+    return NextResponse.redirect(couponsUrl);
   } catch (err) {
     console.error("Error in OAuth callback:", err);
 
@@ -239,18 +240,19 @@ export async function POST(request: NextRequest) {
 
     if (!storeResult.success && storeResult.error) {
       console.error("Failed to store Apple OAuth email:", storeResult.error);
-      // Continue anyway - redirect to survey even if storage fails
+      // Continue anyway - redirect to coupons even if storage fails
     }
 
-    // Redirect to tenant's survey page
-    const redirectPath = `/${tenantSlug}/survey`;
-    const surveyUrl = new URL(redirectPath, origin);
+    // Redirect to tenant's coupons page
+    // OAuth users skip survey since their email is already stored in email_opt_ins
+    const redirectPath = `/${tenantSlug}/coupons`;
+    const couponsUrl = new URL(redirectPath, origin);
 
     if (storeResult.email) {
-      surveyUrl.searchParams.set("email", storeResult.email);
+      couponsUrl.searchParams.set("email", storeResult.email);
     }
 
-    return NextResponse.redirect(surveyUrl);
+    return NextResponse.redirect(couponsUrl);
   } catch (err) {
     console.error("Error in Apple OAuth callback:", err);
 
