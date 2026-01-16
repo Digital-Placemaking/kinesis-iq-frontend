@@ -141,6 +141,7 @@ export async function GET(request: NextRequest) {
     if (storeResult.email) {
       surveyUrl.searchParams.set("email", storeResult.email);
       surveyUrl.searchParams.set("returnTo", "coupons"); // Redirect to coupons after survey
+      surveyUrl.searchParams.set("fromOAuth", "true"); // Force show survey even if email is stored
     }
 
     return NextResponse.redirect(surveyUrl);
@@ -252,6 +253,7 @@ export async function POST(request: NextRequest) {
     if (storeResult.email) {
       surveyUrl.searchParams.set("email", storeResult.email);
       surveyUrl.searchParams.set("returnTo", "coupons"); // Redirect to coupons after survey
+      surveyUrl.searchParams.set("fromOAuth", "true"); // Force show survey even if email is stored
     }
 
     return NextResponse.redirect(surveyUrl);

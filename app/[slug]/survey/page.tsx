@@ -18,7 +18,7 @@ export const revalidate = 0;
 
 interface SurveyPageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ email?: string; returnTo?: string }>;
+  searchParams: Promise<{ email?: string; returnTo?: string; fromOAuth?: string }>;
 }
 
 /**
@@ -37,7 +37,7 @@ export default async function SurveyPage({
   searchParams,
 }: SurveyPageProps) {
   const { slug } = await params;
-  const { email, returnTo } = await searchParams;
+  const { email, returnTo, fromOAuth } = await searchParams;
 
   // Get tenant data
   const { tenant: tenantData, error: tenantError } = await getTenantBySlug(
@@ -58,7 +58,8 @@ export default async function SurveyPage({
 
   // If user has email and returnTo=coupons, check if already in opt-in list
   // (They might have been added via another method while on this page)
-  if (email && returnTo === "coupons") {
+  // Skip this check if fromOAuth=true (OAuth users need to complete survey first)
+  if (email && returnTo === "coupons" && fromOAuth !== "true") {
     const optInCheck = await verifyEmailOptIn(slug, email);
     if (optInCheck.valid) {
       // Already in opt-in list, skip survey and go to coupons
