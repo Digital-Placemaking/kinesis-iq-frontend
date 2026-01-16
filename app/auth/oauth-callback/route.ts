@@ -4,24 +4,28 @@
  * Handles OAuth callbacks from Google and Apple for tenant email collection.
  * This route is separate from admin authentication flows.
  *
- * OAuth Flow (Same as email sign-in flow):
+ * OAuth Flow (Different from email flow):
  * 1. User clicks "Continue with Google" on landing page
  * 2. Redirects to Google OAuth consent screen
  * 3. User authorizes → Google redirects here with authorization code
  * 4. Exchange code for access token
  * 5. Fetch user email from Google API
- * 6. Check if email is in email_opt_ins:
- *    - If YES (returning user) → redirect to coupons page
- *    - If NO (new user) → redirect to survey page with returnTo=coupons
- * 7. After survey completion → email is stored, redirect to coupons
+ * 6. Store email in email_opt_ins table IMMEDIATELY
+ * 7. Track analytics event
+ * 8. Redirect to tenant coupons page
  *
- * Note: OAuth users go through the same flow as email sign-in users.
- * They must complete survey before seeing coupons (unless already in opt-in list).
+ * IMPORTANT: OAuth users have their email stored immediately (unlike email users).
+ * This means when they click a coupon, the survey page will detect their email
+ * is already in the table and skip the survey, going directly to coupon completion.
+ *
+ * This is intentional - OAuth users have already authenticated, so we trust
+ * their email and skip the survey requirement.
  */
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getEmailFromGoogleCode } from "@/lib/google/oauth-direct";
-import { verifyEmailOptIn, submitEmail } from "@/app/actions/emails";
+import { getEmailFromAppleCode } from "@/lib/apple/oauth-direct";
+import { storeOAuthEmail } from "@/app/actions/google/oauth";
 
 export async function GET(request: NextRequest) {
   // Get the correct origin from request headers (handles localhost, production, etc.)
@@ -39,7 +43,7 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state"); // Contains tenant slug
   // Note: Google OAuth doesn't preserve query parameters, so we default to "google"
   // In the future, we could encode the provider in the state parameter
-  const provider = "google"; // Default to Google for now (Apple not yet implemented)
+  const provider = "google";
   const error = searchParams.get("error");
 
   // Handle OAuth errors
@@ -77,8 +81,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Parse state parameter - can be "tenantSlug" or "tenantSlug|returnTo"
-  const [tenantSlug, returnTo] = state.split("|");
+  const tenantSlug = state;
   const redirectUri = new URL("/auth/oauth-callback", origin).toString();
 
   try {
@@ -96,52 +99,52 @@ export async function GET(request: NextRequest) {
         );
       }
       email = await getEmailFromGoogleCode(code, redirectUri);
+      
     } else if (provider === "apple") {
-      // Apple OAuth implementation will be added later
-      throw new Error("Apple OAuth not yet implemented");
+      // Verify Apple environment variables are set
+      if (
+        !process.env.APPLE_CLIENT_ID ||
+        !process.env.APPLE_TEAM_ID ||
+        !process.env.APPLE_KEY_ID ||
+        !process.env.APPLE_PRIVATE_KEY
+      ) {
+        throw new Error(
+          "Apple OAuth credentials not configured. Please set APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, and APPLE_PRIVATE_KEY environment variables."
+        );
+      }
+      email = await getEmailFromAppleCode(code, redirectUri);
     } else {
       throw new Error(`Unsupported OAuth provider: ${provider}`);
     }
 
     // ============================================================================
-    // CHECK IF EMAIL IS IN email_opt_ins TABLE
+    // STORE EMAIL IN email_opt_ins TABLE
     // ============================================================================
-    // OAuth users go through the same flow as email sign-in users.
-    // Check if already in opt-in list to determine redirect destination.
-    const optInCheck = await verifyEmailOptIn(tenantSlug, email);
+    // OAuth users have their email stored immediately (unlike email users who
+    // must complete survey first). This means they'll skip surveys on future
+    // coupon claims since their email is already in the opt-in table.
+    const storeResult = await storeOAuthEmail(tenantSlug, email);
 
-    // Build redirect URL based on opt-in status and returnTo
-    let redirectPath: string;
-    if (returnTo?.includes("survey/completed")) {
-      // Coming from survey completion page - user was subscribing to mailing list
-      // Store email in opt-in list NOW since they're subscribing
-      await submitEmail(tenantSlug, email).catch((err) => {
-        console.warn("Failed to store OAuth email from survey completion:", err);
-      });
-      // Redirect back to survey completed page
-      redirectPath = `/${tenantSlug}${returnTo}`;
-    } else if (optInCheck.valid) {
-      // Returning user - already in opt-in list, go directly to coupons
-      redirectPath = `/${tenantSlug}/coupons`;
-    } else {
-      // New user - not in opt-in list, go to survey first
-      redirectPath = `/${tenantSlug}/survey`;
-    }
-    
-    const targetUrl = new URL(redirectPath, origin);
-    targetUrl.searchParams.set("email", email);
-    
-    // Add returnTo=coupons for new users going to survey
-    if (!optInCheck.valid && !returnTo?.includes("survey/completed")) {
-      targetUrl.searchParams.set("returnTo", "coupons");
-    }
-    
-    // Mark as subscribed if coming from survey completion
-    if (returnTo?.includes("survey/completed")) {
-      targetUrl.searchParams.set("subscribed", "true");
+    if (!storeResult.success && storeResult.error) {
+      console.error("Failed to store OAuth email:", storeResult.error);
+      // Continue anyway - redirect to survey even if storage fails
+      // User can still browse coupons, but may need to complete survey
     }
 
-    return NextResponse.redirect(targetUrl);
+    // Build redirect URL to tenant's survey page
+    // OAuth users complete survey first, then go to coupons (via returnTo param)
+    // Always use path-based routing with tenant slug to ensure consistency
+    // The subdomain routing is handled by the proxy/middleware layer
+    const redirectPath = `/${tenantSlug}/survey`;
+    const surveyUrl = new URL(redirectPath, origin);
+
+    if (storeResult.email) {
+      surveyUrl.searchParams.set("email", storeResult.email);
+      surveyUrl.searchParams.set("returnTo", "coupons"); // Redirect to coupons after survey
+      surveyUrl.searchParams.set("fromOAuth", "true"); // Force show survey even if email is stored
+    }
+
+    return NextResponse.redirect(surveyUrl);
   } catch (err) {
     console.error("Error in OAuth callback:", err);
 
@@ -155,3 +158,115 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 }
+
+/**
+ * POST handler for Apple OAuth callback.
+ * Apple uses form_post response_mode, so it POSTs the authorization code to this endpoint.
+ * 
+ * Flow:
+ * 1. Apple POSTs form data with code and state to this endpoint
+ * 2. We extract the authorization code from the POST body
+ * 3. Exchange code for access token and id_token
+ * 4. Decode id_token to get user's email
+ * 5. Store email in database
+ * 6. Redirect to tenant coupons page
+ */
+export async function POST(request: NextRequest) {
+  // Get the correct origin from request headers
+  const host =
+    request.headers.get("host") ||
+    request.headers.get("x-forwarded-host") ||
+    "localhost:3000";
+  const protocol =
+    request.headers.get("x-forwarded-proto") ||
+    (host.includes("localhost") ? "http" : "https");
+  const origin = `${protocol}://${host}`;
+
+  // Store tenant slug early for error handling
+  let tenantSlug = "unknown";
+
+  try {
+    // Parse form data from Apple's POST request
+    const formData = await request.formData();
+    const code = formData.get("code") as string | null;
+    const state = formData.get("state") as string | null; // Contains tenant slug
+    const error = formData.get("error") as string | null;
+
+    if (state) {
+      tenantSlug = state;
+    }
+
+    // Handle OAuth errors
+    if (error) {
+      console.error("Apple OAuth error:", error);
+
+      let errorCode = "oauth_failed";
+      if (error === "access_denied") {
+        errorCode = "oauth_access_denied";
+      } else if (error === "invalid_request") {
+        errorCode = "oauth_invalid_request";
+      }
+
+      const redirectUrl = new URL(`/${tenantSlug}`, origin);
+      redirectUrl.searchParams.set("error", errorCode);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // Must have code and state (tenant slug)
+    if (!code || !state) {
+      const redirectUrl = new URL(`/${tenantSlug}`, origin);
+      redirectUrl.searchParams.set("error", "oauth_invalid");
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const redirectUri = new URL("/auth/oauth-callback", origin).toString();
+
+    // Verify Apple environment variables
+    if (
+      !process.env.APPLE_CLIENT_ID ||
+      !process.env.APPLE_TEAM_ID ||
+      !process.env.APPLE_KEY_ID ||
+      !process.env.APPLE_PRIVATE_KEY
+    ) {
+      throw new Error(
+        "Apple OAuth credentials not configured. Please set APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, and APPLE_PRIVATE_KEY environment variables."
+      );
+    }
+
+    // Exchange Apple authorization code for email
+    // This creates a signed JWT client_secret and exchanges it for tokens
+    const email = await getEmailFromAppleCode(code, redirectUri);
+
+    // Store email in email_opt_ins table (same as Google OAuth)
+    const storeResult = await storeOAuthEmail(tenantSlug, email);
+
+    if (!storeResult.success && storeResult.error) {
+      console.error("Failed to store Apple OAuth email:", storeResult.error);
+      // Continue anyway - redirect to survey even if storage fails
+    }
+
+    // Redirect to tenant's survey page
+    // OAuth users complete survey first, then go to coupons (via returnTo param)
+    const redirectPath = `/${tenantSlug}/survey`;
+    const surveyUrl = new URL(redirectPath, origin);
+
+    if (storeResult.email) {
+      surveyUrl.searchParams.set("email", storeResult.email);
+      surveyUrl.searchParams.set("returnTo", "coupons"); // Redirect to coupons after survey
+      surveyUrl.searchParams.set("fromOAuth", "true"); // Force show survey even if email is stored
+    }
+
+    return NextResponse.redirect(surveyUrl);
+  } catch (err) {
+    console.error("Error in Apple OAuth callback:", err);
+
+    // Use the tenantSlug we stored earlier
+    const redirectUrl = new URL(`/${tenantSlug}`, origin);
+    redirectUrl.searchParams.set(
+      "error",
+      err instanceof Error ? err.message : "oauth_processing_failed"
+    );
+    return NextResponse.redirect(redirectUrl);
+  }
+}
+

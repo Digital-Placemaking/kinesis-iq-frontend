@@ -9,8 +9,9 @@
 import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { verifyEmailOptIn } from "@/app/actions";
+import { submitEmail } from "@/app/actions";
 import { getGoogleOAuthUrl } from "@/app/actions/google/oauth-url";
+import { getAppleOAuthUrl } from "@/app/actions/apple/oauth-url";
 import { trackPageVisit } from "@/lib/analytics/events";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
@@ -49,15 +50,19 @@ export default function TenantLanding({
   }, [tenant.slug]);
 
   /**
-   * Handles email form submission (Sign-in flow)
+   * Handles email form submission
    *
    * Flow:
    * 1. User enters email and submits
    * 2. Email is validated (format check)
-   * 3. Check if email exists in email_opt_ins table:
-   *    - If YES (returning user) → redirect to coupons page
-   *    - If NO (new user) → redirect to survey page with returnTo=coupons
-   * 4. After survey completion → email is stored in email_opt_ins → redirect to coupons
+   * 3. Email is passed as query parameter to coupons page (NOT stored yet)
+   * 4. When user clicks a coupon, survey page checks if email exists in email_opt_ins
+   * 5. If email NOT in table → show survey (first-time user)
+   * 6. If email IS in table → skip survey, go to coupon (returning user)
+   * 7. After survey completion → email is stored in email_opt_ins
+   *
+   * Note: Email is NOT stored here to ensure first-time users see the survey.
+   * Only after completing the survey will their email be added to email_opt_ins.
    */
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,19 +86,13 @@ export default function TenantLanding({
         return;
       }
 
-      // Check if email is already in email_opt_ins (returning user)
-      const optInCheck = await verifyEmailOptIn(tenant.slug, trimmedEmail);
-
-      let redirectUrl: string;
-      if (optInCheck.valid) {
-        // Returning user - go directly to coupons
-        const couponsPath = getTenantPath(tenant.slug, "/coupons");
-        redirectUrl = `${couponsPath}?email=${encodeURIComponent(trimmedEmail)}`;
-      } else {
-        // New user - go to survey first, then coupons after completion
-        const surveyPath = getTenantPath(tenant.slug, "/survey");
-        redirectUrl = `${surveyPath}?email=${encodeURIComponent(trimmedEmail)}&returnTo=coupons`;
-      }
+      // Redirect to coupons page with email as query parameter
+      // IMPORTANT: Email is NOT stored in email_opt_ins at this point
+      // It will be stored after survey completion (see submitSurveyAnswers)
+      const couponsPath = getTenantPath(tenant.slug, "/coupons");
+      const redirectUrl = `${couponsPath}?email=${encodeURIComponent(
+        trimmedEmail
+      )}`;
 
       // Force full page redirect to ensure clean navigation
       if (typeof window !== "undefined") {
@@ -109,59 +108,56 @@ export default function TenantLanding({
   /**
    * Handles social login (Google/Apple OAuth)
    *
-   * OAuth Flow (Same as email flow now):
+   * OAuth Flow (Different from email flow):
    * 1. User clicks "Continue with Google/Apple"
    * 2. Redirects to OAuth provider consent screen
    * 3. User authorizes → Provider redirects to /auth/oauth-callback with code
    * 4. Callback route exchanges code for email
-   * 5. Callback checks if email is in email_opt_ins:
-   *    - If YES (returning user) → redirect to coupons page
-   *    - If NO (new user) → redirect to survey page with returnTo=coupons
-   * 6. After survey completion → email is stored, redirect to coupons
+   * 5. Email is stored in email_opt_ins table IMMEDIATELY (OAuth users skip survey)
+   * 6. User redirected to tenant coupons page
+   *
+   * Note: OAuth users have their email stored immediately because they've already
+   * authenticated with the provider. When they click a coupon, they'll skip the
+   * survey and go directly to coupon completion (since email is already in table).
    *
    * @param provider - The OAuth provider ("google" or "apple")
    */
   const handleSocialLogin = async (provider: "apple" | "google") => {
-    // Only Google is currently implemented
-    if (provider !== "google") {
-      setError("Apple login is not yet available. Please use Google or email.");
+  setLoading(true);
+  setError(null);
+
+  try {
+    const tenantSlug = tenant.slug;
+    const origin = window.location.origin;
+
+    const result =
+      provider === "google"
+        ? await getGoogleOAuthUrl(tenantSlug, origin)
+        : await getAppleOAuthUrl(tenantSlug, origin);
+
+    if (result.error || !result.url) {
+      const providerName = provider === "apple" ? "Apple" : "Google";
+      setError(
+        result.error ||
+          `Failed to initiate ${providerName} login. Please try again.`
+      );
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const tenantSlug = tenant.slug;
-
-      // Generate Google OAuth authorization URL via server action
-      // This ensures environment variables are accessed server-side
-      const result = await getGoogleOAuthUrl(
-        tenantSlug,
-        window.location.origin
-      );
-
-      if (result.error || !result.url) {
-        setError(
-          result.error || "Failed to initiate Google login. Please try again."
-        );
-        setLoading(false);
-        return;
-      }
-
-      // Redirect to Google OAuth
-      window.location.href = result.url;
-      // No need to set loading to false - user is being redirected
-    } catch (err) {
-      console.error("Error initiating Google OAuth:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "An unexpected error occurred. Please try again."
-      );
-      setLoading(false);
-    }
-  };
+    // Redirect to provider (Apple or Google)
+    window.location.href = result.url;
+    // no need to setLoading(false) here because we're leaving the page
+  } catch (err) {
+    console.error("Error initiating social OAuth:", err);
+    setError(
+      err instanceof Error
+        ? err.message
+        : "An unexpected error occurred. Please try again."
+    );
+    setLoading(false);
+  }
+};
 
   const handleFeedbackClick = () => {
     // Navigate to anonymous survey page
@@ -197,11 +193,11 @@ export default function TenantLanding({
 
           {/* Social Login Buttons */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Apple login - Coming soon */}
+            {/* Apple Sign In - Active */}
             <SocialLoginButton
               provider="apple"
               onClick={() => handleSocialLogin("apple")}
-              disabled
+              disabled={loading}
             />
             {/* Google OAuth - Active */}
             <SocialLoginButton
