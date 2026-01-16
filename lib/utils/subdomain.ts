@@ -39,6 +39,17 @@ export function isSubdomain(): boolean {
     return false;
   }
 
+  // Skip tunnel domains (ngrok, localtunnel, etc.) - these are the main domain, not subdomains
+  if (
+    hostname.includes("ngrok") ||
+    hostname.includes("ngrok-free.app") ||
+    hostname.includes("loca.lt") ||
+    hostname.includes("tunnelto.dev") ||
+    hostname.includes("localhost.run")
+  ) {
+    return false;
+  }
+
   const parts = hostname.split(".");
 
   // Need at least 3 parts for a subdomain (subdomain.domain.tld)
