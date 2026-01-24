@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { submitEmail } from "@/app/actions";
 import { getGoogleOAuthUrl } from "@/app/actions/google/oauth-url";
+import { getAppleOAuthUrl } from "@/app/actions/apple/oauth-url";
 import { trackPageVisit } from "@/lib/analytics/events";
 import Footer from "@/app/components/Footer";
 import TenantLogo from "@/app/components/ui/TenantLogo";
@@ -122,46 +123,41 @@ export default function TenantLanding({
    * @param provider - The OAuth provider ("google" or "apple")
    */
   const handleSocialLogin = async (provider: "apple" | "google") => {
-    // Only Google is currently implemented
-    if (provider !== "google") {
-      setError("Apple login is not yet available. Please use Google or email.");
+  setLoading(true);
+  setError(null);
+
+  try {
+    const tenantSlug = tenant.slug;
+    const origin = window.location.origin;
+
+    const result =
+      provider === "google"
+        ? await getGoogleOAuthUrl(tenantSlug, origin)
+        : await getAppleOAuthUrl(tenantSlug, origin);
+
+    if (result.error || !result.url) {
+      const providerName = provider === "apple" ? "Apple" : "Google";
+      setError(
+        result.error ||
+          `Failed to initiate ${providerName} login. Please try again.`
+      );
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const tenantSlug = tenant.slug;
-
-      // Generate Google OAuth authorization URL via server action
-      // This ensures environment variables are accessed server-side
-      const result = await getGoogleOAuthUrl(
-        tenantSlug,
-        window.location.origin
-      );
-
-      if (result.error || !result.url) {
-        setError(
-          result.error || "Failed to initiate Google login. Please try again."
-        );
-        setLoading(false);
-        return;
-      }
-
-      // Redirect to Google OAuth
-      window.location.href = result.url;
-      // No need to set loading to false - user is being redirected
-    } catch (err) {
-      console.error("Error initiating Google OAuth:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "An unexpected error occurred. Please try again."
-      );
-      setLoading(false);
-    }
-  };
+    // Redirect to provider (Apple or Google)
+    window.location.href = result.url;
+    // no need to setLoading(false) here because we're leaving the page
+  } catch (err) {
+    console.error("Error initiating social OAuth:", err);
+    setError(
+      err instanceof Error
+        ? err.message
+        : "An unexpected error occurred. Please try again."
+    );
+    setLoading(false);
+  }
+};
 
   const handleFeedbackClick = () => {
     // Navigate to anonymous survey page
@@ -197,11 +193,11 @@ export default function TenantLanding({
 
           {/* Social Login Buttons */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Apple login - Coming soon */}
+            {/* Apple Sign In - Active */}
             <SocialLoginButton
               provider="apple"
               onClick={() => handleSocialLogin("apple")}
-              disabled
+              disabled={loading}
             />
             {/* Google OAuth - Active */}
             <SocialLoginButton
@@ -265,7 +261,7 @@ export default function TenantLanding({
           {/* Feedback Section */}
           <div className="space-y-2 border-t border-zinc-200 pt-6 dark:border-zinc-800">
             <p className="text-center text-xs font-medium text-zinc-700 dark:text-zinc-300 sm:text-sm">
-              Just want to share feedback?
+              Take the 20-Second Poll
             </p>
             <button
               type="button"

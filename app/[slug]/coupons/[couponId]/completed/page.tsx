@@ -25,10 +25,9 @@ interface CompletedPageProps {
  *
  * Displays the coupon code and allows user to download/add to wallet.
  *
- * Users can reach this page via two paths:
- * 1. After completing survey → Email was just stored in email_opt_ins
- * 2. Returning user → Email already in email_opt_ins, skipped survey
- * 3. OAuth user → Email stored on OAuth, skipped survey
+ * Users reach this page after clicking "Claim Now" on a coupon.
+ * Since survey is now required BEFORE viewing coupons, users here
+ * are always in the email_opt_ins table.
  *
  * This page issues a new coupon code if one doesn't exist, or reuses
  * an existing coupon code if the user already has one for this coupon.
@@ -68,9 +67,9 @@ export default async function CompletedPage({
   const optInCheck = await verifyEmailOptIn(slug, email);
 
   if (!optInCheck.valid) {
-    // Email not found in database - redirect to survey
+    // Email not found in database - redirect to survey with returnTo
     redirect(
-      `/${slug}/coupons/${couponId}/survey?email=${encodeURIComponent(email)}`
+      `/${slug}/survey?email=${encodeURIComponent(email)}&returnTo=coupons`
     );
   }
 

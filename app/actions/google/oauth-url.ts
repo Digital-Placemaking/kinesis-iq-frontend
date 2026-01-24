@@ -23,11 +23,12 @@ import { buildOAuthRedirectUrl } from "@/lib/google/oauth";
  */
 export async function getGoogleOAuthUrl(
   tenantSlug: string,
-  origin: string
+  origin: string,
+  returnTo?: string
 ): Promise<{ url: string; error: string | null }> {
   try {
     const redirectUrl = buildOAuthRedirectUrl(tenantSlug, origin);
-    const authUrl = generateGoogleAuthUrl(tenantSlug, redirectUrl);
+    const authUrl = generateGoogleAuthUrl(tenantSlug, redirectUrl, returnTo);
     return { url: authUrl, error: null };
   } catch (err) {
     return {
