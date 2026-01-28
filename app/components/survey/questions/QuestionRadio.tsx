@@ -18,24 +18,42 @@ export default function QuestionRadio({
   required = false,
 }: QuestionRadioProps) {
   return (
-    <div className="space-y-3">
-      {options.map((option, index) => (
-        <label
-          key={index}
-          className="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 transition-colors hover:border-blue-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-700 dark:hover:bg-zinc-800"
-        >
-          <input
-            type="radio"
-            name={`radio-${index}`}
-            value={option}
-            checked={value === option}
-            onChange={(e) => onChange(e.target.value)}
-            required={required}
-            className="h-4 w-4 border-zinc-300 text-blue-600 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800"
-          />
-          <span className="text-sm text-black dark:text-zinc-50">{option}</span>
-        </label>
-      ))}
+    <div className="space-y-3 sm:space-y-4">
+      {options.map((option, index) => {
+        const isSelected = value === option;
+        return (
+          <label
+            key={index}
+            className={`group flex cursor-pointer items-center gap-4 rounded-xl border-2 p-4 sm:p-5 text-left transition-all duration-250 ${
+              isSelected
+                ? "border-primary bg-primary/10 shadow-lg"
+                : "border-border bg-card hover:border-primary/50 hover:bg-muted/30"
+            }`}
+          >
+            <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+              isSelected ? "border-primary bg-primary" : "border-muted-foreground/50"
+            }`}>
+              {isSelected && <div className="h-2 w-2 rounded-full bg-primary-foreground" />}
+            </div>
+            <input
+              type="radio"
+              name={`radio-${index}`}
+              value={option}
+              checked={isSelected}
+              onChange={(e) => onChange(e.target.value)}
+              required={required}
+              className="sr-only"
+            />
+            <span
+              className={`text-base sm:text-lg font-semibold transition-colors flex-1 ${
+                isSelected ? "text-primary" : "text-foreground"
+              }`}
+            >
+              {option}
+            </span>
+          </label>
+        );
+      })}
     </div>
   );
 }

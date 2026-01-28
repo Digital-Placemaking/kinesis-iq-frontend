@@ -13,28 +13,28 @@ interface QuestionYesNoProps {
 
 export default function QuestionYesNo({ value, onChange }: QuestionYesNoProps) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3 pt-4">
       <button
         type="button"
         onClick={() => onChange(true)}
-        className={`flex flex-1 items-center justify-center rounded-lg border-2 px-6 py-4 transition-all ${
+        className={`flex flex-1 items-center justify-center rounded-lg border-2 py-4 transition-all duration-200 ${
           value === true
-            ? "border-green-500 bg-green-50 text-green-600 dark:border-green-400 dark:bg-green-900/20 dark:text-green-400"
-            : "border-zinc-200 bg-white text-zinc-600 hover:border-green-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-green-700 dark:hover:bg-zinc-800"
+            ? "border-primary bg-primary/10 text-primary shadow-md"
+            : "border-border bg-card text-foreground hover:border-primary/50 hover:bg-muted/30 active:scale-95"
         }`}
       >
-        <span className="text-base font-semibold">Yes</span>
+        <span className="text-base sm:text-lg font-bold">Yes</span>
       </button>
       <button
         type="button"
         onClick={() => onChange(false)}
-        className={`flex flex-1 items-center justify-center rounded-lg border-2 px-6 py-4 transition-all ${
+        className={`flex flex-1 items-center justify-center rounded-lg border-2 py-4 transition-all duration-200 ${
           value === false
-            ? "border-red-500 bg-red-50 text-red-600 dark:border-red-400 dark:bg-red-900/20 dark:text-red-400"
-            : "border-zinc-200 bg-white text-zinc-600 hover:border-red-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-red-700 dark:hover:bg-zinc-800"
+            ? "border-destructive bg-destructive/10 text-destructive shadow-md"
+            : "border-border bg-card text-foreground hover:border-destructive/50 hover:bg-muted/30 active:scale-95"
         }`}
       >
-        <span className="text-base font-semibold">No</span>
+        <span className="text-base sm:text-lg font-bold">No</span>
       </button>
     </div>
   );

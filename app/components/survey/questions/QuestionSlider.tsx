@@ -29,8 +29,8 @@ export default function QuestionSlider({
   const currentValue = value ?? min;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex items-center gap-4 sm:gap-6">
         <input
           type="range"
           min={min}
@@ -38,16 +38,16 @@ export default function QuestionSlider({
           step={step}
           value={currentValue}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="flex-1"
+          className="flex-1 h-2 accent-primary cursor-pointer"
         />
-        <div className="flex min-w-16 items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
-          <span className="text-base font-semibold text-black dark:text-zinc-50">
+        <div className="flex min-w-20 items-center justify-center rounded-xl border-2 border-border bg-card px-5 py-3">
+          <span className="text-lg sm:text-xl font-bold text-foreground">
             {currentValue}
           </span>
         </div>
       </div>
       {labels && (
-        <div className="flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           {labels.min && <span>{labels.min}</span>}
           {labels.max && <span>{labels.max}</span>}
         </div>

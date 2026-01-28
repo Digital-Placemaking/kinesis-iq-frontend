@@ -30,21 +30,34 @@ export default function QuestionCheckbox({
   };
 
   return (
-    <div className="space-y-3">
-      {options.map((option, index) => (
-        <label
-          key={index}
-          className="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 transition-colors hover:border-blue-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-700 dark:hover:bg-zinc-800"
-        >
-          <input
-            type="checkbox"
-            checked={selectedValues.includes(option)}
-            onChange={() => handleToggle(option)}
-            className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800"
-          />
-          <span className="text-sm text-black dark:text-zinc-50">{option}</span>
-        </label>
-      ))}
+    <div className="space-y-3 sm:space-y-4">
+      {options.map((option, index) => {
+        const isSelected = selectedValues.includes(option);
+        return (
+          <label
+            key={index}
+            className={`group flex cursor-pointer items-center gap-4 rounded-xl border-2 p-4 sm:p-5 text-left transition-all duration-250 ${
+              isSelected
+                ? "border-primary bg-primary/10 shadow-lg"
+                : "border-border bg-card hover:border-primary/50 hover:bg-muted/30"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => handleToggle(option)}
+              className="h-5 w-5 rounded border-2 border-border text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-0 accent-primary flex-shrink-0"
+            />
+            <span
+              className={`text-base sm:text-lg font-semibold transition-colors flex-1 ${
+                isSelected ? "text-primary" : "text-foreground"
+              }`}
+            >
+              {option}
+            </span>
+          </label>
+        );
+      })}
     </div>
   );
 }

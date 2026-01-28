@@ -6,20 +6,20 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Survey, QuestionAnswer } from "@/lib/types/survey";
 import { submitSurveyAnswers } from "@/app/actions";
 import QuestionCard from "./QuestionCard";
-import SurveyProgress from "./SurveyProgress";
 import SurveyNavigation from "./SurveyNavigation";
-import SkipConfirmationModal from "./SkipConfirmationModal";
 
 interface SurveyContainerProps {
   survey: Survey;
   tenantSlug: string;
   couponId: string | null;
   email: string | null;
+  onQuestionChange?: (index: number) => void;
+  onDemoSubmit?: () => void;
   returnTo?: string | null;
 }
 
@@ -28,6 +28,8 @@ export default function SurveyContainer({
   tenantSlug,
   couponId,
   email,
+  onQuestionChange,
+  onDemoSubmit,
   returnTo,
 }: SurveyContainerProps) {
   const router = useRouter();
@@ -35,7 +37,13 @@ export default function SurveyContainer({
   const [answers, setAnswers] = useState<Record<string, QuestionAnswer>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showSkipModal, setShowSkipModal] = useState(false);
+  const submitIntentRef = useRef(false);
+
+  // Sync initial question index with parent
+  useEffect(() => {
+    onQuestionChange?.(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Guard against empty survey
   if (!survey.questions || survey.questions.length === 0) {
@@ -58,8 +66,8 @@ export default function SurveyContainer({
 
   if (!currentQuestion) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-zinc-600 dark:text-zinc-400">
+      <div className="rounded-xl border-2 border-border bg-card p-8 text-center">
+        <p className="text-muted-foreground">
           No questions available for this survey.
         </p>
       </div>
@@ -78,7 +86,9 @@ export default function SurveyContainer({
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      const newIndex = currentQuestionIndex - 1;
+      setCurrentQuestionIndex(newIndex);
+      onQuestionChange?.(newIndex);
     }
   };
 
@@ -111,24 +121,19 @@ export default function SurveyContainer({
     }
 
     if (!hasAnswer) {
-      setError("Please answer this question or skip it");
+      setError("Please answer this question or skip it to continue");
       return;
     }
 
     if (currentQuestionIndex < survey.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      const newIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(newIndex);
+      onQuestionChange?.(newIndex);
       setError(null);
     }
   };
 
   const handleSkipClick = () => {
-    // Show confirmation modal
-    setShowSkipModal(true);
-  };
-
-  const confirmSkip = () => {
-    // Close modal and clear any errors
-    setShowSkipModal(false);
     setError(null);
 
     // Mark question as skipped by setting a null answer
@@ -144,18 +149,18 @@ export default function SurveyContainer({
     };
     setAnswers(updatedAnswers);
 
-    // If it's the last question, submit the survey
     if (currentQuestionIndex === survey.questions.length - 1) {
-      // Create a synthetic form event and submit with updated answers
-      // Passing updatedAnswers tells handleSubmit we're submitting from skip, so skip validation
+      submitIntentRef.current = true;
       const syntheticEvent = {
         preventDefault: () => {},
       } as React.FormEvent;
       handleSubmit(syntheticEvent, updatedAnswers);
-    } else {
-      // Move to next question
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      return;
     }
+
+    const newIndex = currentQuestionIndex + 1;
+    setCurrentQuestionIndex(newIndex);
+    onQuestionChange?.(newIndex);
   };
 
   /**
@@ -172,6 +177,10 @@ export default function SurveyContainer({
    */
   const handleSubmit = async (e: React.FormEvent, providedAnswers?: Record<string, QuestionAnswer>) => {
     e.preventDefault();
+    if (!submitIntentRef.current) {
+      return;
+    }
+    submitIntentRef.current = false;
 
     // Use provided answers if available (from handleSkip), otherwise use state
     const baseAnswers = providedAnswers || answers;
@@ -214,10 +223,10 @@ export default function SurveyContainer({
         }
       }
 
-      // If trying to submit without answering current question, show helpful message
-      // Only show this if user clicked Submit button directly (not from skip modal)
-      if (!currentQuestionAnswered && currentQuestionIndex === survey.questions.length - 1) {
-        setError("Please answer this question or click 'Skip this question' to submit the survey");
+      if (
+        !currentQuestionAnswered &&
+        currentQuestionIndex < survey.questions.length - 1
+      ) {
         return;
       }
     }
@@ -255,6 +264,11 @@ export default function SurveyContainer({
 
     // Update answers state to include all questions
     setAnswers(allAnswers);
+    // Demo mode: skip actual submission
+    if (onDemoSubmit) {
+      onDemoSubmit();
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
@@ -296,38 +310,53 @@ export default function SurveyContainer({
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl">
-      <SurveyProgress
-        current={currentQuestionIndex + 1}
-        total={survey.questions.length}
-      />
+  const handleFormKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
+    if (event.key !== "Enter") return;
+    const target = event.target as HTMLInputElement | HTMLTextAreaElement;
+    if (target && target.tagName === "TEXTAREA") return;
+    if (target && target.tagName === "INPUT" && target.type !== "submit") {
+      event.preventDefault();
+    }
+  };
 
+  return (
+    <form
+      onSubmit={handleSubmit}
+      onKeyDown={handleFormKeyDown}
+      className="flex h-full flex-col min-h-0"
+    >
       {error && (
-        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+        <div className="mb-4 rounded-lg border-2 border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive shadow-sm flex-shrink-0">
           {error}
         </div>
       )}
 
-      <QuestionCard
-        question={currentQuestion}
-        answer={currentAnswer}
-        onChange={handleAnswerChange}
-      />
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+        <QuestionCard
+          question={currentQuestion}
+          answer={currentAnswer}
+          onChange={handleAnswerChange}
+        />
+      </div>
 
       {/* Calculate if Next/Submit should be disabled */}
       {(() => {
         const answer = answers[currentQuestion.id];
         
-        // If no answer yet, disable Next (but allow Submit on last question)
+        // If no answer yet, disable Next/Submit
         if (!answer) {
+          const canSkip = currentQuestionIndex < survey.questions.length - 1;
+
           return (
             <SurveyNavigation
               currentQuestion={currentQuestionIndex + 1}
               totalQuestions={survey.questions.length}
               onPrevious={handlePrevious}
               onNext={handleNext}
-              onSkip={handleSkipClick}
+              onSkip={canSkip ? handleSkipClick : undefined}
+            onSubmitClick={() => {
+              submitIntentRef.current = true;
+            }}
               isNextDisabled={currentQuestionIndex < survey.questions.length - 1}
               isSubmitting={isSubmitting}
             />
@@ -350,9 +379,10 @@ export default function SurveyContainer({
             (answer.answer_boolean !== null);
         }
 
-        // Disable Next only if not answered AND not on last question
-        // (Allow Submit on last question even if skipped)
+        // Disable Next/Submit if not answered
         const isNextDisabled = !hasValue && currentQuestionIndex < survey.questions.length - 1;
+
+        const canSkip = currentQuestionIndex < survey.questions.length - 1;
 
         return (
           <SurveyNavigation
@@ -360,20 +390,15 @@ export default function SurveyContainer({
             totalQuestions={survey.questions.length}
             onPrevious={handlePrevious}
             onNext={handleNext}
-            onSkip={handleSkipClick}
+            onSkip={canSkip ? handleSkipClick : undefined}
+            onSubmitClick={() => {
+              submitIntentRef.current = true;
+            }}
             isNextDisabled={isNextDisabled}
             isSubmitting={isSubmitting}
           />
         );
       })()}
-
-      {/* Skip Confirmation Modal */}
-      <SkipConfirmationModal
-        isOpen={showSkipModal}
-        onClose={() => setShowSkipModal(false)}
-        onConfirm={confirmSkip}
-        isLastQuestion={currentQuestionIndex === survey.questions.length - 1}
-      />
     </form>
   );
 }

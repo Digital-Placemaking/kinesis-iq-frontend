@@ -18,11 +18,11 @@ export default function SectionSeparator({
 }: SectionSeparatorProps) {
   return (
     <div className={cn("relative flex items-center gap-4", className)}>
-      <Separator className="flex-1" />
+      <Separator className="flex-1 bg-primary/30" />
       <span className="text-sm text-muted-foreground whitespace-nowrap">
         {text}
       </span>
-      <Separator className="flex-1" />
+      <Separator className="flex-1 bg-primary/30" />
     </div>
   );
 }

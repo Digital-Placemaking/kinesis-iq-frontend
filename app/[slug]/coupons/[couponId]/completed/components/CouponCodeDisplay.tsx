@@ -7,6 +7,7 @@
 "use client";
 
 import { useState } from "react";
+import { Copy, Check } from "lucide-react";
 
 interface CouponCodeDisplayProps {
   code: string;
@@ -17,7 +18,21 @@ export default function CouponCodeDisplay({ code }: CouponCodeDisplayProps) {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(code);
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        // Fallback for mobile/HTTP: create temporary input
+        const textArea = document.createElement("textarea");
+        textArea.value = code;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -26,18 +41,25 @@ export default function CouponCodeDisplay({ code }: CouponCodeDisplayProps) {
   };
 
   return (
-    <div className="rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20">
-      <p className="mb-1.5 text-center text-[10px] font-medium uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
+    <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/10 p-2.5">
+      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
         Your Coupon Code
       </p>
-      <div className="mb-2 flex items-center justify-center">
-        <div className="w-full max-w-full overflow-hidden rounded-lg border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
-          <span className="block break-all text-center text-base font-bold text-blue-600 dark:text-blue-400 sm:text-lg">
+      <button
+        onClick={handleCopy}
+        className="mb-1 w-full group"
+      >
+        <div className="flex flex-col items-center gap-1 rounded-lg border-2 border-border bg-card px-3 py-1.5 transition-all hover:border-primary/50 hover:bg-card/80 active:scale-[0.98]">
+          <span className="break-all text-center text-base font-bold text-primary sm:text-lg">
             {code}
           </span>
+          <div className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors ${copied ? 'bg-green-500/20 text-green-500' : 'bg-muted/30 text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}`}>
+            {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+            <span>{copied ? "Copied!" : "Tap to copy"}</span>
+          </div>
         </div>
-      </div>
-      <p className="text-center text-[10px] text-zinc-600 dark:text-zinc-400">
+      </button>
+      <p className="text-center text-[10px] text-muted-foreground">
         Present this code at checkout
       </p>
     </div>

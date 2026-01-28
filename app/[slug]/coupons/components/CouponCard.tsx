@@ -86,10 +86,9 @@ export default function CouponCard({
 
   return (
     <>
-      <div className="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-        {/* Image at the top (if present) */}
+      <div className="group flex flex-col overflow-hidden rounded-xl border-2 border-border bg-card shadow-lg transition-all duration-250 hover:shadow-xl hover:scale-[1.01]">
         {coupon.image_url && (
-          <div className="relative w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+          <div className="relative w-full overflow-hidden bg-muted/30">
             <button
               type="button"
               onClick={() => setIsImageModalOpen(true)}
@@ -105,45 +104,40 @@ export default function CouponCard({
           </div>
         )}
 
-        {/* Content section */}
-        <div className="flex flex-col gap-4 p-5 sm:p-6">
-          {/* Header: Icon/Title/Button */}
+        <div className="flex flex-col gap-4 p-4 sm:p-6">
           <div className="flex items-start gap-4">
-            {/* Icon (only shown if no image) */}
             {!coupon.image_url && (
               <div className="shrink-0">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 shadow-sm">
-                  <Gift className="h-6 w-6 text-white" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-sm">
+                  <Gift className="h-6 w-6 text-primary-foreground" />
                 </div>
               </div>
             )}
 
-            {/* Title and Discount */}
             <div className="min-w-0 flex-1">
-              <h3 className="mb-2 wrap-break-word text-lg font-bold leading-tight text-black dark:text-zinc-50 sm:text-xl">
+              <h3 className="mb-2 text-lg sm:text-xl font-bold leading-tight text-foreground">
                 {coupon.title}
               </h3>
               {coupon.discount && (
-                <div className="inline-flex items-center rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                <div className="inline-flex items-center rounded-lg bg-primary/20 px-3 py-1.5 text-sm font-bold text-primary">
                   {coupon.discount}
                 </div>
               )}
             </div>
 
-            {/* Claim Button / Status Badge */}
             <div className="shrink-0">
               {coupon.couponStatus === "redeemed" ? (
-                <div className="flex items-center gap-2 rounded-lg bg-green-100 px-3 py-2 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-400 sm:px-4 sm:text-sm">
+                <div className="flex items-center gap-2 rounded-lg bg-green-500/20 px-3 py-2 text-xs font-medium text-green-400 sm:px-4 sm:text-sm">
                   <CheckCircle className="h-4 w-4" />
                   <span className="hidden sm:inline">Redeemed</span>
                 </div>
               ) : coupon.couponStatus === "revoked" ? (
-                <div className="flex items-center gap-2 rounded-lg bg-red-100 px-3 py-2 text-xs font-medium text-red-800 dark:bg-red-900/20 dark:text-red-400 sm:px-4 sm:text-sm">
+                <div className="flex items-center gap-2 rounded-lg bg-destructive/20 px-3 py-2 text-xs font-medium text-destructive sm:px-4 sm:text-sm">
                   <XCircle className="h-4 w-4" />
                   <span className="hidden sm:inline">Revoked</span>
                 </div>
               ) : coupon.couponStatus === "expired" ? (
-                <div className="flex items-center gap-2 rounded-lg bg-orange-100 px-3 py-2 text-xs font-medium text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 sm:px-4 sm:text-sm">
+                <div className="flex items-center gap-2 rounded-lg bg-primary/20 px-3 py-2 text-xs font-medium text-primary sm:px-4 sm:text-sm">
                   <Clock className="h-4 w-4" />
                   <span className="hidden sm:inline">Expired</span>
                 </div>
@@ -152,7 +146,7 @@ export default function CouponCard({
                   type="button"
                   onClick={handleClaimClick}
                   disabled={coupon.active === false || !email}
-                  className="rounded-lg bg-black px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-black dark:bg-zinc-100 dark:text-black dark:hover:bg-zinc-200 sm:px-6"
+                  className="rounded-lg bg-primary text-primary-foreground px-4 py-2.5 text-sm font-semibold shadow-lg transition-all duration-250 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 sm:px-6"
                 >
                   Claim Now
                 </button>
@@ -160,16 +154,14 @@ export default function CouponCard({
             </div>
           </div>
 
-          {/* Description */}
           {coupon.description && (
-            <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {coupon.description}
             </p>
           )}
 
-          {/* Expiration */}
           {coupon.expires_at && (
-            <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
               <span>{getExpirationText()}</span>
             </div>
@@ -187,7 +179,7 @@ export default function CouponCard({
             <button
               type="button"
               onClick={() => setIsImageModalOpen(false)}
-              className="absolute right-4 top-4 rounded-full bg-white/90 p-2 text-black transition-colors hover:bg-white"
+              className="absolute right-4 top-4 rounded-full bg-card/90 p-2 text-foreground transition-colors hover:bg-card"
               aria-label="Close image"
             >
               <X className="h-5 w-5" />

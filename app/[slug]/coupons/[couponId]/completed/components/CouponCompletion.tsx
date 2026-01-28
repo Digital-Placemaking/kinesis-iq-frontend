@@ -7,14 +7,21 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Share2, Download, Bell, Info } from "lucide-react";
-import { FaWhatsapp, FaFacebook, FaEnvelope, FaTwitter, FaLinkedin, FaSms, FaLink } from "react-icons/fa";
+import { Share2, Download, Bell, Info } from "lucide-react";
+import {
+  FaWhatsapp,
+  FaFacebook,
+  FaEnvelope,
+  FaTwitter,
+  FaLinkedin,
+  FaSms,
+  FaLink,
+} from "react-icons/fa";
 import { QRCodeSVG } from "qrcode.react";
 import SocialLoginButton from "@/app/[slug]/components/ui/SocialLoginButton";
 import SectionSeparator from "@/app/components/ui/SectionSeparator";
 import type { TenantDisplay } from "@/lib/types/tenant";
 import Footer from "@/app/components/Footer";
-import TenantLogo from "@/app/components/ui/TenantLogo";
 import Card from "@/app/components/ui/Card";
 import InfoBox from "@/app/components/ui/InfoBox";
 import ActionButton from "@/app/components/ui/ActionButton";
@@ -22,11 +29,7 @@ import VisitWebsiteButton from "@/app/components/ui/VisitWebsiteButton";
 import CouponCodeDisplay from "./CouponCodeDisplay";
 import { generateGoogleWalletPass, submitEmail } from "@/app/actions";
 import { getGoogleOAuthUrl } from "@/app/actions/google/oauth-url";
-import {
-  trackCodeCopy,
-  trackCouponDownload,
-  trackWalletAdd,
-} from "@/lib/analytics/events";
+import { trackWalletAdd } from "@/lib/analytics/events";
 
 interface Coupon {
   id: string;
@@ -59,7 +62,6 @@ export default function CouponCompletion({
   error,
   isAlreadyRedeemed = false,
 }: CouponCompletionProps) {
-  const [copied, setCopied] = useState(false);
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [showShareQR, setShowShareQR] = useState(false);
@@ -254,25 +256,6 @@ export default function CouponCompletion({
     }
   };
 
-  const handleCopyCode = async () => {
-    if (!couponCode) return;
-    try {
-      await navigator.clipboard.writeText(couponCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-
-      // Track code copy event
-      trackCodeCopy(tenantSlug, {
-        sessionId,
-        email: email || null,
-        couponId: coupon.id,
-        issuedCouponId: issuedCouponId || undefined,
-      });
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
-
   const handleShare = async () => {
     if (!couponCode) return;
     const uniqueShareUrl = createShareUrl("native_share");
@@ -296,24 +279,6 @@ export default function CouponCompletion({
       // Fallback: copy to clipboard with unique link
       await handleCopyShareLink();
     }
-  };
-
-  /**
-   * Handles coupon download
-   * Currently only tracks analytics event
-   * Future: Could generate PDF or image download
-   */
-  const handleDownload = () => {
-    // Track coupon download event
-    trackCouponDownload(tenantSlug, {
-      sessionId,
-      email: email || null,
-      couponId: coupon.id,
-      issuedCouponId: issuedCouponId || undefined,
-    });
-
-    // Note: Actual download functionality not yet implemented
-    // Could generate PDF/image in future iterations
   };
 
   const handleAddToWallet = async () => {
@@ -356,31 +321,31 @@ export default function CouponCompletion({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black">
+    <div className="mobile-theme flex min-h-screen flex-col bg-kinesisiq-gradient">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-6">
         {/* Main Content Card */}
-        <Card className="mb-4 p-4" variant="elevated">
+        <Card className="mb-3 p-3" variant="elevated">
           {/* Congratulations Header */}
           <div className="mb-3 text-center">
-            <h1 className="mb-1 text-xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-2xl">
+            <h1 className="mb-1 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               Congratulations! 🎉
             </h1>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Thanks for completing our survey
             </p>
           </div>
           {/* Logo */}
-          <div className="mb-3 flex justify-center">
-            <div className="w-40">
+          <div className="mb-2 flex justify-center">
+            <div className="max-w-[80px] max-h-[60px]">
               {tenant.logo_url ? (
                 <img
                   src={tenant.logo_url}
                   alt={tenant.name}
-                  className="h-full w-full object-contain"
+                  className="max-w-full max-h-[60px] object-contain"
                 />
               ) : (
-                <div className="flex aspect-square items-center justify-center">
-                  <span className="text-4xl font-bold text-zinc-600 dark:text-zinc-400">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted/50">
+                  <span className="text-2xl font-bold text-muted-foreground">
                     {tenant.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -389,45 +354,43 @@ export default function CouponCompletion({
           </div>
 
           {/* Coupon Title */}
-          <h2 className="mb-1 text-center text-base font-bold text-blue-600 dark:text-blue-400 sm:text-lg">
+          <h2 className="mb-1 text-center text-base font-bold text-primary sm:text-lg">
             {coupon.title}
           </h2>
 
           {/* Coupon Description */}
           {coupon.description && (
-            <p className="mb-3 text-center text-xs text-zinc-600 dark:text-zinc-400">
+            <p className="mb-3 text-center text-xs text-muted-foreground">
               {coupon.description}
             </p>
           )}
 
-          {/* Privacy Message */}
-          <p className="mb-3 text-center text-xs font-bold text-zinc-600 dark:text-zinc-400">
+          <p className="mb-1.5 text-center text-[11px] text-muted-foreground">
             Your data stays anonymous.
           </p>
 
-          {/* Error Display */}
           {error && (
-            <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+            <div className="mb-2 rounded-lg border-2 border-destructive/20 bg-destructive/10 p-2 text-xs text-destructive">
               <p className="font-semibold">Error issuing coupon:</p>
-              <p className="mt-1">{error}</p>
+              <p className="mt-0.5">{error}</p>
             </div>
           )}
 
           {/* Coupon Code Display */}
           {couponCode && (
-            <div className="mb-3">
+            <div className="mb-1.5">
               <CouponCodeDisplay code={couponCode} />
               {/* Show message if this is an existing redeemed coupon */}
               {isAlreadyRedeemed && (
-                <div className="mt-2 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-2 text-xs text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                <div className="mt-2 flex items-start gap-2 rounded-lg border-2 border-primary/20 bg-primary/10 p-2 text-xs text-primary">
                   <Info className="h-3 w-3 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold">
                       This is your existing coupon code.
                     </p>
                     <p className="mt-0.5 text-[10px]">
-                      This coupon has already been redeemed. You'll keep the
-                      same code every time you complete a survey.
+                      This coupon has already been redeemed. You&apos;ll keep
+                      the same code every time you complete a survey.
                     </p>
                   </div>
                 </div>
@@ -435,84 +398,109 @@ export default function CouponCompletion({
             </div>
           )}
 
-          {/* Share Section */}
-          <InfoBox title="Share" variant="success" className="mb-3 py-2">
-            <p className="text-center text-xs font-semibold text-green-700 dark:text-green-300">
-              Send to family, friends and colleagues.
-            </p>
-            {/* Primary sharing options - first row */}
-            <div className="flex justify-center gap-3 mt-2">
-              <button title="WhatsApp" onClick={handleWhatsAppShare} className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
-                <FaWhatsapp size={22} className="text-green-600" />
-              </button>
-              <button title="Facebook" onClick={handleFacebookShare} className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                <FaFacebook size={22} className="text-blue-600" />
-              </button>
-              <button title="Email" onClick={handleGmailShare} className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
-                <FaEnvelope size={22} className="text-red-500" />
-              </button>
-              <button title="Twitter/X" onClick={handleTwitterShare} className="p-2 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors">
-                <FaTwitter size={22} className="text-sky-500" />
-              </button>
-            </div>
-            {/* Secondary sharing options - second row */}
-            <div className="flex justify-center gap-3 mt-1">
-              <button title="LinkedIn" onClick={handleLinkedInShare} className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                <FaLinkedin size={22} className="text-blue-700" />
-              </button>
-              <button title="SMS/Text" onClick={handleSmsShare} className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
-                <FaSms size={22} className="text-green-600" />
-              </button>
-              <button title="Copy Link" onClick={handleCopyShareLink} className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
-                <FaLink size={22} className="text-zinc-600 dark:text-zinc-400" />
-              </button>
-            </div>
-            {/* QR Code - unique per share action */}
-            {showShareQR && qrValue && (
-              <div className="flex flex-col items-center mt-3 p-3 bg-white dark:bg-zinc-800 rounded-lg">
-                <span className="text-xs mb-2 text-zinc-600 dark:text-zinc-400">Unique QR code for this share:</span>
-                <QRCodeSVG value={qrValue} size={120} />
-                <span className="text-[10px] mt-2 text-zinc-500 dark:text-zinc-500 text-center max-w-[200px] break-all">
-                  {qrValue.length > 60 ? qrValue.substring(0, 60) + "..." : qrValue}
-                </span>
+          <div className="space-y-2">
+            <InfoBox title="Share" variant="success" className="py-2">
+              <p className="text-center text-xs font-semibold text-green-700 dark:text-green-300">
+                Send to family, friends and colleagues.
+              </p>
+              {/* Primary sharing options - first row */}
+              <div className="flex justify-center gap-3 mt-2">
+                <button
+                  title="WhatsApp"
+                  onClick={handleWhatsAppShare}
+                  className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+                >
+                  <FaWhatsapp size={22} className="text-green-600" />
+                </button>
+                <button
+                  title="Facebook"
+                  onClick={handleFacebookShare}
+                  className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                >
+                  <FaFacebook size={22} className="text-blue-600" />
+                </button>
+                <button
+                  title="Email"
+                  onClick={handleGmailShare}
+                  className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                >
+                  <FaEnvelope size={22} className="text-red-500" />
+                </button>
+                <button
+                  title="Twitter/X"
+                  onClick={handleTwitterShare}
+                  className="p-2 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors"
+                >
+                  <FaTwitter size={22} className="text-sky-500" />
+                </button>
               </div>
-            )}
-            {shareError && (
-              <div className={`text-xs mt-2 text-center ${shareError.includes("copied") ? "text-green-600" : "text-red-600"}`}>
-                {shareError}
+              {/* Secondary sharing options - second row */}
+              <div className="flex justify-center gap-3 mt-1">
+                <button
+                  title="LinkedIn"
+                  onClick={handleLinkedInShare}
+                  className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                >
+                  <FaLinkedin size={22} className="text-blue-700" />
+                </button>
+                <button
+                  title="SMS/Text"
+                  onClick={handleSmsShare}
+                  className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+                >
+                  <FaSms size={22} className="text-green-600" />
+                </button>
+                <button
+                  title="Copy Link"
+                  onClick={handleCopyShareLink}
+                  className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                >
+                  <FaLink size={22} className="text-zinc-600 dark:text-zinc-400" />
+                </button>
               </div>
-            )}
-          </InfoBox>
+              {/* QR Code - unique per share action */}
+              {showShareQR && qrValue && (
+                <div className="flex flex-col items-center mt-3 p-3 bg-white dark:bg-zinc-800 rounded-lg">
+                  <span className="text-xs mb-2 text-zinc-600 dark:text-zinc-400">
+                    Unique QR code for this share:
+                  </span>
+                  <QRCodeSVG value={qrValue} size={120} />
+                  <span className="text-[10px] mt-2 text-zinc-500 dark:text-zinc-500 text-center max-w-[200px] break-all">
+                    {qrValue.length > 60 ? qrValue.substring(0, 60) + "..." : qrValue}
+                  </span>
+                </div>
+              )}
+              {shareError && (
+                <div
+                  className={`text-xs mt-2 text-center ${shareError.includes("copied") ? "text-green-600" : "text-red-600"}`}
+                >
+                  {shareError}
+                </div>
+              )}
+            </InfoBox>
 
-          {/* Important Information */}
-          <InfoBox variant="info" className="mb-0 py-2">
-            <p className="mb-1 text-xs font-semibold text-zinc-900 dark:text-zinc-50">
-              IMPORTANT:
-            </p>
-            <ul className="space-y-0.5 text-[11px] text-zinc-700 dark:text-zinc-300">
-              <li>• Save this code! Take a screenshot or write it down.</li>
-              <li>• Use before expiry date.</li>
-              <li>• One-time use only.</li>
-            </ul>
-          </InfoBox>
+            <InfoBox variant="info" className="py-1">
+              <p className="mb-0.5 text-[11px] font-semibold text-foreground">
+                IMPORTANT:
+              </p>
+              <ul className="space-y-0 text-[10px] text-muted-foreground">
+                <li>• Save this code! Take a screenshot or write it down.</li>
+                <li>• Use before expiry date.</li>
+                <li>• One-time use only.</li>
+              </ul>
+            </InfoBox>
+          </div>
         </Card>
 
         {/* Wallet Error Display */}
         {walletError && (
-          <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+          <div className="mb-3 rounded-lg border-2 border-destructive/20 bg-destructive/10 p-2 text-xs text-destructive">
             {walletError}
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="mb-4 flex flex-col gap-1.5">
-          <ActionButton
-            icon={Copy}
-            onClick={handleCopyCode}
-            className="w-full py-2 text-sm"
-          >
-            {copied ? "Copied!" : "Copy Code"}
-          </ActionButton>
+        <div className="mb-3 flex flex-col gap-1.5">
           <ActionButton
             icon={Download}
             onClick={handleAddToWallet}
@@ -524,7 +512,8 @@ export default function CouponCompletion({
           <ActionButton
             icon={Share2}
             onClick={handleShare}
-            className="w-full py-2 text-sm"
+            variant="outline"
+            className="w-full py-2 text-sm border-blue-500/50 text-blue-400 hover:bg-blue-500/10 hover:border-blue-500"
           >
             Share with Friends
           </ActionButton>
