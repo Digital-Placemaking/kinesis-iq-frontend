@@ -32,7 +32,11 @@ export default function SurveyCard({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const totalQuestions = survey.questions.length;
   const currentQuestion = currentQuestionIndex + 1;
-  const percentage = totalQuestions > 0 ? Math.round((currentQuestion / totalQuestions) * 100) : 0;
+  const maxProgress = 95;
+  const percentage =
+    totalQuestions > 1
+      ? Math.round((currentQuestionIndex / (totalQuestions - 1)) * maxProgress)
+      : 0;
 
   return (
     <div className="w-full max-w-sm flex flex-col">

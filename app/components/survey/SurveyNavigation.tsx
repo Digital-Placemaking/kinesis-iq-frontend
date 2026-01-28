@@ -12,6 +12,7 @@ interface SurveyNavigationProps {
   onPrevious: () => void;
   onNext: () => void;
   onSkip?: () => void;
+  onSubmitClick?: () => void;
   isNextDisabled?: boolean;
   isSubmitting?: boolean;
 }
@@ -22,6 +23,7 @@ export default function SurveyNavigation({
   onPrevious,
   onNext,
   onSkip,
+  onSubmitClick,
   isNextDisabled = false,
   isSubmitting = false,
 }: SurveyNavigationProps) {
@@ -54,6 +56,7 @@ export default function SurveyNavigation({
       {isLastQuestion ? (
         <button
           type="submit"
+          onClick={onSubmitClick}
           disabled={isNextDisabled || isSubmitting}
           className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold shadow-md transition-all duration-200 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >

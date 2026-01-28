@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Survey, QuestionAnswer } from "@/lib/types/survey";
 import { submitSurveyAnswers } from "@/app/actions";
@@ -37,6 +37,7 @@ export default function SurveyContainer({
   const [answers, setAnswers] = useState<Record<string, QuestionAnswer>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const submitIntentRef = useRef(false);
 
   // Sync initial question index with parent
   useEffect(() => {
@@ -85,7 +86,9 @@ export default function SurveyContainer({
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      const newIndex = currentQuestionIndex - 1;
+      setCurrentQuestionIndex(newIndex);
+      onQuestionChange?.(newIndex);
     }
   };
 
@@ -147,6 +150,7 @@ export default function SurveyContainer({
     setAnswers(updatedAnswers);
 
     if (currentQuestionIndex === survey.questions.length - 1) {
+      submitIntentRef.current = true;
       const syntheticEvent = {
         preventDefault: () => {},
       } as React.FormEvent;
@@ -154,7 +158,9 @@ export default function SurveyContainer({
       return;
     }
 
-    setCurrentQuestionIndex(currentQuestionIndex + 1);
+    const newIndex = currentQuestionIndex + 1;
+    setCurrentQuestionIndex(newIndex);
+    onQuestionChange?.(newIndex);
   };
 
   /**
@@ -171,6 +177,10 @@ export default function SurveyContainer({
    */
   const handleSubmit = async (e: React.FormEvent, providedAnswers?: Record<string, QuestionAnswer>) => {
     e.preventDefault();
+    if (!submitIntentRef.current) {
+      return;
+    }
+    submitIntentRef.current = false;
 
     // Use provided answers if available (from handleSkip), otherwise use state
     const baseAnswers = providedAnswers || answers;
@@ -213,9 +223,10 @@ export default function SurveyContainer({
         }
       }
 
-      // If trying to submit without answering current question, do nothing
-      // This should be prevented by disabling the Submit button
-      if (!currentQuestionAnswered && currentQuestionIndex === survey.questions.length - 1) {
+      if (
+        !currentQuestionAnswered &&
+        currentQuestionIndex < survey.questions.length - 1
+      ) {
         return;
       }
     }
@@ -299,8 +310,21 @@ export default function SurveyContainer({
     }
   };
 
+  const handleFormKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
+    if (event.key !== "Enter") return;
+    const target = event.target as HTMLInputElement | HTMLTextAreaElement;
+    if (target && target.tagName === "TEXTAREA") return;
+    if (target && target.tagName === "INPUT" && target.type !== "submit") {
+      event.preventDefault();
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="flex h-full flex-col min-h-0">
+    <form
+      onSubmit={handleSubmit}
+      onKeyDown={handleFormKeyDown}
+      className="flex h-full flex-col min-h-0"
+    >
       {error && (
         <div className="mb-4 rounded-lg border-2 border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive shadow-sm flex-shrink-0">
           {error}
@@ -330,6 +354,9 @@ export default function SurveyContainer({
               onPrevious={handlePrevious}
               onNext={handleNext}
               onSkip={canSkip ? handleSkipClick : undefined}
+            onSubmitClick={() => {
+              submitIntentRef.current = true;
+            }}
               isNextDisabled={currentQuestionIndex < survey.questions.length - 1}
               isSubmitting={isSubmitting}
             />
@@ -364,6 +391,9 @@ export default function SurveyContainer({
             onPrevious={handlePrevious}
             onNext={handleNext}
             onSkip={canSkip ? handleSkipClick : undefined}
+            onSubmitClick={() => {
+              submitIntentRef.current = true;
+            }}
             isNextDisabled={isNextDisabled}
             isSubmitting={isSubmitting}
           />
