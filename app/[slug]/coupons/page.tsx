@@ -1,7 +1,7 @@
 /**
  * app/[slug]/coupons/page.tsx
  * Coupons list page for a tenant.
- * Displays all available coupons for a tenant, requires email parameter.
+ * Displays all available coupons for a tenant, requires email in opt-in list.
  */
 
 import { redirect, notFound } from "next/navigation";
@@ -23,18 +23,14 @@ interface CouponsPageProps {
  * Coupons List Page
  *
  * Displays all available coupons for a tenant.
+ * REQUIRES user to be in email_opt_ins list (completed survey).
  *
  * Flow:
- * 1. User arrives here from landing page with email in query parameter
- * 2. Email is validated (must be present)
- * 3. Coupons are displayed
- * 4. When user clicks a coupon → goes to survey page
- * 5. Survey page checks if email is in email_opt_ins table:
- *    - If NOT → show survey (first-time user)
- *    - If IS → skip survey, go to coupon completion (returning user)
- *
- * Note: Email is NOT required to be in email_opt_ins table to view this page.
- * The survey page will handle the opt-in check when user clicks a coupon.
+ * 1. User arrives here after completing survey OR as returning user
+ * 2. Email is validated (must be present and in email_opt_ins)
+ * 3. If NOT in opt-in list → redirect to survey with returnTo=coupons
+ * 4. Coupons are displayed
+ * 5. When user clicks "Claim Now" → goes directly to coupon completion
  */
 export default async function CouponsPage({
   params,
@@ -63,6 +59,18 @@ export default async function CouponsPage({
       "../components/DeactivatedMessage"
     );
     return <DeactivatedMessage tenantName={tenantData.name} />;
+  }
+
+  // ============================================================================
+  // OPT-IN GATE: Verify email is in email_opt_ins table
+  // ============================================================================
+  // Users must complete survey before viewing coupons.
+  // This prevents users from bypassing survey by directly navigating to coupons URL.
+  const optInCheck = await verifyEmailOptIn(slug, email);
+
+  if (!optInCheck.valid) {
+    // User not in opt-in list - redirect to survey
+    redirect(`/${slug}/survey?email=${encodeURIComponent(email)}&returnTo=coupons`);
   }
 
   // Get coupons for tenant

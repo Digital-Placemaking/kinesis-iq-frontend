@@ -15,6 +15,7 @@ interface SurveyCardProps {
   tenantSlug: string;
   couponId: string | null;
   email: string | null;
+  returnTo?: string | null;
   showHeader?: boolean;
   onDemoSubmit?: () => void;
 }
@@ -24,6 +25,7 @@ export default function SurveyCard({
   tenantSlug,
   couponId,
   email,
+  returnTo,
   showHeader = true,
   onDemoSubmit,
 }: SurveyCardProps) {
@@ -60,6 +62,7 @@ export default function SurveyCard({
             tenantSlug={tenantSlug}
             couponId={couponId}
             email={email}
+            returnTo={returnTo}
             onQuestionChange={setCurrentQuestionIndex}
             onDemoSubmit={onDemoSubmit}
           />

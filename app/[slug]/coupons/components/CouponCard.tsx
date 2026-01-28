@@ -37,23 +37,23 @@ export default function CouponCard({
 
   /**
    * Handles coupon claim button click
-   * Navigates to the survey page for the selected coupon
+   * Navigates directly to the coupon completion page (survey already completed to see coupons)
    */
   const handleClaimClick = () => {
     if (!email) {
       return;
     }
 
-    // Navigate to survey page for this coupon
-    // Use getTenantPath to handle subdomain routing correctly
-    const surveyPath = getTenantPath(
+    // Navigate directly to coupon completion page
+    // User has already completed survey to see coupons list, so no survey needed
+    const completedPath = getTenantPath(
       tenantSlug,
-      `/coupons/${coupon.id}/survey`
+      `/coupons/${coupon.id}/completed`
     );
-    const surveyUrl = `${surveyPath}?email=${encodeURIComponent(email)}`;
+    const completedUrl = `${completedPath}?email=${encodeURIComponent(email)}`;
 
     // Use window.location for a hard redirect to ensure it works
-    window.location.href = surveyUrl;
+    window.location.href = completedUrl;
   };
   /**
    * Calculates and returns human-readable expiration text

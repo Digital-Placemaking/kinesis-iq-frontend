@@ -11,6 +11,7 @@ interface SurveyNavigationProps {
   totalQuestions: number;
   onPrevious: () => void;
   onNext: () => void;
+  onSkip?: () => void;
   isNextDisabled?: boolean;
   isSubmitting?: boolean;
 }
@@ -20,6 +21,7 @@ export default function SurveyNavigation({
   totalQuestions,
   onPrevious,
   onNext,
+  onSkip,
   isNextDisabled = false,
   isSubmitting = false,
 }: SurveyNavigationProps) {
@@ -37,6 +39,17 @@ export default function SurveyNavigation({
         <ChevronLeft className="h-4 w-4" />
         Previous
       </button>
+
+      {onSkip && (
+        <button
+          type="button"
+          onClick={onSkip}
+          disabled={isSubmitting}
+          className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+        >
+          Skip this question
+        </button>
+      )}
 
       {isLastQuestion ? (
         <button

@@ -4,7 +4,11 @@ Multi-tenant web application built with Next.js and Supabase for managing tenant
 
 ## Overview
 
-KinesisIQ is a Conversational Intelligence and Predictive Insight Platform that transforms real-world interactions into foresight. This application enables businesses (pilots) to create and manage digital coupons, collect customer feedback through surveys, and track visitor engagement with comprehensive analytics. The system supports multiple routing strategies: path-based routes (`yourdomain.com/pilot-slug`) and subdomain routes (`pilot-slug.yourdomain.com`).
+KinesisIQ is a Conversational Intelligence and Predictive Insight Platform that transforms real-world interactions into foresight. This application consists of:
+
+1. **Multi-Tenant System**: Enables businesses (pilots) to create and manage digital coupons, collect customer feedback through surveys, and track visitor engagement with comprehensive analytics. The system supports multiple routing strategies: path-based routes (`yourdomain.com/pilot-slug`) and subdomain routes (`pilot-slug.yourdomain.com`).
+
+2. **Public-Facing Website**: Marketing pages and demo dashboard showcasing KinesisIQ's value proposition to stakeholders, governments, and businesses. Includes landing page, How It Works, About, Contact, and an interactive demo dashboard (`/demo/reporting`) with mock data.
 
 ## Tech Stack
 
@@ -496,10 +500,33 @@ This approach maintains a single routing structure while supporting both access 
 
 ### Core Application Files
 
-- `app/layout.tsx` - Root layout with global metadata, theme configuration, and Vercel Analytics
-- `app/page.tsx` - Homepage component with testimonials
+- `app/layout.tsx` - Root layout component that wraps all pages:
+  - Configures Geist Sans and Geist Mono fonts (Google Fonts)
+  - Sets up global metadata (title template, description, favicons)
+  - Enforces dark mode via inline script (prevents flash)
+  - Imports global CSS (`globals.css`)
+  - Includes Vercel Analytics
+  - Provides HTML structure for all pages
+  - Wraps content with `PublicLayout` which conditionally renders Navbar/Footer for public pages
+- `app/page.tsx` - Public landing page with hero section, value proposition, and testimonials
 - `proxy.ts` - Middleware for request handling, authentication, tenant resolution, and routing
 - `next.config.ts` - Next.js configuration
+
+### Public-Facing Website Pages
+
+- `app/page.tsx` - Landing page with animated network visualization and rotating value messages
+- `app/how-it-works/page.tsx` - Platform explanation and workflow visualization
+- `app/demo/reporting/page.tsx` - Interactive demo dashboard with mock data showcasing current capabilities
+- `app/about-us/page.tsx` - About page
+- `app/contact/page.tsx` - Contact form
+- `app/components/Navbar.tsx` - Global navigation with hide-on-scroll behavior
+- `app/components/Footer.tsx` - Site-wide footer
+- `app/components/SequentialNetworkVisual.tsx` - Animated network visualization component
+- `app/demo/reporting/components/` - Demo dashboard components (charts, cards, carousels)
+- `app/demo/reporting/mock-data.ts` - Mock data for demo dashboard
+- `app/demo/reporting/types.ts` - TypeScript types for demo components
+
+**Note**: The public website uses a dark theme with orange (`#f16609`) and navy (`#23137f`) accent colors. Copy uses "Early Signals" and "Emerging Patterns" terminology to position current features as inputs to future intelligence layers. See `PUBLIC_WEBSITE.md` for detailed documentation on the public-facing pages.
 
 ### Tenant-Facing Pages
 
