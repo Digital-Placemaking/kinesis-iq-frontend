@@ -1,0 +1,4 @@
+project_id = "rougjcojyboecbdeppqo"
+
+[functions.google-wallet]
+verify_jwt = false
