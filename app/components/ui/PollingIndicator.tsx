@@ -2,7 +2,8 @@
  * app/components/ui/PollingIndicator.tsx
  *
  * Shows polling status for TanStack Query surfaces.
- * - Track bar with a light sweep (left → right → left) while refetching
+ * - Idle: track bar with a light that sweeps left → right → left
+ * - Fetching: light pulses in the center of the track
  * - Relative "last updated" text (e.g. "10 seconds ago")
  */
 
@@ -42,7 +43,6 @@ export default function PollingIndicator({
   dataUpdatedAt,
   className = "",
 }: PollingIndicatorProps) {
-  // Re-render every second so "X seconds ago" stays accurate without new fetches.
   const [, setTick] = useState(0);
 
   useEffect(() => {
@@ -66,17 +66,15 @@ export default function PollingIndicator({
       aria-live="polite"
       aria-busy={isFetching}
     >
-      {/* Track bar — light sweeps while a background refetch is in flight */}
       <div
         className="relative h-1 w-20 shrink-0 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
         aria-hidden
       >
-        <div
-          className={cn(
-            "absolute inset-y-0 w-2/5 rounded-full bg-gradient-to-r from-transparent via-blue-400/90 to-transparent dark:via-blue-300/80",
-            isFetching && "animate-polling-bar-sweep"
-          )}
-        />
+        {isFetching ? (
+          <div className="absolute inset-y-0 w-2/5 rounded-full bg-gradient-to-r from-transparent via-blue-400/95 to-transparent dark:via-blue-300/90 animate-polling-bar-pulse" />
+        ) : (
+          <div className="absolute inset-y-0 w-2/5 rounded-full bg-gradient-to-r from-transparent via-blue-400/90 to-transparent dark:via-blue-300/80 animate-polling-bar-sweep" />
+        )}
       </div>
 
       <span>

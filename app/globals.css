@@ -197,7 +197,7 @@
     animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  /* PollingIndicator — light sweeps left → right → left while refetching */
+  /* PollingIndicator — idle: light sweeps; fetching: centered pulse */
   @keyframes pollingBarSweep {
     0%,
     100% {
@@ -210,6 +210,23 @@
 
   .animate-polling-bar-sweep {
     animation: pollingBarSweep 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pollingBarPulse {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: translateX(-50%) scaleX(0.55);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1.1);
+    }
+  }
+
+  .animate-polling-bar-pulse {
+    left: 50%;
+    animation: pollingBarPulse 1s ease-in-out infinite;
   }
 
   .bg-kinesisiq-gradient {
