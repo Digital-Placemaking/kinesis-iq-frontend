@@ -14,7 +14,7 @@ import { getCurrentUser } from "@/lib/auth/server";
 import { getBusinessOwnerForTenantSlug } from "@/lib/auth/server";
 import { createClient } from "@/lib/supabase/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
-import AdminNav from "./components/AdminNav";
+import QueryProvider from "@/app/components/providers/QueryProvider";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -32,7 +32,7 @@ export default async function AdminLayout({
 
   // If not authenticated, don't render nav - let page show login form
   if (!user) {
-    return <>{children}</>;
+    return <QueryProvider>{children}</QueryProvider>;
   }
 
   // Check if user has access to this tenant
@@ -40,7 +40,7 @@ export default async function AdminLayout({
 
   // If no access, don't render nav - let page show login form
   if (!owner) {
-    return <>{children}</>;
+    return <QueryProvider>{children}</QueryProvider>;
   }
 
   /**
@@ -84,8 +84,10 @@ export default async function AdminLayout({
   // Note: AdminNav is now rendered inside AdminWrapper, so we don't render it here
   // Padding is handled by AdminWrapper, so no padding here
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
-      {children}
-    </div>
+    <QueryProvider>
+      <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
+        {children}
+      </div>
+    </QueryProvider>
   );
 }
