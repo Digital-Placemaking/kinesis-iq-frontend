@@ -37,10 +37,16 @@ export const POLLING_QUERY_DEFAULTS = {
   /** Do not poll while the browser tab is in the background. */
   refetchIntervalInBackground: false,
 
-  /** Re-fetch when the user returns to the tab (in addition to the interval). */
+  /** Re-fetch when the user returns to the browser tab. */
   refetchOnWindowFocus: true,
 
-  /** SSR data is a snapshot; mark stale immediately so the first poll runs soon. */
+  /**
+   * Override QueryClient default (refetchOnMount: false).
+   * Ensures stale data refetches when an admin tab panel remounts or reactivates.
+   */
+  refetchOnMount: true,
+
+  /** SSR data is a snapshot; mark stale immediately so refetches run on activation. */
   staleTime: 0,
 
   /** Keep showing the last good data while a background refetch is in flight. */

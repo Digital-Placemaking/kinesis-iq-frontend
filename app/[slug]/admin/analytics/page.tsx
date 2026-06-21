@@ -9,7 +9,7 @@ import { requireBusinessOwnerAccess } from "@/lib/auth/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import { getAnalyticsSummary, getAnalyticsTimeSeries } from "@/app/actions";
 import Card from "@/app/components/ui/Card";
-import AnalyticsCharts from "./components/AnalyticsCharts";
+import PolledAnalyticsCharts from "../components/PolledAnalyticsCharts";
 import MetricTooltip from "./components/MetricTooltip";
 import { Eye, CheckCircle, Copy, Download, Wallet } from "lucide-react";
 
@@ -234,21 +234,12 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
         </div>
       </Card>
 
-      {/* Time-Series Charts */}
-      {timeSeriesData.error ? (
-        <Card className="p-4 sm:p-6" variant="elevated">
-          <p className="text-sm text-red-600 dark:text-red-400">
-            Error loading analytics data: {timeSeriesData.error}
-          </p>
-        </Card>
-      ) : (
-        <div className="mt-8">
-          <AnalyticsCharts
-            tenantSlug={slug}
-            initialTimeSeriesData={timeSeriesData.data}
-          />
-        </div>
-      )}
+      <div className="mt-8">
+        <PolledAnalyticsCharts
+          tenantSlug={slug}
+          initialTimeSeries={timeSeriesData}
+        />
+      </div>
     </div>
   );
 }

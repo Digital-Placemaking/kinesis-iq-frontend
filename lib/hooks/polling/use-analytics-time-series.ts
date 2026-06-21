@@ -7,8 +7,7 @@
  * for instant first paint. Include `days` in the query key so range changes
  * (7 / 30 / 90) cache and poll independently.
  *
- * @param enabled — Set false when the Analytics tab is not active to avoid
- *                  unnecessary Supabase reads while the user is on other tabs.
+ * @param enabled — Pause polling when false; re-activating triggers an instant refetch.
  */
 
 "use client";
@@ -19,6 +18,7 @@ import {
   POLLING_INTERVALS,
   POLLING_QUERY_DEFAULTS,
 } from "@/lib/query/polling-config";
+import { useRefetchOnActivate } from "./use-refetch-on-activate";
 
 export type AnalyticsTimeSeriesResult = Awaited<
   ReturnType<typeof getAnalyticsTimeSeries>
@@ -36,7 +36,8 @@ interface UseAnalyticsTimeSeriesOptions {
   tenantSlug: string;
   /** Number of days of chart data (default: 30). */
   days?: number;
-  initialData: AnalyticsTimeSeriesResult;
+  /** SSR snapshot for the default range — omit when switching to an uncached range. */
+  initialData?: AnalyticsTimeSeriesResult;
   /** Only poll when the Analytics tab is visible (default: true). */
   enabled?: boolean;
 }
@@ -47,12 +48,16 @@ export function useAnalyticsTimeSeries({
   initialData,
   enabled = true,
 }: UseAnalyticsTimeSeriesOptions) {
-  return useQuery({
+  const query = useQuery({
     queryKey: analyticsTimeSeriesQueryKey(tenantSlug, days),
     queryFn: () => getAnalyticsTimeSeries(tenantSlug, days),
-    initialData,
+    ...(initialData !== undefined && { initialData }),
     enabled,
     refetchInterval: enabled ? POLLING_INTERVALS.ANALYTICS_TIME_SERIES : false,
     ...POLLING_QUERY_DEFAULTS,
   });
+
+  useRefetchOnActivate(enabled, query.refetch);
+
+  return query;
 }

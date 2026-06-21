@@ -10,6 +10,12 @@ export {
 } from "./use-dashboard-metrics";
 
 export {
+  useAnalyticsSummary,
+  analyticsSummaryQueryKey,
+  type AnalyticsSummary,
+} from "./use-analytics-summary";
+
+export {
   useAnalyticsTimeSeries,
   analyticsTimeSeriesQueryKey,
   type AnalyticsTimeSeriesResult,

@@ -5,25 +5,13 @@
  */
 
 "use client";
+
 import OverviewTabContent from "./OverviewTabContent";
-import Card from "@/app/components/ui/Card";
+import AnalyticsTabContent from "./AnalyticsTabContent";
 import QuestionsClient from "../questions/components/QuestionsClient";
 import CouponTabs from "../coupons/components/CouponTabs";
 import SettingsClient from "../settings/components/SettingsClient";
-import AnalyticsCharts from "../analytics/components/AnalyticsCharts";
-import MetricTooltip from "../analytics/components/MetricTooltip";
 import EmailsClient from "../emails/components/EmailsClient";
-import {
-  Eye,
-  CheckCircle,
-  Copy,
-  Download,
-  Wallet,
-  Mail,
-  Send,
-  Search,
-} from "lucide-react";
-import ActionButton from "@/app/components/ui/ActionButton";
 
 export type AdminTab =
   | "overview"
@@ -38,17 +26,12 @@ interface AdminContentProps {
   userRole: "owner" | "admin" | "staff";
   // Overview data
   dashboardMetrics: any;
-  // Analytics data
   analyticsSummary: any;
   analyticsTimeSeries: any;
-  // Questions data
   questions: any[];
-  // Coupons data
   coupons: any[];
   canEditCoupons: boolean;
-  // Emails data
   emails: any[];
-  // Settings data
   tenant: any;
   staffList: any[];
   tenantId: string;
@@ -92,121 +75,12 @@ export default function AdminContent({
           return <div>Access denied</div>;
         }
         return (
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <div className="mb-6 sm:mb-8">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
-                Analytics
-              </h1>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                Track visitor engagement, conversion metrics, and trends over
-                time
-              </p>
-            </div>
-
-            {/* Metrics Cards */}
-            <div className="mb-8 grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-              <Card className="p-3 sm:p-4" variant="elevated">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                        Page Visits
-                      </p>
-                      <MetricTooltip description="Unique visitors who have visited your tenant landing page. Counted by email or session ID." />
-                    </div>
-                    <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
-                      {analyticsSummary.pageVisits}
-                    </p>
-                  </div>
-                  <Eye className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 shrink-0 ml-2" />
-                </div>
-              </Card>
-
-              <Card className="p-3 sm:p-4" variant="elevated">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                        Congratulations
-                      </p>
-                      <MetricTooltip description="Unique visitors who completed a survey and reached the congratulations page. This represents survey completion rate." />
-                    </div>
-                    <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
-                      {analyticsSummary.congratulations}
-                    </p>
-                  </div>
-                  <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 shrink-0 ml-2" />
-                </div>
-              </Card>
-
-              <Card className="p-3 sm:p-4" variant="elevated">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                        Copy Code
-                      </p>
-                      <MetricTooltip description="Total number of times visitors clicked the copy button to copy their coupon code to clipboard." />
-                    </div>
-                    <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
-                      {analyticsSummary.copyCode}
-                    </p>
-                  </div>
-                  <Copy className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 shrink-0 ml-2" />
-                </div>
-              </Card>
-
-              <Card className="p-3 sm:p-4" variant="elevated">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                        Downloads
-                      </p>
-                      <MetricTooltip description="Total number of times visitors downloaded their coupon as an image file." />
-                    </div>
-                    <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
-                      {analyticsSummary.downloads}
-                    </p>
-                  </div>
-                  <Download className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 shrink-0 ml-2" />
-                </div>
-              </Card>
-
-              <Card className="p-3 sm:p-4" variant="elevated">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                        Wallet Adds
-                      </p>
-                      <MetricTooltip description="Total number of times visitors successfully added their coupon to Google Wallet or Apple Wallet." />
-                    </div>
-                    <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
-                      {analyticsSummary.walletAdds}
-                    </p>
-                  </div>
-                  <Wallet className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 shrink-0 ml-2" />
-                </div>
-              </Card>
-            </div>
-
-            {/* Time-Series Charts */}
-            {analyticsTimeSeries.error ? (
-              <Card className="p-4 sm:p-6" variant="elevated">
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  Error loading analytics data: {analyticsTimeSeries.error}
-                </p>
-              </Card>
-            ) : (
-              <div className="mt-8">
-                <AnalyticsCharts
-                  tenantSlug={tenantSlug}
-                  initialTimeSeriesData={analyticsTimeSeries.data}
-                />
-              </div>
-            )}
-          </div>
+          <AnalyticsTabContent
+            tenantSlug={tenantSlug}
+            analyticsSummary={analyticsSummary}
+            initialTimeSeries={analyticsTimeSeries}
+            isActive={activeTab === "analytics"}
+          />
         );
 
       case "questions":

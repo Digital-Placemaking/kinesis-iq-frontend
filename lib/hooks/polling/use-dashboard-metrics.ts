@@ -6,8 +6,7 @@
  * Calls the existing getDashboardMetrics server action on an interval.
  * Pass SSR data as initialData for instant first paint (no loading flash).
  *
- * @param enabled — Set false when the Overview tab is not active to avoid
- *                  unnecessary Supabase reads while the user is on other tabs.
+ * @param enabled — Pause polling when false; re-activating triggers an instant refetch.
  */
 
 "use client";
@@ -18,6 +17,7 @@ import {
   POLLING_INTERVALS,
   POLLING_QUERY_DEFAULTS,
 } from "@/lib/query/polling-config";
+import { useRefetchOnActivate } from "./use-refetch-on-activate";
 
 /** Cache key — use for invalidateQueries after mutations that affect dashboard KPIs. */
 export const dashboardMetricsQueryKey = (tenantSlug: string) =>
@@ -35,7 +35,7 @@ export function useDashboardMetrics({
   initialData,
   enabled = true,
 }: UseDashboardMetricsOptions) {
-  return useQuery({
+  const query = useQuery({
     queryKey: dashboardMetricsQueryKey(tenantSlug),
     queryFn: () => getDashboardMetrics(tenantSlug),
     initialData,
@@ -43,4 +43,8 @@ export function useDashboardMetrics({
     refetchInterval: enabled ? POLLING_INTERVALS.DASHBOARD_METRICS : false,
     ...POLLING_QUERY_DEFAULTS,
   });
+
+  useRefetchOnActivate(enabled, query.refetch);
+
+  return query;
 }
