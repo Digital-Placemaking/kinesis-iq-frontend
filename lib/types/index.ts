@@ -48,6 +48,9 @@ export type {
   SurveyWithItemsResponse,
   SurveyMutationResponse,
   SurveyItemMutationResponse,
+  SurveyQuestionTotal,
+  SurveySummary,
+  SurveySummaryResponse,
 } from "./survey-collector";
 
 // Survey response types (survey_responses table rows)

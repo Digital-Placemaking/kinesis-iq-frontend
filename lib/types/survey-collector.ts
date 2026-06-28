@@ -128,3 +128,24 @@ export interface SurveyItemMutationResponse {
   error: string | null;
   item?: SurveyItem | null;
 }
+
+/** Per-question response count within a survey */
+export interface SurveyQuestionTotal {
+  question_id: string;
+  question_text: string;
+  order_index: number;
+  response_count: number;
+}
+
+/** Aggregate stats for a survey collector */
+export interface SurveySummary {
+  survey_id: string;
+  total_responses: number;
+  unique_sessions: number;
+  question_totals: SurveyQuestionTotal[];
+}
+
+export interface SurveySummaryResponse {
+  summary: SurveySummary | null;
+  error: string | null;
+}

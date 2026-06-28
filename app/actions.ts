@@ -9,6 +9,7 @@
  * - surveys.ts: Survey fetching and submission
  * - questions.ts: Survey question management
  * - survey-collector.ts: Surveys and survey_items (collector model)
+ * - survey-results.ts: Survey-level stats and scoped question results
  * - issued-coupons.ts: Issued coupon operations
  * - wallet.ts: Google Wallet integration
  * - feedback.ts: Feedback submission
@@ -75,6 +76,9 @@ export {
   reorderSurveyItem,
   searchQuestionBank,
 } from "./actions/survey-collector";
+
+// Survey results / reporting
+export { getSurveySummary } from "./actions/survey-results";
 
 // Issued coupon actions
 export {
