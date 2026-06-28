@@ -167,7 +167,7 @@ export async function createQuestion(
     options?: string[];
     is_active?: boolean;
   }
-): Promise<{ success: boolean; error: string | null }> {
+): Promise<{ success: boolean; error: string | null; questionId?: string | null }> {
   try {
     const supabase = await createClient();
 
@@ -254,22 +254,30 @@ export async function createQuestion(
       is_active: question.is_active ?? true,
     };
 
-    const { error: insertError } = await tenantSupabase
+    const { data: inserted, error: insertError } = await tenantSupabase
       .from("survey_questions")
-      .insert(insertData);
+      .insert(insertData)
+      .select("id")
+      .single();
 
     if (insertError) {
       return {
         success: false,
         error: insertError.message || "Failed to create question",
+        questionId: null,
       };
     }
 
-    return { success: true, error: null };
+    return {
+      success: true,
+      error: null,
+      questionId: inserted?.id ?? null,
+    };
   } catch (err) {
     return {
       success: false,
       error: err instanceof Error ? err.message : "An error occurred",
+      questionId: null,
     };
   }
 }
