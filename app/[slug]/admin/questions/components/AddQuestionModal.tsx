@@ -10,8 +10,9 @@ import { X, Eye } from "lucide-react";
 import Modal from "@/app/components/ui/Modal";
 import ActionButton from "@/app/components/ui/ActionButton";
 import Spinner from "@/app/components/ui/Spinner";
-import { createQuestion } from "@/app/actions";
+import { createQuestion, addSurveyItem } from "@/app/actions";
 import type { QuestionType } from "@/lib/types/survey";
+import { nextSurveyItemOrderIndex } from "../../surveys/components/survey-form-utils";
 import QuestionNPS from "@/app/components/survey/questions/QuestionNPS";
 import QuestionYesNo from "@/app/components/survey/questions/QuestionYesNo";
 import QuestionInput from "@/app/components/survey/questions/QuestionInput";
@@ -29,6 +30,12 @@ interface AddQuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
   tenantSlug: string;
+  /** When set, links the new question to this survey after bank create */
+  surveyId?: string;
+  surveyItems?: Array<{ order_index: number }>;
+  /** Render form only (no Modal wrapper) for embedding in AddQuestionToSurveyModal */
+  variant?: "modal" | "panel";
+  onCompleted?: () => void;
 }
 
 // Question type options
@@ -53,6 +60,10 @@ export default function AddQuestionModal({
   isOpen,
   onClose,
   tenantSlug,
+  surveyId,
+  surveyItems = [],
+  variant = "modal",
+  onCompleted,
 }: AddQuestionModalProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -287,23 +298,41 @@ export default function AddQuestionModal({
         is_active: isActive,
       });
 
-      if (result.success) {
-        router.refresh();
-        handleClose();
-      } else {
+      if (!result.success) {
         setError(result.error || "Failed to create question");
+        return;
       }
+
+      if (surveyId) {
+        if (!result.questionId) {
+          setError("Question created but could not link to survey (missing id)");
+          return;
+        }
+
+        const linkResult = await addSurveyItem(tenantSlug, {
+          survey_id: surveyId,
+          question_id: result.questionId,
+          order_index: nextSurveyItemOrderIndex(surveyItems),
+          required: true,
+        });
+
+        if (!linkResult.success) {
+          setError(
+            linkResult.error ||
+              "Question created but failed to add to survey"
+          );
+          return;
+        }
+      }
+
+      router.refresh();
+      onCompleted?.();
+      handleClose();
     });
   };
 
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Add New Question"
-      size="lg"
-    >
-      <form onSubmit={handleSubmit} className="space-y-6">
+  const formContent = (
+    <form onSubmit={handleSubmit} className="space-y-6">
         {/* Question Text */}
         <div>
           <label
@@ -480,12 +509,29 @@ export default function AddQuestionModal({
                 <Spinner size="sm" />
                 Creating...
               </span>
+            ) : surveyId ? (
+              "Add to Survey"
             ) : (
               "Create Question"
             )}
           </ActionButton>
         </div>
       </form>
+  );
+
+  if (variant === "panel") {
+    if (!isOpen) return null;
+    return formContent;
+  }
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={surveyId ? "Create New Question" : "Add New Question"}
+      size="lg"
+    >
+      {formContent}
     </Modal>
   );
 }
