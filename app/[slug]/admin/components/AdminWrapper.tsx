@@ -8,7 +8,7 @@
 import { useState } from "react";
 import AdminNav from "./AdminNav";
 import AdminContent, { type AdminTab } from "./AdminContent";
-import type { SurveyRecord } from "@/lib/types";
+import type { SurveyListEntry } from "@/lib/types";
 
 const ADMIN_TABS: AdminTab[] = [
   "overview",
@@ -39,7 +39,7 @@ interface AdminWrapperProps {
   dashboardMetrics: any;
   analyticsSummary: any;
   analyticsTimeSeries: any;
-  surveys: SurveyRecord[];
+  surveys: SurveyListEntry[];
   coupons: any[];
   canEditCoupons: boolean;
   emails: any[];

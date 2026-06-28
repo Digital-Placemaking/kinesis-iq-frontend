@@ -12,7 +12,7 @@ import SurveysTabContent from "../surveys/components/SurveysTabContent";
 import CouponTabs from "../coupons/components/CouponTabs";
 import SettingsClient from "../settings/components/SettingsClient";
 import EmailsClient from "../emails/components/EmailsClient";
-import type { SurveyRecord } from "@/lib/types";
+import type { SurveyListEntry } from "@/lib/types";
 
 export type AdminTab =
   | "overview"
@@ -29,7 +29,7 @@ interface AdminContentProps {
   dashboardMetrics: any;
   analyticsSummary: any;
   analyticsTimeSeries: any;
-  surveys: SurveyRecord[];
+  surveys: SurveyListEntry[];
   coupons: any[];
   canEditCoupons: boolean;
   emails: any[];
@@ -88,9 +88,7 @@ export default function AdminContent({
         if (userRole === "staff") {
           return <div>Access denied</div>;
         }
-        return (
-          <SurveysTabContent tenantSlug={tenantSlug} surveys={surveys} />
-        );
+        return <SurveysTabContent surveyEntries={surveys} />;
 
       case "coupons":
         return (

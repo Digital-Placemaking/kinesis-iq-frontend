@@ -1,21 +1,48 @@
 /**
- * Surveys tab shell — list collector containers; full editor UI in later commits.
+ * Surveys tab — read-only collapsible list of survey collectors.
  */
 
 "use client";
 
-import type { SurveyRecord } from "@/lib/types";
+import { useMemo } from "react";
+import type { SurveyListEntry } from "@/lib/types";
+import SurveyCollapsible from "./SurveyCollapsible";
+
+const QUESTION_TYPE_NAMES: Record<string, string> = {
+  sentiment: "Sentiment Question",
+  multiple_choice: "Multiple Choice",
+  single_choice: "Single Choice",
+  ranked_choice: "Ranked Choice",
+  likert_5: "Likert Scale (5)",
+  likert_7: "Likert Scale (7)",
+  nps: "NPS",
+  rating_5: "Rating (5)",
+  yes_no: "Yes/No",
+  open_text: "Open Text",
+  numeric: "Numeric",
+  slider: "Slider",
+  date: "Date",
+  time: "Time",
+};
 
 interface SurveysTabContentProps {
-  tenantSlug: string;
-  surveys: SurveyRecord[];
+  surveyEntries: SurveyListEntry[];
 }
 
-function formatStatus(status: SurveyRecord["status"]): string {
-  return status.charAt(0).toUpperCase() + status.slice(1);
+function getDefaultExpandedSurveyId(entries: SurveyListEntry[]): string | null {
+  if (entries.length === 0) return null;
+  const active = entries.find((entry) => entry.survey.status === "active");
+  return active?.survey.id ?? entries[0].survey.id;
 }
 
-export default function SurveysTabContent({ surveys }: SurveysTabContentProps) {
+export default function SurveysTabContent({
+  surveyEntries,
+}: SurveysTabContentProps) {
+  const defaultExpandedId = useMemo(
+    () => getDefaultExpandedSurveyId(surveyEntries),
+    [surveyEntries]
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="mb-6 sm:mb-8">
@@ -23,11 +50,11 @@ export default function SurveysTabContent({ surveys }: SurveysTabContentProps) {
           Surveys
         </h1>
         <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-          Manage survey collections and survey questions
+          View survey collections and their questions
         </p>
       </div>
 
-      {surveys.length === 0 ? (
+      {surveyEntries.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-10 text-center dark:border-zinc-700 dark:bg-zinc-900">
           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             No surveys yet
@@ -37,27 +64,16 @@ export default function SurveysTabContent({ surveys }: SurveysTabContentProps) {
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-zinc-200 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
-          {surveys.map((survey) => (
-            <li
-              key={survey.id}
-              className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium text-zinc-900 dark:text-zinc-50">
-                  {survey.title}
-                </p>
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  {survey.kind} · {formatStatus(survey.status)}
-                  {survey.slug ? ` · ${survey.slug}` : ""}
-                </p>
-              </div>
-              <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                Coming soon
-              </span>
-            </li>
+        <div className="space-y-3">
+          {surveyEntries.map((entry) => (
+            <SurveyCollapsible
+              key={entry.survey.id}
+              entry={entry}
+              defaultExpanded={entry.survey.id === defaultExpandedId}
+              questionTypeNames={QUESTION_TYPE_NAMES}
+            />
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

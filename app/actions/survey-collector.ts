@@ -24,6 +24,9 @@ import type {
   SurveyWithItemsResponse,
   SurveyMutationResponse,
   SurveyItemMutationResponse,
+  SurveySummary,
+  SurveyListEntry,
+  SurveysAdminListResponse,
 } from "@/lib/types/survey-collector";
 
 type StaffTenantContext = {
@@ -160,6 +163,170 @@ export async function listSurveys(
   } catch (err) {
     return {
       surveys: null,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Batched load for admin Surveys tab: surveys + items + response summaries.
+ */
+export async function getSurveysForAdminTab(
+  tenantSlug: string
+): Promise<SurveysAdminListResponse> {
+  try {
+    const staffResult = await requireStaffTenantContext(tenantSlug);
+    if (!staffResult.ok) {
+      return { entries: null, error: staffResult.error };
+    }
+
+    const { tenantSupabase } = staffResult.ctx;
+
+    const { data: surveyRows, error: surveysError } = await tenantSupabase
+      .from("surveys")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (surveysError) {
+      return { entries: null, error: surveysError.message };
+    }
+
+    const surveys = (surveyRows ?? []).map((row) =>
+      mapSurvey(row as Record<string, unknown>)
+    );
+
+    if (surveys.length === 0) {
+      return { entries: [], error: null };
+    }
+
+    const surveyIds = surveys.map((survey) => survey.id);
+
+    const { data: itemRows, error: itemsError } = await tenantSupabase
+      .from("survey_items")
+      .select("*")
+      .in("survey_id", surveyIds)
+      .order("order_index", { ascending: true });
+
+    if (itemsError) {
+      return { entries: null, error: itemsError.message };
+    }
+
+    const items = itemRows ?? [];
+    const questionIds = [
+      ...new Set(items.map((item) => item.question_id as string)),
+    ];
+
+    const questionById = new Map<string, HydratedSurveyQuestion>();
+
+    if (questionIds.length > 0) {
+      const { data: questionRows, error: questionsError } = await tenantSupabase
+        .from("survey_questions")
+        .select("*")
+        .in("id", questionIds);
+
+      if (questionsError) {
+        return { entries: null, error: questionsError.message };
+      }
+
+      for (const row of questionRows ?? []) {
+        questionById.set(
+          row.id as string,
+          mapQuestion(row as Record<string, unknown>)
+        );
+      }
+    }
+
+    const { data: responseRows, error: responsesError } = await tenantSupabase
+      .from("survey_responses")
+      .select("survey_id, question_id, session_id")
+      .in("survey_id", surveyIds);
+
+    if (responsesError) {
+      return { entries: null, error: responsesError.message };
+    }
+
+    const itemsBySurvey = new Map<string, typeof items>();
+    for (const itemRow of items) {
+      const surveyId = itemRow.survey_id as string;
+      const list = itemsBySurvey.get(surveyId) ?? [];
+      list.push(itemRow);
+      itemsBySurvey.set(surveyId, list);
+    }
+
+    const responsesBySurvey = new Map<
+      string,
+      Array<{ survey_id: string | null; question_id: string; session_id: string | null }>
+    >();
+
+    for (const row of responseRows ?? []) {
+      const surveyId = row.survey_id as string | null;
+      if (!surveyId) continue;
+      const list = responsesBySurvey.get(surveyId) ?? [];
+      list.push(row);
+      responsesBySurvey.set(surveyId, list);
+    }
+
+    const entries: SurveyListEntry[] = surveys.map((survey) => {
+      const surveyItemRows = itemsBySurvey.get(survey.id) ?? [];
+      const hydrated: HydratedSurveyItem[] = [];
+
+      for (const itemRow of surveyItemRows) {
+        const item = mapSurveyItem(itemRow as Record<string, unknown>);
+        const question = questionById.get(item.question_id);
+        if (question) {
+          hydrated.push({ ...item, question });
+        }
+      }
+
+      const responses = responsesBySurvey.get(survey.id) ?? [];
+      const sessionIds = new Set<string>();
+      const countByQuestion = new Map<string, number>();
+
+      for (const response of responses) {
+        const sessionId = response.session_id;
+        if (sessionId) {
+          sessionIds.add(sessionId);
+        }
+        const questionId = response.question_id as string;
+        countByQuestion.set(
+          questionId,
+          (countByQuestion.get(questionId) ?? 0) + 1
+        );
+      }
+
+      const questionTotals = hydrated.map((item) => ({
+        question_id: item.question_id,
+        question_text: item.question.question,
+        order_index: item.order_index,
+        response_count: countByQuestion.get(item.question_id) ?? 0,
+      }));
+
+      const itemQuestionIds = new Set(hydrated.map((item) => item.question_id));
+      for (const [questionId, responseCount] of countByQuestion) {
+        if (!itemQuestionIds.has(questionId)) {
+          questionTotals.push({
+            question_id: questionId,
+            question_text: "Unknown question",
+            order_index: questionTotals.length,
+            response_count: responseCount,
+          });
+        }
+      }
+
+      const summary: SurveySummary = {
+        survey_id: survey.id,
+        total_responses: responses.length,
+        unique_sessions: sessionIds.size,
+        question_totals: questionTotals,
+      };
+
+      return { survey, items: hydrated, summary };
+    });
+
+    return { entries, error: null };
+  } catch (err) {
+    return {
+      entries: null,
       error: err instanceof Error ? err.message : "An error occurred",
     };
   }

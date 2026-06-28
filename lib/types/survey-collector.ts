@@ -149,3 +149,15 @@ export interface SurveySummaryResponse {
   summary: SurveySummary | null;
   error: string | null;
 }
+
+/** Survey row + hydrated items + response summary for admin list */
+export interface SurveyListEntry {
+  survey: Survey;
+  items: HydratedSurveyItem[];
+  summary: SurveySummary;
+}
+
+export interface SurveysAdminListResponse {
+  entries: SurveyListEntry[] | null;
+  error: string | null;
+}

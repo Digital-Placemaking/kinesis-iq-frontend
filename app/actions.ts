@@ -67,6 +67,7 @@ export type { QuestionResult } from "@/lib/types/question";
 // Survey collector actions (surveys + survey_items)
 export {
   listSurveys,
+  getSurveysForAdminTab,
   getSurveyWithItems,
   createSurvey,
   updateSurvey,

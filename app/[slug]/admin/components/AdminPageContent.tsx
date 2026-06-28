@@ -16,7 +16,7 @@ import {
   getDashboardMetrics,
   getAnalyticsSummary,
   getAnalyticsTimeSeries,
-  listSurveys,
+  getSurveysForAdminTab,
 } from "@/app/actions";
 import AdminWrapper from "./AdminWrapper";
 import { getCurrentUser } from "@/lib/auth/server";
@@ -106,10 +106,10 @@ export default async function AdminPageContent({
       ? getAnalyticsTimeSeries(slug, 30)
       : Promise.resolve({ data: [], error: null }),
 
-    // Surveys (only if owner/admin)
+    // Surveys tab (only if owner/admin)
     userRole !== "staff"
-      ? listSurveys(slug)
-      : Promise.resolve({ surveys: [], error: null }),
+      ? getSurveysForAdminTab(slug)
+      : Promise.resolve({ entries: [], error: null }),
 
     // Coupons
     tenantSupabase
@@ -195,7 +195,7 @@ export default async function AdminPageContent({
       dashboardMetrics={dashboardMetrics}
       analyticsSummary={analyticsSummary}
       analyticsTimeSeries={analyticsTimeSeries}
-      surveys={surveysData.surveys || []}
+      surveys={surveysData.entries || []}
       coupons={couponsData.data || []}
       canEditCoupons={canEditCoupons}
       emails={emailsData.data || []}
