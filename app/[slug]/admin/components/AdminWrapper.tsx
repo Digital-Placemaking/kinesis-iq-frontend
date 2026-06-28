@@ -8,6 +8,26 @@
 import { useState } from "react";
 import AdminNav from "./AdminNav";
 import AdminContent, { type AdminTab } from "./AdminContent";
+import type { SurveyRecord } from "@/lib/types";
+
+const ADMIN_TABS: AdminTab[] = [
+  "overview",
+  "analytics",
+  "surveys",
+  "coupons",
+  "emails",
+  "settings",
+];
+
+function parseInitialTab(tab: string | undefined): AdminTab {
+  if (tab === "questions") {
+    return "surveys";
+  }
+  if (tab && ADMIN_TABS.includes(tab as AdminTab)) {
+    return tab as AdminTab;
+  }
+  return "overview";
+}
 
 interface AdminWrapperProps {
   tenantSlug: string;
@@ -19,13 +39,14 @@ interface AdminWrapperProps {
   dashboardMetrics: any;
   analyticsSummary: any;
   analyticsTimeSeries: any;
-  questions: any[];
+  surveys: SurveyRecord[];
   coupons: any[];
   canEditCoupons: boolean;
   emails: any[];
   tenant: any;
   staffList: any[];
   tenantId: string;
+  initialTab?: string;
 }
 
 export default function AdminWrapper({
@@ -37,15 +58,18 @@ export default function AdminWrapper({
   dashboardMetrics,
   analyticsSummary,
   analyticsTimeSeries,
-  questions,
+  surveys,
   coupons,
   canEditCoupons,
   emails,
   tenant,
   staffList,
   tenantId,
+  initialTab,
 }: AdminWrapperProps) {
-  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+  const [activeTab, setActiveTab] = useState<AdminTab>(() =>
+    parseInitialTab(initialTab)
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
@@ -64,7 +88,7 @@ export default function AdminWrapper({
           dashboardMetrics={dashboardMetrics}
           analyticsSummary={analyticsSummary}
           analyticsTimeSeries={analyticsTimeSeries}
-          questions={questions}
+          surveys={surveys}
           coupons={coupons}
           canEditCoupons={canEditCoupons}
           emails={emails}

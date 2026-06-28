@@ -8,15 +8,16 @@
 
 import OverviewTabContent from "./OverviewTabContent";
 import AnalyticsTabContent from "./AnalyticsTabContent";
-import QuestionsClient from "../questions/components/QuestionsClient";
+import SurveysTabContent from "../surveys/components/SurveysTabContent";
 import CouponTabs from "../coupons/components/CouponTabs";
 import SettingsClient from "../settings/components/SettingsClient";
 import EmailsClient from "../emails/components/EmailsClient";
+import type { SurveyRecord } from "@/lib/types";
 
 export type AdminTab =
   | "overview"
   | "analytics"
-  | "questions"
+  | "surveys"
   | "coupons"
   | "emails"
   | "settings";
@@ -28,7 +29,7 @@ interface AdminContentProps {
   dashboardMetrics: any;
   analyticsSummary: any;
   analyticsTimeSeries: any;
-  questions: any[];
+  surveys: SurveyRecord[];
   coupons: any[];
   canEditCoupons: boolean;
   emails: any[];
@@ -47,7 +48,7 @@ export default function AdminContent({
   dashboardMetrics,
   analyticsSummary,
   analyticsTimeSeries,
-  questions,
+  surveys,
   coupons,
   canEditCoupons,
   emails,
@@ -83,34 +84,12 @@ export default function AdminContent({
           />
         );
 
-      case "questions":
+      case "surveys":
         if (userRole === "staff") {
           return <div>Access denied</div>;
         }
-        const questionTypeNames: Record<string, string> = {
-          sentiment: "Sentiment Question",
-          multiple_choice: "Multiple Choice",
-          single_choice: "Single Choice",
-          ranked_choice: "Ranked Choice",
-          likert_5: "Likert Scale (5)",
-          likert_7: "Likert Scale (7)",
-          nps: "NPS",
-          rating_5: "Rating (5)",
-          yes_no: "Yes/No",
-          open_text: "Open Text",
-          numeric: "Numeric",
-          slider: "Slider",
-          date: "Date",
-          time: "Time",
-        };
         return (
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <QuestionsClient
-              questions={questions}
-              tenantSlug={tenantSlug}
-              questionTypeNames={questionTypeNames}
-            />
-          </div>
+          <SurveysTabContent tenantSlug={tenantSlug} surveys={surveys} />
         );
 
       case "coupons":

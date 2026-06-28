@@ -23,7 +23,7 @@ export default async function AdminDashboard({
   searchParams,
 }: AdminDashboardProps) {
   const { slug } = await params;
-  const { error } = await searchParams;
+  const { error, tab } = await searchParams;
 
   // Fetch tenant data for login form display (name and logo)
   const { tenant: tenantData } = await getTenantBySlug(slug);
@@ -96,7 +96,7 @@ export default async function AdminDashboard({
   // Render admin content with loading state
   return (
     <Suspense fallback={<AdminLoading />}>
-      <AdminPageContent slug={slug} user={user} owner={owner} />
+      <AdminPageContent slug={slug} user={user} owner={owner} initialTab={tab} />
     </Suspense>
   );
 }
