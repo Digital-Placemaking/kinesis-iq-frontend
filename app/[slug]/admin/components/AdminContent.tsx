@@ -88,7 +88,7 @@ export default function AdminContent({
         if (userRole === "staff") {
           return <div>Access denied</div>;
         }
-        return <SurveysTabContent surveyEntries={surveys} />;
+        return <SurveysTabContent tenantSlug={tenantSlug} surveyEntries={surveys} />;
 
       case "coupons":
         return (

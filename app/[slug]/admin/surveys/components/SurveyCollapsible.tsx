@@ -5,13 +5,16 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Pencil, Plus } from "lucide-react";
 import type { SurveyListEntry } from "@/lib/types";
+import ActionButton from "@/app/components/ui/ActionButton";
 
 interface SurveyCollapsibleProps {
   entry: SurveyListEntry;
   defaultExpanded?: boolean;
   questionTypeNames: Record<string, string>;
+  onEdit: () => void;
+  onAddQuestion?: () => void;
 }
 
 function StatusBadge({ status }: { status: SurveyListEntry["survey"]["status"] }) {
@@ -45,6 +48,8 @@ export default function SurveyCollapsible({
   entry,
   defaultExpanded = false,
   questionTypeNames,
+  onEdit,
+  onAddQuestion,
 }: SurveyCollapsibleProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const { survey, items, summary } = entry;
@@ -91,6 +96,28 @@ export default function SurveyCollapsible({
 
       {expanded && (
         <div className="border-t border-zinc-200 px-4 py-4 sm:px-6 dark:border-zinc-800">
+          <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+            <ActionButton
+              type="button"
+              onClick={() => onEdit()}
+              variant="secondary"
+            >
+              <span className="flex items-center gap-1.5">
+                <Pencil className="h-4 w-4" />
+                Edit
+              </span>
+            </ActionButton>
+            {onAddQuestion && (
+              <ActionButton
+                type="button"
+                icon={Plus}
+                onClick={() => onAddQuestion()}
+              >
+                Add Question
+              </ActionButton>
+            )}
+          </div>
+
           {items.length === 0 ? (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               No questions linked to this survey yet.
