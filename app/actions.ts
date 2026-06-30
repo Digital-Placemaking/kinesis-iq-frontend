@@ -74,6 +74,7 @@ export {
   deleteSurvey,
   addSurveyItem,
   removeSurveyItem,
+  updateSurveyItem,
   reorderSurveyItem,
   searchQuestionBank,
 } from "./actions/survey-collector";

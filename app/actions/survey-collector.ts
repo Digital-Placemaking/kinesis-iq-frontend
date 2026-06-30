@@ -20,6 +20,7 @@ import type {
   CreateSurveyInput,
   UpdateSurveyInput,
   CreateSurveyItemInput,
+  UpdateSurveyItemInput,
   SurveysListResponse,
   SurveyWithItemsResponse,
   SurveyMutationResponse,
@@ -742,6 +743,66 @@ export async function removeSurveyItem(
       success: true,
       error: null,
       item: mapSurveyItem(removedItem as Record<string, unknown>),
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+      item: null,
+    };
+  }
+}
+
+/**
+ * Update per-survey item fields (required, settings, order_index).
+ */
+export async function updateSurveyItem(
+  tenantSlug: string,
+  itemId: string,
+  input: UpdateSurveyItemInput
+): Promise<SurveyItemMutationResponse> {
+  try {
+    const staffResult = await requireStaffTenantContext(tenantSlug);
+    if (!staffResult.ok) {
+      return { success: false, error: staffResult.error, item: null };
+    }
+
+    const { tenantSupabase } = staffResult.ctx;
+
+    const updateData: Record<string, unknown> = {};
+    if (input.order_index !== undefined) {
+      updateData.order_index = input.order_index;
+    }
+    if (input.required !== undefined) {
+      updateData.required = input.required;
+    }
+    if (input.settings !== undefined) {
+      updateData.settings = input.settings;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return { success: false, error: "No fields to update", item: null };
+    }
+
+    const { data, error } = await tenantSupabase
+      .from("survey_items")
+      .update(updateData)
+      .eq("id", itemId)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      return { success: false, error: error.message, item: null };
+    }
+
+    if (!data) {
+      return { success: false, error: "Survey item not found", item: null };
+    }
+
+    return {
+      success: true,
+      error: null,
+      item: mapSurveyItem(data as Record<string, unknown>),
     };
   } catch (err) {
     return {
