@@ -30,6 +30,8 @@ interface EditQuestionModalProps {
   onClose: () => void;
   tenantSlug: string;
   questionId: string;
+  /** Shown when editing a bank question from a survey (shared across surveys). */
+  sharedBankWarning?: string;
 }
 
 // Question type options
@@ -55,6 +57,7 @@ export default function EditQuestionModal({
   onClose,
   tenantSlug,
   questionId,
+  sharedBankWarning,
 }: EditQuestionModalProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -321,6 +324,12 @@ export default function EditQuestionModal({
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
+          {sharedBankWarning && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
+              {sharedBankWarning}
+            </div>
+          )}
+
           {/* Question Text */}
           <div>
             <label

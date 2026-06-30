@@ -1,5 +1,5 @@
 /**
- * Read-only collapsible survey row for the admin Surveys tab.
+ * Collapsible survey row for the admin Surveys tab with per-item builder actions.
  */
 
 "use client";
@@ -8,9 +8,11 @@ import { useState } from "react";
 import { ChevronDown, Pencil, Plus } from "lucide-react";
 import type { SurveyListEntry } from "@/lib/types";
 import ActionButton from "@/app/components/ui/ActionButton";
+import SurveyItemActions from "./SurveyItemActions";
 
 interface SurveyCollapsibleProps {
   entry: SurveyListEntry;
+  tenantSlug: string;
   defaultExpanded?: boolean;
   questionTypeNames: Record<string, string>;
   onEdit: () => void;
@@ -46,6 +48,7 @@ function KindBadge({ kind }: { kind: SurveyListEntry["survey"]["kind"] }) {
 
 export default function SurveyCollapsible({
   entry,
+  tenantSlug,
   defaultExpanded = false,
   questionTypeNames,
   onEdit,
@@ -156,10 +159,20 @@ export default function SurveyCollapsible({
                           {item.question.question}
                         </p>
                       </div>
-                      <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
-                        {perQuestionCount}{" "}
-                        {perQuestionCount === 1 ? "response" : "responses"}
-                      </span>
+                      <div className="flex shrink-0 flex-col items-end gap-2 sm:items-end">
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          {perQuestionCount}{" "}
+                          {perQuestionCount === 1 ? "response" : "responses"}
+                        </span>
+                        <SurveyItemActions
+                          tenantSlug={tenantSlug}
+                          surveyId={survey.id}
+                          surveyTitle={survey.title}
+                          item={item}
+                          itemIndex={index}
+                          totalItems={items.length}
+                        />
+                      </div>
                     </div>
                   </li>
                 );

@@ -96,6 +96,7 @@ export default function SurveysTabContent({
               <SurveyCollapsible
                 key={entry.survey.id}
                 entry={entry}
+                tenantSlug={tenantSlug}
                 defaultExpanded={entry.survey.id === defaultExpandedId}
                 questionTypeNames={QUESTION_TYPE_NAMES}
                 onEdit={() => setEditSurvey(entry.survey)}
