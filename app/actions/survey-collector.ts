@@ -814,6 +814,72 @@ export async function updateSurveyItem(
 }
 
 /**
+ * Persist a full survey_items order in one update (used after drag reorder).
+ */
+export async function setSurveyItemsOrder(
+  tenantSlug: string,
+  surveyId: string,
+  itemIds: string[]
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const staffResult = await requireStaffTenantContext(tenantSlug);
+    if (!staffResult.ok) {
+      return { success: false, error: staffResult.error };
+    }
+
+    const { tenantSupabase } = staffResult.ctx;
+
+    const { data: existingItems, error: fetchError } = await tenantSupabase
+      .from("survey_items")
+      .select("id")
+      .eq("survey_id", surveyId);
+
+    if (fetchError) {
+      return { success: false, error: fetchError.message };
+    }
+
+    const existingIds = new Set(
+      (existingItems ?? []).map((row) => row.id as string)
+    );
+
+    if (existingIds.size !== itemIds.length) {
+      return {
+        success: false,
+        error: "Survey items changed — refresh and try again",
+      };
+    }
+
+    for (const itemId of itemIds) {
+      if (!existingIds.has(itemId)) {
+        return {
+          success: false,
+          error: "Survey items changed — refresh and try again",
+        };
+      }
+    }
+
+    for (let orderIndex = 0; orderIndex < itemIds.length; orderIndex++) {
+      const { error } = await tenantSupabase
+        .from("survey_items")
+        .update({ order_index: orderIndex })
+        .eq("id", itemIds[orderIndex])
+        .eq("survey_id", surveyId);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+    }
+
+    return { success: true, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
  * Swap a survey item up or down within its survey (survey_items.order_index).
  */
 export async function reorderSurveyItem(

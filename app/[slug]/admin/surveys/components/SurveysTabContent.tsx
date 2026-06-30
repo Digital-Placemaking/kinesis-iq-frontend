@@ -4,14 +4,20 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
-import type { SurveyListEntry, SurveyRecord } from "@/lib/types";
+import { setSurveyItemsOrder } from "@/app/actions";
+import type { HydratedSurveyItem, SurveyListEntry, SurveyRecord } from "@/lib/types";
 import ActionButton from "@/app/components/ui/ActionButton";
 import SurveyCollapsible from "./SurveyCollapsible";
 import AddSurveyModal from "./AddSurveyModal";
 import EditSurveyModal from "./EditSurveyModal";
 import AddQuestionToSurveyModal from "./AddQuestionToSurveyModal";
+import {
+  createSurveyReorderQueue,
+  reorderItemsLocally,
+} from "./survey-item-utils";
 
 const QUESTION_TYPE_NAMES: Record<string, string> = {
   sentiment: "Sentiment Question",
@@ -45,15 +51,76 @@ export default function SurveysTabContent({
   tenantSlug,
   surveyEntries,
 }: SurveysTabContentProps) {
+  const router = useRouter();
+  const reorderQueueRef = useRef(createSurveyReorderQueue());
+  const [entries, setEntries] = useState(surveyEntries);
+  const [reorderError, setReorderError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setEntries(surveyEntries);
+  }, [surveyEntries]);
+
   const defaultExpandedId = useMemo(
-    () => getDefaultExpandedSurveyId(surveyEntries),
-    [surveyEntries]
+    () => getDefaultExpandedSurveyId(entries),
+    [entries]
   );
 
   const [isAddSurveyOpen, setIsAddSurveyOpen] = useState(false);
   const [editSurvey, setEditSurvey] = useState<SurveyRecord | null>(null);
   const [addQuestionEntry, setAddQuestionEntry] =
     useState<SurveyListEntry | null>(null);
+
+  const persistItemsOrder = useCallback(
+    (surveyId: string, items: HydratedSurveyItem[]) => {
+      const itemIds = items.map((item) => item.id);
+      reorderQueueRef.current(
+        surveyId,
+        () => setSurveyItemsOrder(tenantSlug, surveyId, itemIds),
+        (error) => {
+          setReorderError(error);
+          router.refresh();
+        }
+      );
+    },
+    [tenantSlug, router]
+  );
+
+  const handleItemsOrderChange = useCallback(
+    (surveyId: string, items: HydratedSurveyItem[]) => {
+      setReorderError(null);
+      setEntries((current) =>
+        current.map((entry) =>
+          entry.survey.id === surveyId ? { ...entry, items } : entry
+        )
+      );
+      persistItemsOrder(surveyId, items);
+    },
+    [persistItemsOrder]
+  );
+
+  const handleReorderItem = useCallback(
+    (surveyId: string, itemId: string, direction: "up" | "down") => {
+      setReorderError(null);
+
+      let nextItems: HydratedSurveyItem[] | null = null;
+      setEntries((current) =>
+        current.map((entry) => {
+          if (entry.survey.id !== surveyId) return entry;
+
+          const reordered = reorderItemsLocally(entry.items, itemId, direction);
+          if (!reordered) return entry;
+
+          nextItems = reordered;
+          return { ...entry, items: reordered };
+        })
+      );
+
+      if (!nextItems) return;
+
+      persistItemsOrder(surveyId, nextItems);
+    },
+    [persistItemsOrder]
+  );
 
   return (
     <>
@@ -76,7 +143,13 @@ export default function SurveysTabContent({
           </ActionButton>
         </div>
 
-        {surveyEntries.length === 0 ? (
+        {reorderError && (
+          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+            {reorderError}
+          </div>
+        )}
+
+        {entries.length === 0 ? (
           <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-10 text-center dark:border-zinc-700 dark:bg-zinc-900">
             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
               No surveys yet
@@ -92,7 +165,7 @@ export default function SurveysTabContent({
           </div>
         ) : (
           <div className="space-y-3">
-            {surveyEntries.map((entry) => (
+            {entries.map((entry) => (
               <SurveyCollapsible
                 key={entry.survey.id}
                 entry={entry}
@@ -101,6 +174,12 @@ export default function SurveysTabContent({
                 questionTypeNames={QUESTION_TYPE_NAMES}
                 onEdit={() => setEditSurvey(entry.survey)}
                 onAddQuestion={() => setAddQuestionEntry(entry)}
+                onItemsOrderChange={(items) =>
+                  handleItemsOrderChange(entry.survey.id, items)
+                }
+                onReorderItem={(itemId, direction) =>
+                  handleReorderItem(entry.survey.id, itemId, direction)
+                }
               />
             ))}
           </div>

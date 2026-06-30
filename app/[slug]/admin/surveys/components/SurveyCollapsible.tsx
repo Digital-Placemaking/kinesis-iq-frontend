@@ -8,7 +8,8 @@ import { useState } from "react";
 import { ChevronDown, Pencil, Plus } from "lucide-react";
 import type { SurveyListEntry } from "@/lib/types";
 import ActionButton from "@/app/components/ui/ActionButton";
-import SurveyItemActions from "./SurveyItemActions";
+import SurveyItemSortableList from "./SurveyItemSortableList";
+import type { HydratedSurveyItem } from "@/lib/types";
 
 interface SurveyCollapsibleProps {
   entry: SurveyListEntry;
@@ -17,6 +18,8 @@ interface SurveyCollapsibleProps {
   questionTypeNames: Record<string, string>;
   onEdit: () => void;
   onAddQuestion?: () => void;
+  onItemsOrderChange?: (items: HydratedSurveyItem[]) => void;
+  onReorderItem?: (itemId: string, direction: "up" | "down") => void;
 }
 
 function StatusBadge({ status }: { status: SurveyListEntry["survey"]["status"] }) {
@@ -53,6 +56,8 @@ export default function SurveyCollapsible({
   questionTypeNames,
   onEdit,
   onAddQuestion,
+  onItemsOrderChange,
+  onReorderItem,
 }: SurveyCollapsibleProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const { survey, items, summary } = entry;
@@ -125,58 +130,29 @@ export default function SurveyCollapsible({
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               No questions linked to this survey yet.
             </p>
+          ) : onItemsOrderChange ? (
+            <SurveyItemSortableList
+              items={items}
+              summary={summary}
+              surveyId={survey.id}
+              surveyTitle={survey.title}
+              tenantSlug={tenantSlug}
+              questionTypeNames={questionTypeNames}
+              onItemsOrderChange={onItemsOrderChange}
+              onReorderItem={onReorderItem}
+            />
           ) : (
             <ol className="space-y-3">
-              {items.map((item, index) => {
-                const typeName =
-                  questionTypeNames[item.question.type] || item.question.type;
-                const perQuestionCount =
-                  summary.question_totals.find(
-                    (total) => total.question_id === item.question_id
-                  )?.response_count ?? 0;
-
-                return (
-                  <li
-                    key={item.id}
-                    className="rounded-lg border border-zinc-100 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/50"
-                  >
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 flex flex-wrap items-center gap-2">
-                          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                            {index + 1}.
-                          </span>
-                          <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                            {typeName}
-                          </span>
-                          {item.required && (
-                            <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
-                              Required
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-zinc-900 dark:text-zinc-50">
-                          {item.question.question}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-2 sm:items-end">
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          {perQuestionCount}{" "}
-                          {perQuestionCount === 1 ? "response" : "responses"}
-                        </span>
-                        <SurveyItemActions
-                          tenantSlug={tenantSlug}
-                          surveyId={survey.id}
-                          surveyTitle={survey.title}
-                          item={item}
-                          itemIndex={index}
-                          totalItems={items.length}
-                        />
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
+              {items.map((item, index) => (
+                <li
+                  key={item.id}
+                  className="rounded-lg border border-zinc-100 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/50"
+                >
+                  <p className="text-sm text-zinc-900 dark:text-zinc-50">
+                    {index + 1}. {item.question.question}
+                  </p>
+                </li>
+              ))}
             </ol>
           )}
         </div>

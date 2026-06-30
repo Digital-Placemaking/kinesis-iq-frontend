@@ -7,10 +7,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  reorderSurveyItem,
-  removeSurveyItem,
-} from "@/app/actions";
+import { removeSurveyItem } from "@/app/actions";
 import EditQuestionModal from "../../questions/components/EditQuestionModal";
 import EditSurveyItemModal from "./EditSurveyItemModal";
 import DeleteConfirmationModal from "@/app/components/ui/DeleteConfirmationModal";
@@ -35,6 +32,8 @@ interface SurveyItemActionsProps {
   item: HydratedSurveyItem;
   itemIndex: number;
   totalItems: number;
+  /** Optimistic reorder — UI updates immediately; persistence is handled upstream. */
+  onReorder?: (direction: "up" | "down") => void;
 }
 
 export default function SurveyItemActions({
@@ -44,6 +43,7 @@ export default function SurveyItemActions({
   item,
   itemIndex,
   totalItems,
+  onReorder,
 }: SurveyItemActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -54,20 +54,10 @@ export default function SurveyItemActions({
   const [isResultsOpen, setIsResultsOpen] = useState(false);
 
   const handleMove = (direction: "up" | "down") => {
-    setError(null);
-    startTransition(async () => {
-      const result = await reorderSurveyItem(
-        tenantSlug,
-        surveyId,
-        item.id,
-        direction
-      );
-      if (result.success) {
-        router.refresh();
-      } else {
-        setError(result.error || `Failed to move question ${direction}`);
-      }
-    });
+    if (onReorder) {
+      onReorder(direction);
+      return;
+    }
   };
 
   const handleRemoveConfirm = () => {
@@ -92,7 +82,7 @@ export default function SurveyItemActions({
         <button
           type="button"
           onClick={() => handleMove("up")}
-          disabled={isPending || itemIndex === 0}
+          disabled={itemIndex === 0}
           className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800 cursor-pointer"
           title="Move up"
         >
@@ -101,7 +91,7 @@ export default function SurveyItemActions({
         <button
           type="button"
           onClick={() => handleMove("down")}
-          disabled={isPending || itemIndex === totalItems - 1}
+          disabled={itemIndex === totalItems - 1}
           className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800 cursor-pointer"
           title="Move down"
         >
