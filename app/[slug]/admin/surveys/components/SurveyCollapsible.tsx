@@ -11,6 +11,7 @@ import ActionButton from "@/app/components/ui/ActionButton";
 import SurveyItemSortableList from "./SurveyItemSortableList";
 import SurveySummaryPanel from "./SurveySummaryPanel";
 import type { HydratedSurveyItem } from "@/lib/types";
+import { canAddQuestionToSurvey } from "./survey-form-utils";
 
 interface SurveyCollapsibleProps {
   entry: SurveyListEntry;
@@ -64,6 +65,7 @@ export default function SurveyCollapsible({
   const { survey, items, summary } = entry;
   const questionCount = items.length;
   const responseCount = summary.total_responses;
+  const canAddQuestion = canAddQuestionToSurvey(survey.kind, questionCount);
 
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
@@ -116,7 +118,7 @@ export default function SurveyCollapsible({
                 Edit
               </span>
             </ActionButton>
-            {onAddQuestion && (
+            {onAddQuestion && canAddQuestion && (
               <ActionButton
                 type="button"
                 icon={Plus}
@@ -124,6 +126,11 @@ export default function SurveyCollapsible({
               >
                 Add Question
               </ActionButton>
+            )}
+            {onAddQuestion && !canAddQuestion && survey.kind === "poll" && (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Polls are limited to one question.
+              </p>
             )}
           </div>
 

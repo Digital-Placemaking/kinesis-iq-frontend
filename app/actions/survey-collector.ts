@@ -530,6 +530,26 @@ export async function updateSurvey(
       return { success: false, error: "No updates provided", survey: null };
     }
 
+    if (input.kind === "poll") {
+      const { count, error: countError } = await tenantSupabase
+        .from("survey_items")
+        .select("id", { count: "exact", head: true })
+        .eq("survey_id", surveyId);
+
+      if (countError) {
+        return { success: false, error: countError.message, survey: null };
+      }
+
+      if ((count ?? 0) > 1) {
+        return {
+          success: false,
+          error:
+            "Cannot change to poll: remove extra questions first (polls allow only one)",
+          survey: null,
+        };
+      }
+    }
+
     const { data, error } = await tenantSupabase
       .from("surveys")
       .update(updateData)
@@ -623,7 +643,7 @@ export async function addSurveyItem(
 
     const { data: survey, error: surveyError } = await tenantSupabase
       .from("surveys")
-      .select("id")
+      .select("id, kind")
       .eq("id", input.survey_id)
       .maybeSingle();
 
@@ -633,6 +653,25 @@ export async function addSurveyItem(
 
     if (!survey) {
       return { success: false, error: "Survey not found", item: null };
+    }
+
+    if (survey.kind === "poll") {
+      const { count, error: countError } = await tenantSupabase
+        .from("survey_items")
+        .select("id", { count: "exact", head: true })
+        .eq("survey_id", input.survey_id);
+
+      if (countError) {
+        return { success: false, error: countError.message, item: null };
+      }
+
+      if ((count ?? 0) >= 1) {
+        return {
+          success: false,
+          error: "Polls can only have one question",
+          item: null,
+        };
+      }
     }
 
     const { data: question, error: questionError } = await tenantSupabase

@@ -32,6 +32,22 @@ export function nextSurveyItemOrderIndex(
   return Math.max(...items.map((item) => item.order_index)) + 1;
 }
 
+export const POLL_MAX_QUESTIONS = 1;
+
+export function isPollAtQuestionLimit(
+  kind: SurveyRecord["kind"],
+  itemCount: number
+): boolean {
+  return kind === "poll" && itemCount >= POLL_MAX_QUESTIONS;
+}
+
+export function canAddQuestionToSurvey(
+  kind: SurveyRecord["kind"],
+  itemCount: number
+): boolean {
+  return !isPollAtQuestionLimit(kind, itemCount);
+}
+
 export type SurveyFormValues = {
   title: string;
   slug: string;

@@ -206,6 +206,7 @@ export default function SurveysTabContent({
           tenantSlug={tenantSlug}
           surveyId={addQuestionEntry.survey.id}
           surveyTitle={addQuestionEntry.survey.title}
+          surveyKind={addQuestionEntry.survey.kind}
           surveyItems={addQuestionEntry.items}
         />
       )}

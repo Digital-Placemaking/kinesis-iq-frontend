@@ -95,6 +95,11 @@ export default function SurveyFormFields({
             <option value="survey">Survey</option>
             <option value="poll">Poll</option>
           </select>
+          {values.kind === "poll" && (
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              Polls can include only one question.
+            </p>
+          )}
         </div>
 
         <div>

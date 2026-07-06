@@ -11,10 +11,10 @@ import Modal from "@/app/components/ui/Modal";
 import ActionButton from "@/app/components/ui/ActionButton";
 import Spinner from "@/app/components/ui/Spinner";
 import { addSurveyItem, searchQuestionBank } from "@/app/actions";
-import type { HydratedSurveyItem } from "@/lib/types";
+import type { HydratedSurveyItem, SurveyKind } from "@/lib/types";
 import type { Question } from "@/lib/types/question";
 import AddQuestionModal from "../../questions/components/AddQuestionModal";
-import { nextSurveyItemOrderIndex } from "./survey-form-utils";
+import { canAddQuestionToSurvey, nextSurveyItemOrderIndex } from "./survey-form-utils";
 
 const QUESTION_TYPE_NAMES: Record<string, string> = {
   sentiment: "Sentiment",
@@ -41,6 +41,7 @@ interface AddQuestionToSurveyModalProps {
   tenantSlug: string;
   surveyId: string;
   surveyTitle: string;
+  surveyKind: SurveyKind;
   surveyItems: HydratedSurveyItem[];
 }
 
@@ -50,6 +51,7 @@ export default function AddQuestionToSurveyModal({
   tenantSlug,
   surveyId,
   surveyTitle,
+  surveyKind,
   surveyItems,
 }: AddQuestionToSurveyModalProps) {
   const router = useRouter();
@@ -71,6 +73,8 @@ export default function AddQuestionToSurveyModal({
     () => nextSurveyItemOrderIndex(surveyItems),
     [surveyItems]
   );
+
+  const atPollLimit = !canAddQuestionToSurvey(surveyKind, surveyItems.length);
 
   const reset = () => {
     setActiveTab("create");
@@ -116,6 +120,11 @@ export default function AddQuestionToSurveyModal({
   }, [isOpen, activeTab, query, tenantSlug]);
 
   const handleAddFromBank = (questionId: string) => {
+    if (atPollLimit) {
+      setActionError("Polls can only have one question");
+      return;
+    }
+
     if (linkedQuestionIds.has(questionId)) {
       setActionError("This question is already in the survey");
       return;
@@ -154,7 +163,25 @@ export default function AddQuestionToSurveyModal({
       title={`Add Question — ${surveyTitle}`}
       size="lg"
     >
-      <div className="mb-4 flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
+      {atPollLimit ? (
+        <div className="space-y-4">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            This poll already has a question. Remove it before adding another, or
+            use a survey type for multiple questions.
+          </p>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="mb-4 flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
         <button
           type="button"
           onClick={() => setActiveTab("create")}
@@ -272,6 +299,8 @@ export default function AddQuestionToSurveyModal({
             </button>
           </div>
         </div>
+      )}
+        </>
       )}
     </Modal>
   );
