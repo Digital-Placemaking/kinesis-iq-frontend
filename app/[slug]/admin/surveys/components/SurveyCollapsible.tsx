@@ -9,6 +9,7 @@ import { ChevronDown, Pencil, Plus } from "lucide-react";
 import type { SurveyListEntry } from "@/lib/types";
 import ActionButton from "@/app/components/ui/ActionButton";
 import SurveyItemSortableList from "./SurveyItemSortableList";
+import SurveySummaryPanel from "./SurveySummaryPanel";
 import type { HydratedSurveyItem } from "@/lib/types";
 
 interface SurveyCollapsibleProps {
@@ -125,6 +126,14 @@ export default function SurveyCollapsible({
               </ActionButton>
             )}
           </div>
+
+          <SurveySummaryPanel
+            tenantSlug={tenantSlug}
+            surveyId={survey.id}
+            surveyTitle={survey.title}
+            initialSummary={summary}
+            items={items}
+          />
 
           {items.length === 0 ? (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
