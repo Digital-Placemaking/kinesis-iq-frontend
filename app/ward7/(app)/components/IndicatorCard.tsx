@@ -25,8 +25,14 @@ export function IndicatorCard({
   status,
   statusTone,
   sample,
+  directionTone,
 }: IndicatorCardProps) {
   const Dir = DIR_ICON[direction];
+  // A rising Pressure is bad news even though the arrow points up, so colour by
+  // what the move means. Fixtures omit directionTone and keep "up" = good.
+  const tone =
+    directionTone ??
+    (direction === "up" ? "good" : direction === "down" ? "bad" : "neutral");
   return (
     <Card className="gap-0 border-l-4 border-l-transparent p-4 py-4 data-[tone=critical]:border-l-red-400 data-[tone=elevated]:border-l-amber-400 data-[tone=good]:border-l-emerald-400">
       <div className="flex items-center justify-between">
@@ -40,9 +46,9 @@ export function IndicatorCard({
         <Dir
           className={cn(
             "size-3.5",
-            direction === "up" && "text-emerald-600",
-            direction === "down" && "text-red-600",
-            direction === "flat" && "text-slate-400"
+            tone === "good" && "text-emerald-600",
+            tone === "bad" && "text-red-600",
+            tone === "neutral" && "text-slate-400"
           )}
         />
         <span>{delta}</span>

@@ -22,9 +22,14 @@ export const WARD = {
 /**
  * The four headline "system health" indicators shown on the dashboard.
  *
- * `column` is the v_ward_week_indicators field that backs the card.
- * `live` marks the only two that are actually produced today; the rest are NULL
- * in both real and sandbox data, so they render as labeled SAMPLE values.
+ * `column` is the v_ward_week_indicators field that backs the card — the
+ * dashboard reads it straight off the newest ward-week row and only falls back
+ * to a labeled SAMPLE when the column is null. All four now have producers
+ * (kinesis-iq-etl/etl/indicator_producers.py); the three *_index columns are
+ * [0, 1] and sentiment_score_avg is [-1, 1].
+ *
+ * `higherIsBetter` drives the up/down arrow colour: a rising Pressure is bad
+ * news, a rising Sentiment is good news.
  */
 export type IndicatorKey = "demand" | "pressure" | "delay" | "sentiment";
 
@@ -32,7 +37,7 @@ export interface IndicatorDef {
   key: IndicatorKey;
   label: string;
   column: keyof import("./types").IndicatorRow;
-  live: boolean;
+  higherIsBetter: boolean;
   blurb: string;
 }
 
@@ -41,28 +46,28 @@ export const INDICATORS: IndicatorDef[] = [
     key: "demand",
     label: "Demand",
     column: "request_intensity_index",
-    live: false,
-    blurb: "Service-request intensity vs. the ward's own baseline.",
+    higherIsBetter: false,
+    blurb: "Request volume normalised against the intensity cap (500/week).",
   },
   {
     key: "pressure",
     label: "Pressure",
     column: "pressure_index",
-    live: false,
-    blurb: "Composite strain across categories this week.",
+    higherIsBetter: false,
+    blurb: "Composite of request intensity and demand concentration.",
   },
   {
     key: "delay",
     label: "Delay",
     column: "service_delay_index",
-    live: false,
-    blurb: "How far open requests run past their expected close.",
+    higherIsBetter: false,
+    blurb: "Share of this week's requests still open or in progress.",
   },
   {
     key: "sentiment",
     label: "Sentiment",
     column: "sentiment_score_avg",
-    live: true,
+    higherIsBetter: true,
     blurb: "Average resident sentiment across feedback this week.",
   },
 ];

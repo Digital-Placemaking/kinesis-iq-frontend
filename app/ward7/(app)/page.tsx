@@ -1,10 +1,16 @@
 import { AlertTriangle, Megaphone, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTopSignals, getWeeklyOverview } from "@/lib/councillor/api";
-import { INDICATORS, WARD } from "@/lib/councillor/config";
+import {
+  INDICATORS,
+  WARD,
+  type IndicatorDef,
+  type IndicatorKey,
+} from "@/lib/councillor/config";
 import {
   SAMPLE_INDICATORS,
   type IndicatorView,
+  type StatusTone,
 } from "@/lib/councillor/sample-indicators";
 import {
   categoryLabel,
@@ -33,43 +39,133 @@ const TONE_BY_SENTIMENT = {
   negative: "critical",
 } as const;
 
-/** Live value where the column is actually produced; labeled sample otherwise. */
-function buildIndicator(
-  key: (typeof INDICATORS)[number]["key"],
-  label: string,
-  rows: IndicatorRow[]
-): IndicatorView & { label: string } {
-  const sample = SAMPLE_INDICATORS[key];
-  if (key === "sentiment") {
-    const newest = rows[0]?.sentiment_score_avg;
-    if (typeof newest === "number") {
-      const tone = sentimentTone(newest);
-      const series = [...rows]
-        .reverse()
-        .map((r) => r.sentiment_score_avg)
-        .filter((v): v is number => typeof v === "number");
-      const prev = rows[1]?.sentiment_score_avg;
-      const dir =
-        typeof prev === "number"
-          ? newest > prev + 0.02
-            ? "up"
-            : newest < prev - 0.02
-              ? "down"
-              : "flat"
-          : "flat";
-      return {
-        label,
-        value: newest,
-        delta: tone.label,
-        direction: dir,
-        status: tone.label,
-        statusTone: TONE_BY_SENTIMENT[tone.tone],
-        series: series.length ? series : sample.series,
-        sample: false,
-      };
-    }
-  }
-  return { label, ...sample };
+/**
+ * Week-over-week move that counts as a real trend. 0.05 mirrors the ETL's
+ * TREND_THRESHOLD (kinesis-iq-etl docs/project/indicator_semantics.md), so the
+ * Demand arrow agrees with the view's own trend_indicator column. Sentiment
+ * keeps its tighter band because it rides a -1..1 scale, not 0..1.
+ */
+const TREND_THRESHOLD = 0.05;
+const SENTIMENT_TREND_THRESHOLD = 0.02;
+
+type BuiltIndicator = {
+  key: IndicatorKey;
+  /** Props for the headline card. */
+  card: IndicatorView & { label: string };
+  /** oldest → newest, week labels kept aligned with the surviving values. */
+  points: { week: string; value: number }[];
+};
+
+/**
+ * Bands for the [0, 1] index columns (request_intensity_index, pressure_index,
+ * service_delay_index). Higher means more strain on the ward, so the tone
+ * escalates with the value.
+ */
+function indexBand(value: number): { status: string; statusTone: StatusTone } {
+  if (value < 0.25) return { status: "Low", statusTone: "good" };
+  if (value < 0.5) return { status: "Moderate", statusTone: "watch" };
+  if (value < 0.75) return { status: "Elevated", statusTone: "elevated" };
+  return { status: "High", statusTone: "critical" };
+}
+
+/** Reads one indicator column off a row, treating anything non-numeric as absent. */
+function numericColumn(
+  row: IndicatorRow | undefined,
+  column: IndicatorDef["column"]
+): number | null {
+  const value = row?.[column];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function sampleFallback(def: IndicatorDef): BuiltIndicator {
+  const sample = SAMPLE_INDICATORS[def.key];
+  return {
+    key: def.key,
+    card: { ...sample, label: def.label },
+    points: sample.series.map((value, i) => ({ week: `W${i + 1}`, value })),
+  };
+}
+
+/**
+ * Live value straight off the newest ward-week row; labeled sample only when
+ * that column is null. Driven by `def.column`, so every indicator goes live the
+ * moment its producer starts filling the view — no per-key special cases.
+ */
+function buildIndicator(def: IndicatorDef, rows: IndicatorRow[]): BuiltIndicator {
+  const newest = numericColumn(rows[0], def.column);
+  if (newest === null) return sampleFallback(def);
+
+  const sample = SAMPLE_INDICATORS[def.key];
+  const prev = numericColumn(rows[1], def.column);
+  const change = prev === null ? null : newest - prev;
+  const threshold =
+    def.key === "sentiment" ? SENTIMENT_TREND_THRESHOLD : TREND_THRESHOLD;
+
+  const direction =
+    change === null || Math.abs(change) <= threshold
+      ? "flat"
+      : change > 0
+        ? "up"
+        : "down";
+
+  const band =
+    def.key === "sentiment"
+      ? sentimentBand(newest)
+      : indexBand(newest);
+
+  // oldest → newest; rows whose column is null drop out with their label.
+  const points = [...rows].reverse().flatMap((row) => {
+    const value = numericColumn(row, def.column);
+    return value === null ? [] : [{ week: weekLabel(row.time_bucket), value }];
+  });
+
+  return {
+    key: def.key,
+    card: {
+      label: def.label,
+      value: newest,
+      delta:
+        change === null
+          ? "No prior week"
+          : direction === "flat"
+            ? "Stable"
+            : `${change > 0 ? "+" : ""}${change.toFixed(2)} vs last week`,
+      direction,
+      status: band.status,
+      statusTone: band.statusTone,
+      directionTone:
+        direction === "flat"
+          ? "neutral"
+          : (direction === "up") === def.higherIsBetter
+            ? "good"
+            : "bad",
+      series: points.length ? points.map((p) => p.value) : sample.series,
+      sample: false,
+    },
+    points: points.length
+      ? points
+      : sample.series.map((value, i) => ({ week: `W${i + 1}`, value })),
+  };
+}
+
+function sentimentBand(value: number): { status: string; statusTone: StatusTone } {
+  const tone = sentimentTone(value);
+  return { status: tone.label, statusTone: TONE_BY_SENTIMENT[tone.tone] };
+}
+
+/**
+ * Every card reads rows[0] as "this week". /weekly-overview already sorts
+ * newest-first before slicing to 4 weeks, but the underlying view query has no
+ * ORDER BY of its own — re-sorting here keeps the page correct on its own terms
+ * rather than on the endpoint's current slicing behaviour.
+ */
+function newestFirst(rows: IndicatorRow[]): IndicatorRow[] {
+  return [...rows].sort((a, b) => {
+    const ta = new Date(a.time_bucket).getTime();
+    const tb = new Date(b.time_bucket).getTime();
+    if (Number.isNaN(ta) || Number.isNaN(tb)) return 0;
+    return tb - ta;
+  });
 }
 
 export default async function Ward7Dashboard() {
@@ -78,45 +174,21 @@ export default async function Ward7Dashboard() {
     getTopSignals(),
   ]);
 
-  const rows: IndicatorRow[] =
-    wkRes.status === "fulfilled" ? wkRes.value.data ?? [] : [];
+  const rows: IndicatorRow[] = newestFirst(
+    wkRes.status === "fulfilled" ? wkRes.value.data ?? [] : []
+  );
   const signals: TopSignals | null =
     tsRes.status === "fulfilled" ? tsRes.value : null;
   const apiDown = wkRes.status === "rejected" && tsRes.status === "rejected";
 
-  const indicators = INDICATORS.map((d) =>
-    buildIndicator(d.key, d.label, rows)
-  );
+  const indicators = INDICATORS.map((def) => buildIndicator(def, rows));
 
-  const trendTabs: TrendTab[] = [
-    {
-      key: "pressure",
-      label: "Pressure",
-      sample: true,
-      points: SAMPLE_INDICATORS.pressure.series.map((value, i) => ({
-        week: `W${i + 1}`,
-        value,
-      })),
-    },
-    {
-      key: "delay",
-      label: "Delay",
-      sample: true,
-      points: SAMPLE_INDICATORS.delay.series.map((value, i) => ({
-        week: `W${i + 1}`,
-        value,
-      })),
-    },
-    {
-      key: "sentiment",
-      label: "Sentiment",
-      sample: indicators[3].sample,
-      points: indicators[3].series.map((value, i) => ({
-        week: rows.length ? weekLabel(rows[rows.length - 1 - i]?.time_bucket) : `W${i + 1}`,
-        value,
-      })),
-    },
-  ];
+  const trendTabs: TrendTab[] = indicators.map((ind) => ({
+    key: ind.key,
+    label: ind.card.label,
+    sample: ind.card.sample,
+    points: ind.points,
+  }));
 
   const keyIssues = signals?.rising_categories.slice(0, 3) ?? [];
   const alerts = signals?.early_warning.slice(0, 3) ?? [];
@@ -161,7 +233,7 @@ export default async function Ward7Dashboard() {
         </h2>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {indicators.map((ind) => (
-            <IndicatorCard key={ind.label} {...ind} />
+            <IndicatorCard key={ind.key} {...ind.card} />
           ))}
         </div>
       </section>

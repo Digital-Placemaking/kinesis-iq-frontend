@@ -1,13 +1,13 @@
 /**
- * Labeled SAMPLE values for the system-health indicators that have no producer
- * yet (Demand / Pressure / Delay are NULL in both real and sandbox data — see
- * kinesis-iq-etl/schemas/api_views.sql). These render with a visible "Sample"
- * badge so they show the intended experience without being presented as real
- * Ward 7 figures. Sentiment is produced live, so it is NOT sampled here.
+ * Last-resort placeholder values for the system-health indicators.
  *
- * Replace these with live values once Niloufar/Sameer ship the indicator
- * producers — the dashboard already reads live data first and only falls back to
- * SAMPLE_INDICATORS when the backing column is null.
+ * All four indicators are now produced by the ETL (see
+ * kinesis-iq-etl/schemas/api_views.sql → v_ward_week_indicators), and the
+ * dashboard reads them live off the newest ward-week row. These fixtures are
+ * only used when the backing column comes back null for that row — a ward-week
+ * with no sentiment measures, or a week the producers haven't filled yet. When
+ * they are used the card carries a visible "Sample" badge, so the demo never
+ * presents them as real Ward 7 figures.
  */
 import type { IndicatorKey } from "./config";
 
@@ -26,6 +26,12 @@ export interface IndicatorView {
   series: number[];
   /** True when this is a labeled sample rather than produced data. */
   sample: boolean;
+  /**
+   * Whether the week-over-week move is good or bad news for the ward, used to
+   * colour the arrow. Omitted on the fixtures below, where the card falls back
+   * to treating "up" as good.
+   */
+  directionTone?: "good" | "bad" | "neutral";
 }
 
 export const SAMPLE_INDICATORS: Record<IndicatorKey, IndicatorView> = {
