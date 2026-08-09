@@ -9,6 +9,7 @@
 import OverviewTabContent from "./OverviewTabContent";
 import AnalyticsTabContent from "./AnalyticsTabContent";
 import SurveysTabContent from "../surveys/components/SurveysTabContent";
+import ExportTabContent from "../export/components/ExportTabContent";
 import CouponTabs from "../coupons/components/CouponTabs";
 import SettingsClient from "../settings/components/SettingsClient";
 import EmailsClient from "../emails/components/EmailsClient";
@@ -20,6 +21,7 @@ export type AdminTab =
   | "surveys"
   | "coupons"
   | "emails"
+  | "export"
   | "settings";
 
 interface AdminContentProps {
@@ -116,6 +118,12 @@ export default function AdminContent({
           return <div>Access denied</div>;
         }
         return <EmailsClient tenantSlug={tenantSlug} emails={emails || []} />;
+
+      case "export":
+        if (userRole === "staff") {
+          return <div>Access denied</div>;
+        }
+        return <ExportTabContent tenantId={tenantId} surveys={surveys} />;
 
       case "settings":
         if (userRole === "staff") {

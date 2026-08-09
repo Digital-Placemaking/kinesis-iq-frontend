@@ -16,6 +16,7 @@ const ADMIN_TABS: AdminTab[] = [
   "surveys",
   "coupons",
   "emails",
+  "export",
   "settings",
 ];
 
