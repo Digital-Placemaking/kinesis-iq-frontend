@@ -130,6 +130,7 @@ export default function AdminLoginForm({
           required
           disabled={loading}
           icon={Lock}
+          passwordToggle
         />
 
         {error && <ErrorMessage message={error} />}
