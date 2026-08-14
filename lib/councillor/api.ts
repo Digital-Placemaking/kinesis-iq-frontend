@@ -68,10 +68,16 @@ export async function loginRequest(
   return (await res.json()) as LoginResult;
 }
 
-/** Read the session stored at login (role/ward/scope) from the cookie. */
+/**
+ * Read the session stored at login (role/ward/scope).
+ * Requires both session + access-token cookies so an expired JWT cannot leave
+ * the UI looking signed-in while API calls 401.
+ */
 export async function getSession(): Promise<CouncillorSession | null> {
-  const raw = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (!raw) return null;
+  const jar = await cookies();
+  const token = jar.get(TOKEN_COOKIE)?.value;
+  const raw = jar.get(SESSION_COOKIE)?.value;
+  if (!token || !raw) return null;
   try {
     return JSON.parse(raw) as CouncillorSession;
   } catch {

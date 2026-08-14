@@ -179,7 +179,16 @@ export default async function Ward7Dashboard() {
   );
   const signals: TopSignals | null =
     tsRes.status === "fulfilled" ? tsRes.value : null;
-  const apiDown = wkRes.status === "rejected" && tsRes.status === "rejected";
+  // Banner on any feed failure — weekly-only outage otherwise looks like SAMPLE
+  // indicator data rather than an API error.
+  const weeklyDown = wkRes.status === "rejected";
+  const signalsDown = tsRes.status === "rejected";
+  const apiDown = weeklyDown || signalsDown;
+  const apiDownDetail = weeklyDown && signalsDown
+    ? undefined
+    : weeklyDown
+      ? "Weekly indicator feed failed — cards may show sample values."
+      : "Story Layer signals failed — issues and summary may be incomplete.";
 
   const indicators = INDICATORS.map((def) => buildIndicator(def, rows));
 
@@ -224,7 +233,7 @@ export default async function Ward7Dashboard() {
         </div>
       </div>
 
-      {apiDown ? <ApiErrorBanner /> : null}
+      {apiDown ? <ApiErrorBanner detail={apiDownDetail} /> : null}
 
       {/* Current System Health */}
       <section>

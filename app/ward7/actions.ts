@@ -3,11 +3,42 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { loginRequest, ApiError } from "@/lib/councillor/api";
-import { SESSION_COOKIE, TOKEN_COOKIE } from "@/lib/councillor/config";
+import {
+  COOKIE_PATH,
+  SESSION_COOKIE,
+  TOKEN_COOKIE,
+} from "@/lib/councillor/config";
 import type { CouncillorSession } from "@/lib/councillor/types";
 
 export interface LoginState {
   error?: string;
+}
+
+/** Cookie options shared by login set + logout delete (path must match). */
+function cookieBase(secure: boolean) {
+  return {
+    httpOnly: true,
+    secure,
+    sameSite: "lax" as const,
+    path: COOKIE_PATH,
+  };
+}
+
+/**
+ * Turn gateway `expires_at` (unix seconds) into cookie lifetime. Falls back to
+ * 1h if the value is missing or already past so we never set an immortal cookie.
+ */
+function cookieLifetime(expiresAt: number | undefined): {
+  maxAge: number;
+  expires: Date;
+} {
+  const nowSec = Math.floor(Date.now() / 1000);
+  const fallbackSec = 60 * 60;
+  const maxAge =
+    typeof expiresAt === "number" && expiresAt > nowSec
+      ? expiresAt - nowSec
+      : fallbackSec;
+  return { maxAge, expires: new Date((nowSec + maxAge) * 1000) };
 }
 
 export async function loginAction(
@@ -37,25 +68,21 @@ export async function loginAction(
 
   const jar = await cookies();
   const secure = process.env.NODE_ENV === "production";
-  jar.set(TOKEN_COOKIE, result.access_token, {
-    httpOnly: true,
-    secure,
-    sameSite: "lax",
-    path: "/",
-  });
-  jar.set(SESSION_COOKIE, JSON.stringify(session), {
-    httpOnly: true,
-    secure,
-    sameSite: "lax",
-    path: "/",
-  });
+  const base = cookieBase(secure);
+  const { maxAge, expires } = cookieLifetime(result.expires_at);
+
+  jar.set(TOKEN_COOKIE, result.access_token, { ...base, maxAge, expires });
+  jar.set(SESSION_COOKIE, JSON.stringify(session), { ...base, maxAge, expires });
 
   redirect("/ward7");
 }
 
 export async function logoutAction() {
   const jar = await cookies();
-  jar.delete(TOKEN_COOKIE);
-  jar.delete(SESSION_COOKIE);
+  const secure = process.env.NODE_ENV === "production";
+  const base = cookieBase(secure);
+  // Next requires matching path (and ideally same attributes) to clear cookies.
+  jar.set(TOKEN_COOKIE, "", { ...base, maxAge: 0 });
+  jar.set(SESSION_COOKIE, "", { ...base, maxAge: 0 });
   redirect("/ward7/login");
 }

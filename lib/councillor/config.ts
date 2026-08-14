@@ -13,6 +13,8 @@ export const COUNCILLOR_API_URL =
 /** httpOnly cookies set on login. */
 export const TOKEN_COOKIE = "kiq_token";
 export const SESSION_COOKIE = "kiq_session";
+/** Must match path used in jar.set / jar.delete. */
+export const COOKIE_PATH = "/";
 
 export const WARD = {
   id: "07",
