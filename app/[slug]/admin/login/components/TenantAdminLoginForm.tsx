@@ -178,6 +178,7 @@ export default function TenantAdminLoginForm({
           required
           disabled={loading}
           icon={Lock}
+          passwordToggle
         />
 
         {error && <ErrorMessage message={error} />}
