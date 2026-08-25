@@ -196,6 +196,7 @@ export default async function AdminPageContent({
       analyticsSummary={analyticsSummary}
       analyticsTimeSeries={analyticsTimeSeries}
       surveys={surveysData.entries || []}
+      surveysError={surveysData.error}
       coupons={couponsData.data || []}
       canEditCoupons={canEditCoupons}
       emails={emailsData.data || []}

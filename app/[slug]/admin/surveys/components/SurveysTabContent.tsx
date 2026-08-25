@@ -39,6 +39,8 @@ const QUESTION_TYPE_NAMES: Record<string, string> = {
 interface SurveysTabContentProps {
   tenantSlug: string;
   surveyEntries: SurveyListEntry[];
+  /** Server load failure — shown instead of the empty state. */
+  loadError?: string | null;
 }
 
 function getDefaultExpandedSurveyId(entries: SurveyListEntry[]): string | null {
@@ -50,6 +52,7 @@ function getDefaultExpandedSurveyId(entries: SurveyListEntry[]): string | null {
 export default function SurveysTabContent({
   tenantSlug,
   surveyEntries,
+  loadError = null,
 }: SurveysTabContentProps) {
   const router = useRouter();
   const reorderQueueRef = useRef(createSurveyReorderQueue());
@@ -149,7 +152,31 @@ export default function SurveysTabContent({
           </div>
         )}
 
-        {entries.length === 0 ? (
+        {loadError ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400">
+            <p className="font-medium">Couldn’t load surveys</p>
+            <p className="mt-2 text-xs opacity-90">{loadError}</p>
+            {loadError.includes("permission denied") ? (
+              <p className="mt-3 text-xs opacity-90">
+                The database role used by the app lacks table privileges. In the
+                Supabase SQL editor, grant access on{" "}
+                <code className="rounded bg-red-100 px-1 dark:bg-red-950">
+                  survey_questions
+                </code>
+                ,{" "}
+                <code className="rounded bg-red-100 px-1 dark:bg-red-950">
+                  surveys
+                </code>
+                , and{" "}
+                <code className="rounded bg-red-100 px-1 dark:bg-red-950">
+                  survey_items
+                </code>{" "}
+                to <code className="rounded bg-red-100 px-1 dark:bg-red-950">authenticated</code>{" "}
+                (see <code className="rounded bg-red-100 px-1 dark:bg-red-950">scripts/fix-survey-table-grants.sql</code>).
+              </p>
+            ) : null}
+          </div>
+        ) : entries.length === 0 ? (
           <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-10 text-center dark:border-zinc-700 dark:bg-zinc-900">
             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
               No surveys yet

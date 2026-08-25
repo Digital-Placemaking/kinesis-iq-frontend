@@ -41,6 +41,7 @@ interface AdminWrapperProps {
   analyticsSummary: any;
   analyticsTimeSeries: any;
   surveys: SurveyListEntry[];
+  surveysError?: string | null;
   coupons: any[];
   canEditCoupons: boolean;
   emails: any[];
@@ -60,6 +61,7 @@ export default function AdminWrapper({
   analyticsSummary,
   analyticsTimeSeries,
   surveys,
+  surveysError = null,
   coupons,
   canEditCoupons,
   emails,
@@ -90,6 +92,7 @@ export default function AdminWrapper({
           analyticsSummary={analyticsSummary}
           analyticsTimeSeries={analyticsTimeSeries}
           surveys={surveys}
+          surveysError={surveysError}
           coupons={coupons}
           canEditCoupons={canEditCoupons}
           emails={emails}

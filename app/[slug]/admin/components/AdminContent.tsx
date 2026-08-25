@@ -32,6 +32,8 @@ interface AdminContentProps {
   analyticsSummary: any;
   analyticsTimeSeries: any;
   surveys: SurveyListEntry[];
+  /** Set when getSurveysForAdminTab failed (entries may be empty). */
+  surveysError?: string | null;
   coupons: any[];
   canEditCoupons: boolean;
   emails: any[];
@@ -51,6 +53,7 @@ export default function AdminContent({
   analyticsSummary,
   analyticsTimeSeries,
   surveys,
+  surveysError = null,
   coupons,
   canEditCoupons,
   emails,
@@ -90,7 +93,7 @@ export default function AdminContent({
         if (userRole === "staff") {
           return <div>Access denied</div>;
         }
-        return <SurveysTabContent tenantSlug={tenantSlug} surveyEntries={surveys} />;
+        return <SurveysTabContent tenantSlug={tenantSlug} surveyEntries={surveys} loadError={surveysError} />;
 
       case "coupons":
         return (
