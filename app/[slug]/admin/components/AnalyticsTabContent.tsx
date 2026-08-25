@@ -122,9 +122,9 @@ export default function AnalyticsTabContent({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                  Congratulations
+                  Survey Completions
                 </p>
-                <MetricTooltip description="Unique visitors who completed a survey and reached the congratulations page. This represents survey completion rate." />
+                <MetricTooltip description="Unique visitors who completed a survey. Counted by email or session ID." />
               </div>
               <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
                 {summary.congratulations}

@@ -226,7 +226,25 @@ export async function getSurveysForAdminTab(
         .in("id", questionIds);
 
       if (questionsError) {
-        return { entries: null, error: questionsError.message };
+        // Don't blank the whole Surveys tab — return survey shells + surface the error.
+        console.error(
+          "getSurveysForAdminTab: failed to hydrate questions:",
+          questionsError.message
+        );
+        const partialEntries: SurveyListEntry[] = surveys.map((survey) => ({
+          survey,
+          items: [],
+          summary: {
+            survey_id: survey.id,
+            total_responses: 0,
+            unique_sessions: 0,
+            question_totals: [],
+          },
+        }));
+        return {
+          entries: partialEntries,
+          error: questionsError.message,
+        };
       }
 
       for (const row of questionRows ?? []) {
