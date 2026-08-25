@@ -100,7 +100,7 @@ export default function OverviewTabContent({
               <h2 className="text-lg sm:text-xl font-semibold text-black dark:text-zinc-50">
                 Sentiment Distribution
               </h2>
-              <MetricTooltip description="Shows how visitors are feeling based on their survey responses. Responses to 'Sentiment Question' type questions are categorized as: Happy (4-5), Neutral (3), or Concerned (1-2). If no sentiment questions are set up, the system uses NPS questions instead (7+ = Happy, 4-6 = Neutral, 0-3 = Concerned)." />
+              <MetricTooltip description="Happy / Neutral / Concerned from Sentiment, NPS, Likert, and Rating answers only. Other response types (text, yes/no, etc.) are excluded, so the center total can be lower than Total Responses." />
             </div>
             <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
               How people are feeling
