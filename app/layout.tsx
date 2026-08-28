@@ -58,10 +58,10 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        {/* 
-          Safe use of dangerouslySetInnerHTML: 
+        {/*
+          Safe use of dangerouslySetInnerHTML:
           - Static, hardcoded script (no user input)
-          - Only adds dark mode class to document element
+          - Applies saved or system theme before paint to avoid a flash
           - No XSS risk as content is not user-generated
         */}
         <script
@@ -69,7 +69,11 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  document.documentElement.classList.add('dark');
+                  var saved = localStorage.getItem('theme');
+                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  var theme = saved || (prefersDark ? 'dark' : 'light');
+                  if (theme === 'dark') document.documentElement.classList.add('dark');
+                  else document.documentElement.classList.remove('dark');
                 } catch (e) {}
               })();
             `,
@@ -77,7 +81,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <PublicLayout>{children}</PublicLayout>
         <Analytics />
