@@ -25,6 +25,7 @@ import {
   Mail,
   Send,
   Search,
+  Printer,
 } from "lucide-react";
 import ActionButton from "@/app/components/ui/ActionButton";
 
@@ -173,15 +174,25 @@ export default function AdminContent({
           return <div>Access denied</div>;
         }
         return (
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <div className="mb-6 sm:mb-8">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
-                Analytics
-              </h1>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                Track visitor engagement, conversion metrics, and trends over
-                time
-              </p>
+          <div className="print-area mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-zinc-50">
+                  Analytics
+                </h1>
+                <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                  Track visitor engagement, conversion metrics, and trends over
+                  time
+                </p>
+              </div>
+              <ActionButton
+                icon={Printer}
+                variant="outline"
+                className="print:hidden shrink-0"
+                onClick={() => window.print()}
+              >
+                Print Report
+              </ActionButton>
             </div>
 
             {/* Metrics Cards */}
