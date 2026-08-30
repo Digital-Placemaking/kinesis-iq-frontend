@@ -22,13 +22,93 @@ import type {
   SurveySubmission,
   Survey,
   SurveyQuestion,
+  PublicSurveyListItem,
+  PublicSurveysListResponse,
+  PublicSurveyLoadResponse,
 } from "@/lib/types/survey";
 import type { SurveyAnswer } from "@/lib/types/survey-answer";
+import type { HydratedSurveyItem } from "@/lib/types/survey-collector";
+import {
+  mapSurvey,
+  mapSurveyItem,
+  mapQuestion,
+} from "@/lib/survey/map-collector";
+import {
+  allowsAnonymous,
+  isSurveyInWindow,
+  isUuid,
+  mapCollectorToVisitorSurvey,
+} from "@/lib/survey/public-survey";
 
 /**
  * Survey Actions
  * Server actions for survey fetching and submission
  */
+
+async function resolveTenantId(
+  tenantSlug: string
+): Promise<{ tenantId: string } | { error: string }> {
+  const supabase = await createClient();
+  const { data: tenantId, error: resolveError } = await supabase.rpc(
+    "resolve_tenant",
+    { slug_input: tenantSlug }
+  );
+
+  if (resolveError || !tenantId) {
+    return { error: `Tenant not found: ${tenantSlug}` };
+  }
+
+  return { tenantId };
+}
+
+async function hydrateSurveyItems(
+  tenantSupabase: Awaited<ReturnType<typeof createTenantClient>>,
+  surveyId: string
+): Promise<{ items: HydratedSurveyItem[] } | { error: string }> {
+  const { data: itemRows, error: itemsError } = await tenantSupabase
+    .from("survey_items")
+    .select("*")
+    .eq("survey_id", surveyId)
+    .order("order_index", { ascending: true });
+
+  if (itemsError) {
+    return { error: itemsError.message };
+  }
+
+  const items = itemRows ?? [];
+  if (items.length === 0) {
+    return { items: [] };
+  }
+
+  const questionIds = items.map((item) => item.question_id as string);
+  const { data: questionRows, error: questionsError } = await tenantSupabase
+    .from("survey_questions")
+    .select("*")
+    .in("id", questionIds);
+
+  if (questionsError) {
+    return { error: questionsError.message };
+  }
+
+  const questionById = new Map(
+    (questionRows ?? []).map((q) => [
+      q.id as string,
+      mapQuestion(q as Record<string, unknown>),
+    ])
+  );
+
+  const hydrated: HydratedSurveyItem[] = [];
+  for (const itemRow of items) {
+    const item = mapSurveyItem(itemRow as Record<string, unknown>);
+    const question = questionById.get(item.question_id);
+    if (!question) {
+      return { error: `Question not found for survey item ${item.id}` };
+    }
+    hydrated.push({ ...item, question });
+  }
+
+  return { items: hydrated };
+}
 
 /**
  * Fetches survey questions for a specific tenant
@@ -194,6 +274,156 @@ export async function getSurveyForCoupon(
 }
 
 /**
+ * Lists active, in-window surveys/polls that have at least one question.
+ * Used by the public surveys hub.
+ */
+export async function listPublicSurveys(
+  tenantSlug: string
+): Promise<PublicSurveysListResponse> {
+  try {
+    const resolved = await resolveTenantId(tenantSlug);
+    if ("error" in resolved) {
+      return { surveys: [], error: resolved.error };
+    }
+
+    const tenantSupabase = await createTenantClient(resolved.tenantId);
+    const { data: surveyRows, error: surveysError } = await tenantSupabase
+      .from("surveys")
+      .select("*")
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
+
+    if (surveysError) {
+      return { surveys: [], error: surveysError.message };
+    }
+
+    const liveSurveys = (surveyRows ?? [])
+      .map((row) => mapSurvey(row as Record<string, unknown>))
+      .filter((survey) => isSurveyInWindow(survey).ok);
+
+    if (liveSurveys.length === 0) {
+      return { surveys: [], error: null };
+    }
+
+    const surveyIds = liveSurveys.map((survey) => survey.id);
+    const { data: itemRows, error: itemsError } = await tenantSupabase
+      .from("survey_items")
+      .select("survey_id")
+      .in("survey_id", surveyIds);
+
+    if (itemsError) {
+      return { surveys: [], error: itemsError.message };
+    }
+
+    const countBySurveyId = new Map<string, number>();
+    for (const row of itemRows ?? []) {
+      const surveyId = row.survey_id as string;
+      countBySurveyId.set(surveyId, (countBySurveyId.get(surveyId) ?? 0) + 1);
+    }
+
+    const surveys: PublicSurveyListItem[] = liveSurveys
+      .map((survey) => ({
+        id: survey.id,
+        title: survey.title,
+        slug: survey.slug,
+        description: survey.description,
+        kind: survey.kind,
+        questionCount: countBySurveyId.get(survey.id) ?? 0,
+        allowAnonymous: allowsAnonymous(survey.settings),
+      }))
+      .filter((survey) => survey.questionCount > 0);
+
+    return { surveys, error: null };
+  } catch (err) {
+    return {
+      surveys: [],
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
+ * Loads one public survey by slug or UUID. Drafts are treated as not found.
+ */
+export async function getPublicSurvey(
+  tenantSlug: string,
+  surveyRef: string
+): Promise<PublicSurveyLoadResponse> {
+  try {
+    const resolved = await resolveTenantId(tenantSlug);
+    if ("error" in resolved) {
+      return { survey: null, reason: "not_found", error: resolved.error };
+    }
+
+    const tenantSupabase = await createTenantClient(resolved.tenantId);
+    const trimmedRef = surveyRef.trim();
+
+    let query = tenantSupabase.from("surveys").select("*");
+    query = isUuid(trimmedRef)
+      ? query.or(`id.eq.${trimmedRef},slug.eq.${trimmedRef}`)
+      : query.eq("slug", trimmedRef);
+
+    const { data: surveyRow, error: surveyError } = await query.maybeSingle();
+
+    if (surveyError) {
+      return { survey: null, reason: null, error: surveyError.message };
+    }
+
+    if (!surveyRow) {
+      return { survey: null, reason: "not_found", error: null };
+    }
+
+    const record = mapSurvey(surveyRow as Record<string, unknown>);
+
+    if (record.status === "draft") {
+      return { survey: null, reason: "not_found", error: null };
+    }
+
+    if (record.status === "closed") {
+      return {
+        survey: mapCollectorToVisitorSurvey(record, []),
+        reason: "inactive",
+        error: null,
+      };
+    }
+
+    const window = isSurveyInWindow(record);
+    if (!window.ok) {
+      return {
+        survey: mapCollectorToVisitorSurvey(record, []),
+        reason: window.reason,
+        error: null,
+      };
+    }
+
+    const hydrated = await hydrateSurveyItems(tenantSupabase, record.id);
+    if ("error" in hydrated) {
+      return { survey: null, reason: null, error: hydrated.error };
+    }
+
+    if (hydrated.items.length === 0) {
+      return {
+        survey: mapCollectorToVisitorSurvey(record, []),
+        reason: "no_questions",
+        error: null,
+      };
+    }
+
+    return {
+      survey: mapCollectorToVisitorSurvey(record, hydrated.items),
+      reason: null,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      survey: null,
+      reason: null,
+      error: err instanceof Error ? err.message : "An error occurred",
+    };
+  }
+}
+
+/**
  * Submits survey answers and stores email in email_opt_ins
  *
  * This function is called after a user completes a survey.
@@ -243,6 +473,55 @@ export async function submitSurveyAnswers(
     // Create tenant-scoped client
     const tenantSupabase = await createTenantClient(tenantId);
 
+    let surveyId: string | null =
+      submission.survey_id && isUuid(submission.survey_id)
+        ? submission.survey_id
+        : null;
+
+    if (surveyId) {
+      const { data: surveyRow, error: surveyError } = await tenantSupabase
+        .from("surveys")
+        .select("*")
+        .eq("id", surveyId)
+        .maybeSingle();
+
+      if (surveyError) {
+        return {
+          success: false,
+          error: `Failed to load survey: ${surveyError.message}`,
+        };
+      }
+
+      if (!surveyRow) {
+        return { success: false, error: "Survey not found" };
+      }
+
+      const record = mapSurvey(surveyRow as Record<string, unknown>);
+      if (record.status !== "active") {
+        return { success: false, error: "This survey is not currently open" };
+      }
+
+      const window = isSurveyInWindow(record);
+      if (!window.ok) {
+        return {
+          success: false,
+          error:
+            window.reason === "not_started"
+              ? "This survey has not started yet"
+              : "This survey has ended",
+        };
+      }
+
+      if (!allowsAnonymous(record.settings) && !submission.email) {
+        return {
+          success: false,
+          error: "An email is required to submit this survey",
+        };
+      }
+    } else {
+      surveyId = null;
+    }
+
     // Generate a session_id to group all responses together
     const sessionId =
       submission.coupon_id && submission.email
@@ -282,6 +561,7 @@ export async function submitSurveyAnswers(
 
       return {
         tenant_id: tenantId,
+        survey_id: surveyId,
         question_id: answer.question_id,
         answer: answerJsonb,
         session_id: sessionId,
@@ -324,7 +604,7 @@ export async function submitSurveyAnswers(
     trackSurveyCompletion(tenantSlug, {
       sessionId,
       email: submission.email || null,
-      surveyId: submission.survey_id || undefined,
+      surveyId: surveyId || undefined,
       couponId: submission.coupon_id || undefined,
     });
 
@@ -339,6 +619,17 @@ export async function submitSurveyAnswers(
         // Log error but don't fail survey submission
         console.warn("Failed to mark survey as completed in Redis:", err);
       });
+      if (surveyId) {
+        await markSurveyCompleted(
+          tenantSlug,
+          submission.email,
+          null,
+          30,
+          surveyId
+        ).catch((err) => {
+          console.warn("Failed to mark survey as completed in Redis:", err);
+        });
+      }
     }
 
     return {

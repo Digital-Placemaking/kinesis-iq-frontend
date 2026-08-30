@@ -49,6 +49,8 @@ export {
 export {
   getSurveyForTenant,
   getSurveyForCoupon,
+  listPublicSurveys,
+  getPublicSurvey,
   submitSurveyAnswers,
 } from "./actions/surveys";
 

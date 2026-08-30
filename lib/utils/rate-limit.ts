@@ -301,7 +301,8 @@ export async function markSurveyCompleted(
   tenantSlug: string,
   email: string | null,
   couponId: string | null = null,
-  expirationDays: number = 30
+  expirationDays: number = 30,
+  surveyId: string | null = null
 ): Promise<void> {
   if (!redis) {
     console.warn("Redis not configured - survey completion tracking disabled");
@@ -313,9 +314,11 @@ export async function markSurveyCompleted(
     // For anonymous surveys (no email), use a session-based identifier
     let key: string;
     if (email) {
-      key = couponId
-        ? `survey_completed:${tenantSlug}:${email}:${couponId}`
-        : `survey_completed:${tenantSlug}:${email}`;
+      key = surveyId
+        ? `survey_completed:${tenantSlug}:${email}:s:${surveyId}`
+        : couponId
+          ? `survey_completed:${tenantSlug}:${email}:${couponId}`
+          : `survey_completed:${tenantSlug}:${email}`;
     } else {
       // For anonymous surveys, we can't reliably track, so skip
       // They can complete multiple times (by design for anonymous surveys)
@@ -343,7 +346,8 @@ export async function markSurveyCompleted(
 export async function isSurveyCompleted(
   tenantSlug: string,
   email: string | null,
-  couponId: string | null = null
+  couponId: string | null = null,
+  surveyId: string | null = null
 ): Promise<boolean> {
   if (!redis) {
     // If Redis is not configured, return false (allow access)
@@ -355,9 +359,11 @@ export async function isSurveyCompleted(
     // Create the same key format as markSurveyCompleted
     let key: string;
     if (email) {
-      key = couponId
-        ? `survey_completed:${tenantSlug}:${email}:${couponId}`
-        : `survey_completed:${tenantSlug}:${email}`;
+      key = surveyId
+        ? `survey_completed:${tenantSlug}:${email}:s:${surveyId}`
+        : couponId
+          ? `survey_completed:${tenantSlug}:${email}:${couponId}`
+          : `survey_completed:${tenantSlug}:${email}`;
     } else {
       // Anonymous surveys can't be tracked reliably
       return false;
