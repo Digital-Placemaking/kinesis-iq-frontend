@@ -6,6 +6,7 @@
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { createAdminClient } from "@/lib/supabase/server";
 
 /**
  * Creates a Supabase client with x-tenant-id header set.
@@ -50,4 +51,18 @@ export async function createTenantClient(tenantId: string) {
       },
     }
   );
+}
+
+/**
+ * After an app-level staff/auth check, use the service-role client so missing
+ * GRANT/RLS on collector tables does not 42501 (e.g. survey_questions INSERT
+ * evaluates a policy that reads `user_roles`, which authenticated cannot select).
+ * Callers must still filter by tenant_id.
+ */
+export async function createPrivilegedTenantClient(tenantId: string) {
+  try {
+    return createAdminClient();
+  } catch {
+    return createTenantClient(tenantId);
+  }
 }

@@ -10,7 +10,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { createTenantClient } from "@/lib/supabase/tenant-client";
+import { createPrivilegedTenantClient } from "@/lib/supabase/tenant-client";
 import type { QuestionsResponse } from "@/lib/types/question";
 import type {
   Survey as SurveyRecord,
@@ -37,7 +37,7 @@ import {
 
 type StaffTenantContext = {
   tenantId: string;
-  tenantSupabase: Awaited<ReturnType<typeof createTenantClient>>;
+  tenantSupabase: Awaited<ReturnType<typeof createPrivilegedTenantClient>>;
   userId: string;
 };
 
@@ -79,7 +79,7 @@ async function requireStaffTenantContext(
     return { ok: false, error: "You don't have access to this tenant" };
   }
 
-  const tenantSupabase = await createTenantClient(tenantId);
+  const tenantSupabase = await createPrivilegedTenantClient(tenantId);
 
   return {
     ok: true,
@@ -107,11 +107,12 @@ export async function listSurveys(
       return { surveys: null, error: staffResult.error };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     const { data, error } = await tenantSupabase
       .from("surveys")
       .select("*")
+      .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -142,11 +143,12 @@ export async function getSurveysForAdminTab(
       return { entries: null, error: staffResult.error };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     const { data: surveyRows, error: surveysError } = await tenantSupabase
       .from("surveys")
       .select("*")
+      .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false });
 
     if (surveysError) {
@@ -166,6 +168,7 @@ export async function getSurveysForAdminTab(
     const { data: itemRows, error: itemsError } = await tenantSupabase
       .from("survey_items")
       .select("*")
+      .eq("tenant_id", tenantId)
       .in("survey_id", surveyIds)
       .order("order_index", { ascending: true });
 
@@ -184,6 +187,7 @@ export async function getSurveysForAdminTab(
       const { data: questionRows, error: questionsError } = await tenantSupabase
         .from("survey_questions")
         .select("*")
+        .eq("tenant_id", tenantId)
         .in("id", questionIds);
 
       if (questionsError) {
@@ -219,6 +223,7 @@ export async function getSurveysForAdminTab(
     const { data: responseRows, error: responsesError } = await tenantSupabase
       .from("survey_responses")
       .select("survey_id, question_id, session_id")
+      .eq("tenant_id", tenantId)
       .in("survey_id", surveyIds);
 
     if (responsesError) {
@@ -325,11 +330,12 @@ export async function getSurveyWithItems(
       return { survey: null, items: null, error: staffResult.error };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     const { data: surveyRow, error: surveyError } = await tenantSupabase
       .from("surveys")
       .select("*")
+      .eq("tenant_id", tenantId)
       .eq("id", surveyId)
       .maybeSingle();
 
@@ -344,6 +350,7 @@ export async function getSurveyWithItems(
     const { data: itemRows, error: itemsError } = await tenantSupabase
       .from("survey_items")
       .select("*")
+      .eq("tenant_id", tenantId)
       .eq("survey_id", surveyId)
       .order("order_index", { ascending: true });
 
@@ -366,6 +373,7 @@ export async function getSurveyWithItems(
     const { data: questionRows, error: questionsError } = await tenantSupabase
       .from("survey_questions")
       .select("*")
+      .eq("tenant_id", tenantId)
       .in("id", questionIds);
 
     if (questionsError) {
@@ -482,7 +490,7 @@ export async function updateSurvey(
       return { success: false, error: staffResult.error, survey: null };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     const updateData: Record<string, unknown> = {};
 
@@ -513,6 +521,7 @@ export async function updateSurvey(
       const { count, error: countError } = await tenantSupabase
         .from("survey_items")
         .select("id", { count: "exact", head: true })
+        .eq("tenant_id", tenantId)
         .eq("survey_id", surveyId);
 
       if (countError) {
@@ -532,6 +541,7 @@ export async function updateSurvey(
     const { data, error } = await tenantSupabase
       .from("surveys")
       .update(updateData)
+      .eq("tenant_id", tenantId)
       .eq("id", surveyId)
       .select("*")
       .maybeSingle();
@@ -574,11 +584,12 @@ export async function deleteSurvey(
       return { success: false, error: staffResult.error, survey: null };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     const { data, error } = await tenantSupabase
       .from("surveys")
       .delete()
+      .eq("tenant_id", tenantId)
       .eq("id", surveyId)
       .select("*")
       .maybeSingle();
@@ -623,6 +634,7 @@ export async function addSurveyItem(
     const { data: survey, error: surveyError } = await tenantSupabase
       .from("surveys")
       .select("id, kind")
+      .eq("tenant_id", tenantId)
       .eq("id", input.survey_id)
       .maybeSingle();
 
@@ -638,6 +650,7 @@ export async function addSurveyItem(
       const { count, error: countError } = await tenantSupabase
         .from("survey_items")
         .select("id", { count: "exact", head: true })
+        .eq("tenant_id", tenantId)
         .eq("survey_id", input.survey_id);
 
       if (countError) {
@@ -656,6 +669,7 @@ export async function addSurveyItem(
     const { data: question, error: questionError } = await tenantSupabase
       .from("survey_questions")
       .select("id")
+      .eq("tenant_id", tenantId)
       .eq("id", input.question_id)
       .maybeSingle();
 
@@ -714,11 +728,12 @@ export async function removeSurveyItem(
       return { success: false, error: staffResult.error, item: null };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     const { data: removedItem, error: fetchError } = await tenantSupabase
       .from("survey_items")
       .select("*")
+      .eq("tenant_id", tenantId)
       .eq("id", itemId)
       .maybeSingle();
 
@@ -733,6 +748,7 @@ export async function removeSurveyItem(
     const { error: deleteError } = await tenantSupabase
       .from("survey_items")
       .delete()
+      .eq("tenant_id", tenantId)
       .eq("id", itemId);
 
     if (deleteError) {
@@ -745,6 +761,7 @@ export async function removeSurveyItem(
     const { data: itemsToShift } = await tenantSupabase
       .from("survey_items")
       .select("id, order_index")
+      .eq("tenant_id", tenantId)
       .eq("survey_id", surveyId)
       .gt("order_index", removedOrder);
 
@@ -753,6 +770,7 @@ export async function removeSurveyItem(
         await tenantSupabase
           .from("survey_items")
           .update({ order_index: (item.order_index as number) - 1 })
+          .eq("tenant_id", tenantId)
           .eq("id", item.id as string);
       }
     }
@@ -785,7 +803,7 @@ export async function updateSurveyItem(
       return { success: false, error: staffResult.error, item: null };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     const updateData: Record<string, unknown> = {};
     if (input.order_index !== undefined) {
@@ -805,6 +823,7 @@ export async function updateSurveyItem(
     const { data, error } = await tenantSupabase
       .from("survey_items")
       .update(updateData)
+      .eq("tenant_id", tenantId)
       .eq("id", itemId)
       .select("*")
       .maybeSingle();
@@ -845,11 +864,12 @@ export async function setSurveyItemsOrder(
       return { success: false, error: staffResult.error };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     const { data: existingItems, error: fetchError } = await tenantSupabase
       .from("survey_items")
       .select("id")
+      .eq("tenant_id", tenantId)
       .eq("survey_id", surveyId);
 
     if (fetchError) {
@@ -880,6 +900,7 @@ export async function setSurveyItemsOrder(
       const { error } = await tenantSupabase
         .from("survey_items")
         .update({ order_index: orderIndex })
+        .eq("tenant_id", tenantId)
         .eq("id", itemIds[orderIndex])
         .eq("survey_id", surveyId);
 
@@ -912,11 +933,12 @@ export async function reorderSurveyItem(
       return { success: false, error: staffResult.error, item: null };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     const { data: currentItem, error: currentError } = await tenantSupabase
       .from("survey_items")
       .select("*")
+      .eq("tenant_id", tenantId)
       .eq("id", itemId)
       .eq("survey_id", surveyId)
       .maybeSingle();
@@ -935,6 +957,7 @@ export async function reorderSurveyItem(
     const { data: targetItem, error: targetError } = await tenantSupabase
       .from("survey_items")
       .select("id, order_index")
+      .eq("tenant_id", tenantId)
       .eq("survey_id", surveyId)
       .eq("order_index", targetOrder)
       .maybeSingle();
@@ -958,6 +981,7 @@ export async function reorderSurveyItem(
     const { error: step1Error } = await tenantSupabase
       .from("survey_items")
       .update({ order_index: tempOrder })
+      .eq("tenant_id", tenantId)
       .eq("id", itemId);
 
     if (step1Error) {
@@ -967,6 +991,7 @@ export async function reorderSurveyItem(
     const { error: step2Error } = await tenantSupabase
       .from("survey_items")
       .update({ order_index: currentOrder })
+      .eq("tenant_id", tenantId)
       .eq("id", targetItem.id as string);
 
     if (step2Error) {
@@ -976,6 +1001,7 @@ export async function reorderSurveyItem(
     const { data: updatedItem, error: step3Error } = await tenantSupabase
       .from("survey_items")
       .update({ order_index: targetOrder })
+      .eq("tenant_id", tenantId)
       .eq("id", itemId)
       .select("*")
       .single();
@@ -1011,11 +1037,12 @@ export async function searchQuestionBank(
       return { questions: null, error: staffResult.error };
     }
 
-    const { tenantSupabase } = staffResult.ctx;
+    const { tenantId, tenantSupabase } = staffResult.ctx;
 
     let request = tenantSupabase
       .from("survey_questions")
       .select("*")
+      .eq("tenant_id", tenantId)
       .order("order_index", { ascending: true });
 
     const trimmed = query?.trim();

@@ -7,7 +7,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { createTenantClient } from "@/lib/supabase/tenant-client";
+import {
+  createPrivilegedTenantClient,
+  createTenantClient,
+} from "@/lib/supabase/tenant-client";
 import type { QuestionType } from "@/lib/types/survey";
 import type {
   Question,
@@ -204,7 +207,7 @@ export async function createQuestion(
       };
     }
 
-    const tenantSupabase = await createTenantClient(tenantId);
+    const tenantSupabase = await createPrivilegedTenantClient(tenantId);
 
     // Input validation: trim question text and validate required fields
     const trimmedQuestion = question.question?.trim();
@@ -231,6 +234,7 @@ export async function createQuestion(
     const { data: questions, error: orderError } = await tenantSupabase
       .from("survey_questions")
       .select("order_index")
+      .eq("tenant_id", tenantId)
       .order("order_index", { ascending: false })
       .limit(1);
 
@@ -331,7 +335,7 @@ export async function updateQuestion(
       };
     }
 
-    const tenantSupabase = await createTenantClient(tenantId);
+    const tenantSupabase = await createPrivilegedTenantClient(tenantId);
 
     // Prepare update data
     const updateData: {
@@ -353,6 +357,7 @@ export async function updateQuestion(
     const { data, error: updateError } = await tenantSupabase
       .from("survey_questions")
       .update(updateData)
+      .eq("tenant_id", tenantId)
       .eq("id", questionId)
       .select();
 
@@ -422,12 +427,13 @@ export async function deleteQuestion(
       };
     }
 
-    const tenantSupabase = await createTenantClient(tenantId);
+    const tenantSupabase = await createPrivilegedTenantClient(tenantId);
 
     // Get the question to find its order_index
     const { data: question, error: questionError } = await tenantSupabase
       .from("survey_questions")
       .select("order_index")
+      .eq("tenant_id", tenantId)
       .eq("id", questionId)
       .single();
 
@@ -444,6 +450,7 @@ export async function deleteQuestion(
     const { error: deleteError } = await tenantSupabase
       .from("survey_questions")
       .delete()
+      .eq("tenant_id", tenantId)
       .eq("id", questionId);
 
     if (deleteError) {
@@ -458,6 +465,7 @@ export async function deleteQuestion(
     const { data: questionsToReorder, error: fetchError } = await tenantSupabase
       .from("survey_questions")
       .select("id, order_index")
+      .eq("tenant_id", tenantId)
       .gt("order_index", deletedOrderIndex);
 
     if (fetchError) {
@@ -469,6 +477,7 @@ export async function deleteQuestion(
         await tenantSupabase
           .from("survey_questions")
           .update({ order_index: question.order_index - 1 })
+          .eq("tenant_id", tenantId)
           .eq("id", question.id);
       }
     }
@@ -525,12 +534,13 @@ export async function toggleQuestionStatus(
       };
     }
 
-    const tenantSupabase = await createTenantClient(tenantId);
+    const tenantSupabase = await createPrivilegedTenantClient(tenantId);
 
     // Get current status
     const { data: question, error: questionError } = await tenantSupabase
       .from("survey_questions")
       .select("is_active")
+      .eq("tenant_id", tenantId)
       .eq("id", questionId)
       .single();
 
@@ -547,6 +557,7 @@ export async function toggleQuestionStatus(
     const { data, error: updateError } = await tenantSupabase
       .from("survey_questions")
       .update({ is_active: newStatus })
+      .eq("tenant_id", tenantId)
       .eq("id", questionId)
       .select();
 
@@ -602,12 +613,27 @@ export async function reorderQuestion(
       return { success: false, error: `Tenant not found: ${tenantSlug}` };
     }
 
-    const tenantSupabase = await createTenantClient(tenantId);
+    const { data: staff, error: staffError } = await supabase
+      .from("staff")
+      .select("tenant_id, role")
+      .eq("user_id", user.id)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
+    if (staffError || !staff) {
+      return {
+        success: false,
+        error: "You don't have access to this tenant",
+      };
+    }
+
+    const tenantSupabase = await createPrivilegedTenantClient(tenantId);
 
     // Get current question
     const { data: currentQuestion, error: currentError } = await tenantSupabase
       .from("survey_questions")
       .select("order_index")
+      .eq("tenant_id", tenantId)
       .eq("id", questionId)
       .single();
 
@@ -626,6 +652,7 @@ export async function reorderQuestion(
     const { data: targetQuestion, error: targetError } = await tenantSupabase
       .from("survey_questions")
       .select("id, order_index")
+      .eq("tenant_id", tenantId)
       .eq("order_index", targetOrder)
       .single();
 
@@ -644,6 +671,7 @@ export async function reorderQuestion(
     const { error: step1Error } = await tenantSupabase
       .from("survey_questions")
       .update({ order_index: tempOrder })
+      .eq("tenant_id", tenantId)
       .eq("id", questionId);
 
     if (step1Error) {
@@ -657,6 +685,7 @@ export async function reorderQuestion(
     const { error: step2Error } = await tenantSupabase
       .from("survey_questions")
       .update({ order_index: currentOrder })
+      .eq("tenant_id", tenantId)
       .eq("id", targetQuestion.id);
 
     if (step2Error) {
@@ -664,6 +693,7 @@ export async function reorderQuestion(
       await tenantSupabase
         .from("survey_questions")
         .update({ order_index: currentOrder })
+        .eq("tenant_id", tenantId)
         .eq("id", questionId);
       return {
         success: false,
@@ -675,6 +705,7 @@ export async function reorderQuestion(
     const { data, error: step3Error } = await tenantSupabase
       .from("survey_questions")
       .update({ order_index: targetOrder })
+      .eq("tenant_id", tenantId)
       .eq("id", questionId)
       .select();
 
@@ -683,10 +714,12 @@ export async function reorderQuestion(
       await tenantSupabase
         .from("survey_questions")
         .update({ order_index: currentOrder })
+        .eq("tenant_id", tenantId)
         .eq("id", questionId);
       await tenantSupabase
         .from("survey_questions")
         .update({ order_index: targetOrder })
+        .eq("tenant_id", tenantId)
         .eq("id", targetQuestion.id);
       return {
         success: false,
