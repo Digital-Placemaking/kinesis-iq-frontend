@@ -20,6 +20,9 @@ interface QuestionResultsModalProps {
   questionId: string;
   questionText: string;
   questionType: string;
+  /** When set, results are scoped to this survey only. */
+  surveyId?: string;
+  surveyTitle?: string;
 }
 
 /**
@@ -33,6 +36,8 @@ export default function QuestionResultsModal({
   questionId,
   questionText,
   questionType,
+  surveyId,
+  surveyTitle,
 }: QuestionResultsModalProps) {
   const [results, setResults] = useState<QuestionResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,7 +49,8 @@ export default function QuestionResultsModal({
     try {
       const { results: data, error: err } = await getQuestionResults(
         tenantSlug,
-        questionId
+        questionId,
+        surveyId
       );
       if (err) {
         setError(err);
@@ -66,11 +72,24 @@ export default function QuestionResultsModal({
       setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, questionId, tenantSlug]);
+  }, [isOpen, questionId, tenantSlug, surveyId]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Question Results">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={surveyId ? "Survey Question Results" : "Question Results"}
+    >
       <div className="space-y-6">
+        {surveyId && surveyTitle && (
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Results for survey:{" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-50">
+              {surveyTitle}
+            </span>
+          </p>
+        )}
+
         {/* Question Info */}
         <div>
           <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400">

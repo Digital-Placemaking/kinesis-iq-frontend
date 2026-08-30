@@ -75,6 +75,7 @@ export default function SurveyContainer({
   }
 
   const currentAnswer = answers[currentQuestion.id] || null;
+  const isRequired = currentQuestion.required === true;
 
   const handleAnswerChange = (answer: QuestionAnswer) => {
     setAnswers((prev) => ({
@@ -121,7 +122,11 @@ export default function SurveyContainer({
     }
 
     if (!hasAnswer) {
-      setError("Please answer this question or skip it to continue");
+      setError(
+        isRequired
+          ? "This question is required"
+          : "Please answer this question or skip it to continue"
+      );
       return;
     }
 
@@ -260,6 +265,30 @@ export default function SurveyContainer({
         setError("Please answer at least one question before submitting");
         return;
       }
+
+      const missingRequired = survey.questions.find((q) => {
+        if (!q.required) return false;
+        const answer = allAnswers[q.id];
+        if (!answer) return true;
+        if (q.type === "multiple_choice" && answer.answer_text) {
+          try {
+            const parsed = JSON.parse(answer.answer_text);
+            return !(Array.isArray(parsed) && parsed.length > 0);
+          } catch {
+            return true;
+          }
+        }
+        return !(
+          (answer.answer_text !== null && answer.answer_text !== "") ||
+          answer.answer_number !== null ||
+          answer.answer_boolean !== null
+        );
+      });
+
+      if (missingRequired) {
+        setError("Please answer all required questions before submitting");
+        return;
+      }
     }
 
     // Update answers state to include all questions
@@ -275,7 +304,7 @@ export default function SurveyContainer({
 
     try {
       const submission = {
-        survey_id: survey.tenant_id, // Use tenant_id as survey identifier since no surveys table
+        survey_id: survey.id || survey.tenant_id,
         coupon_id: couponId,
         email: email || null,
         answers: Object.values(allAnswers),
@@ -296,6 +325,10 @@ export default function SurveyContainer({
           )}`;
           if (typeof window !== "undefined") {
             window.location.href = redirectUrl;
+          }
+        } else if (returnTo === "coupons" && email) {
+          if (typeof window !== "undefined") {
+            window.location.href = `/${tenantSlug}/coupons?email=${encodeURIComponent(email)}`;
           }
         } else {
           // Anonymous survey - redirect to survey completion
@@ -345,7 +378,8 @@ export default function SurveyContainer({
         
         // If no answer yet, disable Next/Submit
         if (!answer) {
-          const canSkip = currentQuestionIndex < survey.questions.length - 1;
+          const canSkip =
+            !isRequired && currentQuestionIndex < survey.questions.length - 1;
 
           return (
             <SurveyNavigation
@@ -357,7 +391,10 @@ export default function SurveyContainer({
             onSubmitClick={() => {
               submitIntentRef.current = true;
             }}
-              isNextDisabled={currentQuestionIndex < survey.questions.length - 1}
+              isNextDisabled={
+                isRequired ||
+                currentQuestionIndex < survey.questions.length - 1
+              }
               isSubmitting={isSubmitting}
             />
           );
@@ -378,11 +415,14 @@ export default function SurveyContainer({
             (answer.answer_number !== null) ||
             (answer.answer_boolean !== null);
         }
+        
+        // Disable Next/Submit if no value and required or not last question
+        const isNextDisabled =
+          !hasValue &&
+          (isRequired || currentQuestionIndex < survey.questions.length - 1);
 
-        // Disable Next/Submit if not answered
-        const isNextDisabled = !hasValue && currentQuestionIndex < survey.questions.length - 1;
-
-        const canSkip = currentQuestionIndex < survey.questions.length - 1;
+        const canSkip =
+          !isRequired && currentQuestionIndex < survey.questions.length - 1;
 
         return (
           <SurveyNavigation

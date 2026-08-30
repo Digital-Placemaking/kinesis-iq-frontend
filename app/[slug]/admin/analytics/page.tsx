@@ -9,7 +9,7 @@ import { requireBusinessOwnerAccess } from "@/lib/auth/server";
 import { createTenantClient } from "@/lib/supabase/tenant-client";
 import { getAnalyticsSummary, getAnalyticsTimeSeries } from "@/app/actions";
 import Card from "@/app/components/ui/Card";
-import AnalyticsCharts from "./components/AnalyticsCharts";
+import PolledAnalyticsCharts from "../components/PolledAnalyticsCharts";
 import MetricTooltip from "./components/MetricTooltip";
 import { Eye, CheckCircle, Copy, Download, Wallet } from "lucide-react";
 
@@ -62,7 +62,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   const funnelSteps = [
     { label: "Page Visits", value: pageVisits, color: "bg-blue-500" },
     {
-      label: "Reached Congratulations",
+      label: "Survey Completions",
       value: congratulations,
       color: "bg-green-500",
     },
@@ -115,9 +115,9 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                  Congratulations
+                  Survey Completions
                 </p>
-                <MetricTooltip description="Unique visitors who completed a survey and reached the congratulations page. This represents survey completion rate." />
+                <MetricTooltip description="Unique visitors who completed a survey. Counted by email or session ID." />
               </div>
               <p className="mt-1 text-xl sm:text-2xl font-bold text-black dark:text-zinc-50">
                 {congratulations}
@@ -234,21 +234,12 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
         </div>
       </Card>
 
-      {/* Time-Series Charts */}
-      {timeSeriesData.error ? (
-        <Card className="p-4 sm:p-6" variant="elevated">
-          <p className="text-sm text-red-600 dark:text-red-400">
-            Error loading analytics data: {timeSeriesData.error}
-          </p>
-        </Card>
-      ) : (
-        <div className="mt-8">
-          <AnalyticsCharts
-            tenantSlug={slug}
-            initialTimeSeriesData={timeSeriesData.data}
-          />
-        </div>
-      )}
+      <div className="mt-8">
+        <PolledAnalyticsCharts
+          tenantSlug={slug}
+          initialTimeSeries={timeSeriesData}
+        />
+      </div>
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   getDashboardMetrics,
   getAnalyticsSummary,
   getAnalyticsTimeSeries,
+  getSurveysForAdminTab,
 } from "@/app/actions";
 import AdminWrapper from "./AdminWrapper";
 import { getCurrentUser } from "@/lib/auth/server";
@@ -25,12 +26,14 @@ interface AdminPageContentProps {
   slug: string;
   user: any;
   owner: any;
+  initialTab?: string;
 }
 
 export default async function AdminPageContent({
   slug,
   user,
   owner,
+  initialTab,
 }: AdminPageContentProps) {
   const supabase = await createClient();
 
@@ -76,7 +79,7 @@ export default async function AdminPageContent({
     dashboardMetrics,
     analyticsSummary,
     analyticsTimeSeries,
-    questionsData,
+    surveysData,
     couponsData,
     emailsData,
     tenantDataFull,
@@ -103,13 +106,10 @@ export default async function AdminPageContent({
       ? getAnalyticsTimeSeries(slug, 30)
       : Promise.resolve({ data: [], error: null }),
 
-    // Questions (only if owner/admin)
+    // Surveys tab (only if owner/admin)
     userRole !== "staff"
-      ? tenantSupabase
-          .from("survey_questions")
-          .select("*")
-          .order("order_index", { ascending: true })
-      : Promise.resolve({ data: [], error: null }),
+      ? getSurveysForAdminTab(slug)
+      : Promise.resolve({ entries: [], error: null }),
 
     // Coupons
     tenantSupabase
@@ -146,6 +146,10 @@ export default async function AdminPageContent({
   // Check for errors
   if (dashboardMetrics.error) {
     console.error("Failed to fetch dashboard metrics:", dashboardMetrics.error);
+  }
+
+  if (surveysData.error) {
+    console.error("Failed to fetch surveys:", surveysData.error);
   }
 
   const canEditCoupons = userRole === "owner" || userRole === "admin";
@@ -191,13 +195,15 @@ export default async function AdminPageContent({
       dashboardMetrics={dashboardMetrics}
       analyticsSummary={analyticsSummary}
       analyticsTimeSeries={analyticsTimeSeries}
-      questions={questionsData.data || []}
+      surveys={surveysData.entries || []}
+      surveysError={surveysData.error}
       coupons={couponsData.data || []}
       canEditCoupons={canEditCoupons}
       emails={emailsData.data || []}
       tenant={tenantDataFull.data}
       staffList={(staffListData.data || []) as any[]}
       tenantId={resolvedTenantId}
+      initialTab={initialTab}
     />
   );
 }

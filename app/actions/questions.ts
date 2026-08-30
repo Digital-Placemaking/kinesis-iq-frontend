@@ -19,13 +19,15 @@ import type {
   QuestionMutationResponse,
 } from "@/lib/types/question";
 import type { SurveyAnswer } from "@/lib/types/survey-answer";
+import { aggregateQuestionResults } from "@/lib/survey/aggregate-question-results";
 
 /**
- * Fetches all responses for a specific question
+ * Fetches all responses for a specific question, optionally scoped to a survey.
  */
 export async function getQuestionResults(
   tenantSlug: string,
-  questionId: string
+  questionId: string,
+  surveyId?: string
 ): Promise<{ results: QuestionResult | null; error: string | null }> {
   try {
     const supabase = await createClient();
@@ -62,11 +64,17 @@ export async function getQuestionResults(
       };
     }
 
-    // Fetch all responses for this question
-    const { data: responses, error: responsesError } = await tenantSupabase
+    // Fetch responses for this question, optionally filtered by survey
+    let responsesQuery = tenantSupabase
       .from("survey_responses")
       .select("answer")
       .eq("question_id", questionId);
+
+    if (surveyId) {
+      responsesQuery = responsesQuery.eq("survey_id", surveyId);
+    }
+
+    const { data: responses, error: responsesError } = await responsesQuery;
 
     if (responsesError) {
       return {
@@ -75,248 +83,15 @@ export async function getQuestionResults(
       };
     }
 
-    const totalResponses = responses?.length || 0;
-
-    if (totalResponses === 0) {
-      return {
-        results: {
-          totalResponses: 0,
-          questionType: question.type,
-          questionText: question.question,
-          options: Array.isArray(question.options) ? question.options : [],
-        },
-        error: null,
-      };
-    }
-
-    // Process responses based on question type
-    const questionType = question.type;
-    const options = Array.isArray(question.options) ? question.options : [];
-
-    if (
-      questionType === "multiple_choice" ||
-      questionType === "single_choice" ||
-      questionType === "ranked_choice"
-    ) {
-      // Count choices
-      const choiceCounts: Record<string, number> = {};
-
-      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
-        const answer = response.answer;
-        if (answer && typeof answer === "object") {
-          if ("array" in answer && Array.isArray(answer.array)) {
-            // Multiple choice - array of selected options
-            answer.array.forEach((option: string) => {
-              choiceCounts[option] = (choiceCounts[option] || 0) + 1;
-            });
-          } else if ("text" in answer && typeof answer.text === "string") {
-            // Single choice - text option
-            choiceCounts[answer.text] = (choiceCounts[answer.text] || 0) + 1;
-          }
-        }
-      });
-
-      return {
-        results: {
-          totalResponses,
-          questionType,
-          questionText: question.question,
-          options,
-          choiceCounts,
-        },
-        error: null,
-      };
-    }
-
-    if (questionType === "yes_no") {
-      // Count yes/no
-      let yesCount = 0;
-      let noCount = 0;
-
-      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
-        const answer = response.answer;
-        if (answer && typeof answer === "object" && "boolean" in answer) {
-          if (answer.boolean === true) yesCount++;
-          else if (answer.boolean === false) noCount++;
-        }
-      });
-
-      return {
-        results: {
-          totalResponses,
-          questionType,
-          questionText: question.question,
-          booleanCounts: { yes: yesCount, no: noCount },
-        },
-        error: null,
-      };
-    }
-
-    if (
-      questionType === "nps" ||
-      questionType === "likert_5" ||
-      questionType === "likert_7" ||
-      questionType === "rating_5" ||
-      questionType === "numeric" ||
-      questionType === "slider" ||
-      questionType === "sentiment"
-    ) {
-      // Numeric statistics
-      const numbers: number[] = [];
-      const distribution: Record<number, number> = {};
-
-      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
-        const answer = response.answer;
-        if (
-          answer &&
-          typeof answer === "object" &&
-          "number" in answer &&
-          answer.number !== undefined &&
-          answer.number !== null
-        ) {
-          const num = Number(answer.number);
-          numbers.push(num);
-          distribution[num] = (distribution[num] || 0) + 1;
-        }
-      });
-
-      if (numbers.length === 0) {
-        return {
-          results: {
-            totalResponses,
-            questionType,
-            questionText: question.question,
-            numericStats: {
-              min: 0,
-              max: 0,
-              mean: 0,
-              median: 0,
-              distribution: {},
-            },
-          },
-          error: null,
-        };
-      }
-
-      numbers.sort((a, b) => a - b);
-      const min = numbers[0];
-      const max = numbers[numbers.length - 1];
-      const mean = numbers.reduce((sum, n) => sum + n, 0) / numbers.length;
-      const median =
-        numbers.length % 2 === 0
-          ? (numbers[numbers.length / 2 - 1] + numbers[numbers.length / 2]) / 2
-          : numbers[Math.floor(numbers.length / 2)];
-
-      return {
-        results: {
-          totalResponses,
-          questionType,
-          questionText: question.question,
-          numericStats: {
-            min,
-            max,
-            mean: Number(mean.toFixed(2)),
-            median: Number(median.toFixed(2)),
-            distribution,
-          },
-        },
-        error: null,
-      };
-    }
-
-    if (questionType === "open_text") {
-      // Text responses
-      const textResponses: string[] = [];
-
-      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
-        const answer = response.answer;
-        if (
-          answer &&
-          typeof answer === "object" &&
-          "text" in answer &&
-          answer.text &&
-          typeof answer.text === "string" &&
-          answer.text.trim()
-        ) {
-          textResponses.push(answer.text);
-        }
-      });
-
-      return {
-        results: {
-          totalResponses,
-          questionType,
-          questionText: question.question,
-          textResponses,
-        },
-        error: null,
-      };
-    }
-
-    if (questionType === "date") {
-      // Date counts
-      const dateCounts: Record<string, number> = {};
-
-      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
-        const answer = response.answer;
-        if (
-          answer &&
-          typeof answer === "object" &&
-          "text" in answer &&
-          answer.text &&
-          typeof answer.text === "string"
-        ) {
-          const date = answer.text.split("T")[0]; // Get date part only
-          dateCounts[date] = (dateCounts[date] || 0) + 1;
-        }
-      });
-
-      return {
-        results: {
-          totalResponses,
-          questionType,
-          questionText: question.question,
-          dateCounts,
-        },
-        error: null,
-      };
-    }
-
-    if (questionType === "time") {
-      // Time counts
-      const timeCounts: Record<string, number> = {};
-
-      responses?.forEach((response: { answer: SurveyAnswer | null }) => {
-        const answer = response.answer;
-        if (
-          answer &&
-          typeof answer === "object" &&
-          "text" in answer &&
-          answer.text &&
-          typeof answer.text === "string"
-        ) {
-          timeCounts[answer.text] = (timeCounts[answer.text] || 0) + 1;
-        }
-      });
-
-      return {
-        results: {
-          totalResponses,
-          questionType,
-          questionText: question.question,
-          timeCounts,
-        },
-        error: null,
-      };
-    }
-
-    // Unknown question type
     return {
-      results: {
-        totalResponses,
-        questionType,
-        questionText: question.question,
-      },
+      results: aggregateQuestionResults(
+        {
+          question: question.question,
+          type: question.type,
+          options: question.options,
+        },
+        (responses ?? []) as { answer: SurveyAnswer | null }[]
+      ),
       error: null,
     };
   } catch (err) {
@@ -392,7 +167,7 @@ export async function createQuestion(
     options?: string[];
     is_active?: boolean;
   }
-): Promise<{ success: boolean; error: string | null }> {
+): Promise<{ success: boolean; error: string | null; questionId?: string | null }> {
   try {
     const supabase = await createClient();
 
@@ -479,22 +254,30 @@ export async function createQuestion(
       is_active: question.is_active ?? true,
     };
 
-    const { error: insertError } = await tenantSupabase
+    const { data: inserted, error: insertError } = await tenantSupabase
       .from("survey_questions")
-      .insert(insertData);
+      .insert(insertData)
+      .select("id")
+      .single();
 
     if (insertError) {
       return {
         success: false,
         error: insertError.message || "Failed to create question",
+        questionId: null,
       };
     }
 
-    return { success: true, error: null };
+    return {
+      success: true,
+      error: null,
+      questionId: inserted?.id ?? null,
+    };
   } catch (err) {
     return {
       success: false,
       error: err instanceof Error ? err.message : "An error occurred",
+      questionId: null,
     };
   }
 }

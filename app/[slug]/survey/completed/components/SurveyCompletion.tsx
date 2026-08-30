@@ -125,10 +125,10 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
           {/* Congratulations Header */}
           <div className="mb-4 text-center sm:mb-6">
             <h1 className="mb-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
-              Congratulations! 🎉
+              Thank you!
             </h1>
             <p className="text-xs text-muted-foreground sm:text-sm">
-              Thanks for completing our survey
+              Your insights help us improve our services.
             </p>
           </div>
 
@@ -137,10 +137,7 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
             <TenantLogo tenant={tenant} size="md" />
           </div>
 
-          {/* Thank You Message */}
-          <p className="mb-4 text-center text-xs text-muted-foreground sm:mb-6 sm:text-sm">
-            Thank you — your insight helps shape decisions people can trust.
-          </p>
+          {/* Anonymous Message */}
           <p className="mb-4 text-center text-xs font-bold text-muted-foreground sm:mb-6 sm:text-sm">
             Your data stays anonymous.
           </p>
@@ -149,24 +146,9 @@ export default function SurveyCompletion({ tenant }: SurveyCompletionProps) {
           {!submitted ? (
             <div className="space-y-3">
               <p className="text-center text-xs font-medium text-zinc-700 dark:text-zinc-300 sm:text-sm">
-                Want to stay updated with exclusive offers?
+                Want to stay updated with our latest news and updates?
               </p>
 
-              {/* Social Login Buttons */}
-              <div className="grid grid-cols-2 gap-3">
-                {/* Apple login - Coming soon */}
-                <SocialLoginButton
-                  provider="apple"
-                  onClick={() => handleSocialLogin("apple")}
-                  disabled
-                />
-                {/* Google OAuth - Active */}
-                <SocialLoginButton
-                  provider="google"
-                  onClick={() => handleSocialLogin("google")}
-                  disabled={loading}
-                />
-              </div>
 
               {/* Separator */}
               <SectionSeparator text="Or continue with email" />

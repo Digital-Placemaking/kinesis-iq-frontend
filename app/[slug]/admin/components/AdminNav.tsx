@@ -13,7 +13,8 @@ import {
   Settings,
   BarChart3,
   Gift,
-  FileText,
+  ClipboardList,
+  Download,
   Eye,
   Mail,
   ChevronDown,
@@ -113,9 +114,9 @@ export default function AdminNav({
       roles: ["owner", "admin"],
     },
     {
-      tab: "questions",
-      label: "Questions",
-      icon: FileText,
+      tab: "surveys",
+      label: "Surveys",
+      icon: ClipboardList,
       roles: ["owner", "admin"],
     },
     {
@@ -128,6 +129,12 @@ export default function AdminNav({
       tab: "emails",
       label: "Emails",
       icon: Mail,
+      roles: ["owner", "admin"],
+    },
+    {
+      tab: "export",
+      label: "Export",
+      icon: Download,
       roles: ["owner", "admin"],
     },
     {

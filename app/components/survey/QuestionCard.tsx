@@ -296,6 +296,11 @@ export default function QuestionCard({
           <div className="space-y-1">
             <label className="block text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-tight">
               Rank your preferences
+              {question.required && (
+                <span className="ml-1 text-primary" aria-hidden="true">
+                  *
+                </span>
+              )}
             </label>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
               (most to least important)
@@ -304,6 +309,11 @@ export default function QuestionCard({
         ) : (
           <label className="block text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-tight">
             {question.question}
+            {question.required && (
+              <span className="ml-1 text-primary" aria-hidden="true">
+                *
+              </span>
+            )}
           </label>
         )}
       </div>

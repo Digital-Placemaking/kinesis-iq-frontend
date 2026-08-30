@@ -197,6 +197,38 @@
     animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  /* PollingIndicator — idle: light sweeps; fetching: centered pulse */
+  @keyframes pollingBarSweep {
+    0%,
+    100% {
+      transform: translateX(-120%);
+    }
+    50% {
+      transform: translateX(320%);
+    }
+  }
+
+  .animate-polling-bar-sweep {
+    animation: pollingBarSweep 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pollingBarPulse {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: translateX(-50%) scaleX(0.55);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1.1);
+    }
+  }
+
+  .animate-polling-bar-pulse {
+    left: 50%;
+    animation: pollingBarPulse 1s ease-in-out infinite;
+  }
+
   .bg-kinesisiq-gradient {
     background: linear-gradient(135deg, #0f1624 0%, #1a2235 100%);
   }

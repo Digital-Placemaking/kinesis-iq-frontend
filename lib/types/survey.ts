@@ -1,8 +1,11 @@
 /**
  * lib/types/survey.ts
  * Survey type definitions.
- * Defines TypeScript types for surveys, survey questions, and survey submissions.
+ * Defines TypeScript types for visitor-facing loaded surveys, questions, and submissions.
  */
+
+import type { SurveyKind, SurveyStatus } from "./survey-collector";
+
 export type QuestionType =
   | "ranked_choice"
   | "sentiment"
@@ -20,33 +23,83 @@ export type QuestionType =
   | "time";
 
 /**
- * Individual survey question
- * Matches the survey_questions table schema
+ * Individual survey question (survey_questions row).
+ * When loaded via survey_items, item_id / required / item_settings are populated.
  */
 export interface SurveyQuestion {
   id: string;
   tenant_id: string;
   question: string;
   type: QuestionType;
-  options: string[] | any[]; // JSONB array
+  options: string[] | any[];
+  /**
+   * Legacy bank order on survey_questions.
+   * Prefer survey_items.order_index when rendering a specific survey.
+   */
   order_index: number;
+  /** survey_items.id — set when hydrated through the collector model */
+  item_id?: string;
+  /** Per-survey required flag from survey_items */
+  required?: boolean;
+  /** Per-survey overrides from survey_items.settings */
+  item_settings?: Record<string, unknown>;
 }
 
 /**
- * Survey structure
- * Since there's no surveys table, we use survey_questions directly
+ * Visitor- or staff-facing survey with ordered questions.
+ * Loaded via surveys → survey_items → survey_questions (collector model).
+ *
+ * `id` and `title` are optional on the legacy flat survey_questions load path.
  */
 export interface Survey {
+  /** surveys.id — absent on legacy flat survey_questions load */
+  id?: string;
   tenant_id: string;
   coupon_id?: string | null;
-  title?: string; // Optional since we don't have a surveys table
+  title?: string;
+  slug?: string | null;
   description?: string | null;
+  kind?: SurveyKind;
+  status?: SurveyStatus;
+  settings?: Record<string, unknown>;
+  starts_at?: string | null;
+  ends_at?: string | null;
   questions: SurveyQuestion[];
 }
 
+/** Card shown on the public surveys/polls hub */
+export interface PublicSurveyListItem {
+  id: string;
+  title: string;
+  slug: string | null;
+  description: string | null;
+  kind: SurveyKind;
+  questionCount: number;
+  allowAnonymous: boolean;
+}
+
+export interface PublicSurveysListResponse {
+  surveys: PublicSurveyListItem[];
+  error: string | null;
+}
+
+export type PublicSurveyUnavailableReason =
+  | "not_found"
+  | "inactive"
+  | "not_started"
+  | "ended"
+  | "no_questions"
+  | "email_required";
+
+export interface PublicSurveyLoadResponse {
+  survey: Survey | null;
+  reason: PublicSurveyUnavailableReason | null;
+  error: string | null;
+}
+
 /**
- * Answer for a single question
- * For multiple_choice, answer_text should be a JSON string array
+ * Answer for a single question in a submission payload.
+ * For multiple_choice, answer_text should be a JSON string array.
  */
 export interface QuestionAnswer {
   question_id: string;
@@ -56,19 +109,20 @@ export interface QuestionAnswer {
 }
 
 /**
- * Complete survey submission
- * Since there's no surveys table, survey_id is actually tenant_id
+ * Complete survey submission (one POST per answer row server-side).
  */
 export interface SurveySubmission {
-  survey_id: string; // Actually tenant_id
+  /**
+   * surveys.id — survey context for survey_responses.survey_id.
+   * Legacy clients may still pass tenant_id here until visitor flow is migrated.
+   */
+  survey_id: string;
   coupon_id?: string | null;
   email?: string | null;
   answers: QuestionAnswer[];
 }
 
-/**
- * Survey response types
- */
+/** Result of loading a survey for display */
 export interface SurveyResponse {
   survey: Survey | null;
   error: string | null;
