@@ -4,7 +4,6 @@
 
 "use client";
 
-import { useState } from "react";
 import { ChevronDown, ExternalLink, Pencil, Plus } from "lucide-react";
 import type { SurveyListEntry } from "@/lib/types";
 import ActionButton from "@/app/components/ui/ActionButton";
@@ -16,7 +15,8 @@ import { canAddQuestionToSurvey } from "./survey-form-utils";
 interface SurveyCollapsibleProps {
   entry: SurveyListEntry;
   tenantSlug: string;
-  defaultExpanded?: boolean;
+  expanded: boolean;
+  onToggle: () => void;
   questionTypeNames: Record<string, string>;
   onEdit: () => void;
   onAddQuestion?: () => void;
@@ -54,14 +54,14 @@ function KindBadge({ kind }: { kind: SurveyListEntry["survey"]["kind"] }) {
 export default function SurveyCollapsible({
   entry,
   tenantSlug,
-  defaultExpanded = false,
+  expanded,
+  onToggle,
   questionTypeNames,
   onEdit,
   onAddQuestion,
   onItemsOrderChange,
   onReorderItem,
 }: SurveyCollapsibleProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
   const { survey, items, summary } = entry;
   const questionCount = items.length;
   const responseCount = summary.total_responses;
@@ -69,11 +69,18 @@ export default function SurveyCollapsible({
 
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <button
-        type="button"
-        onClick={() => setExpanded((open) => !open)}
+      <div
+        role="button"
+        tabIndex={0}
         aria-expanded={expanded}
-        className="flex w-full items-start gap-3 px-4 py-4 text-left transition-colors hover:bg-zinc-50 sm:items-center sm:px-6 dark:hover:bg-zinc-800/50"
+        onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onToggle();
+          }
+        }}
+        className="flex w-full cursor-pointer items-start gap-3 px-4 py-4 text-left transition-colors hover:bg-zinc-50 sm:items-center sm:px-6 dark:hover:bg-zinc-800/50"
       >
         <ChevronDown
           className={`mt-0.5 h-5 w-5 shrink-0 text-zinc-500 transition-transform sm:mt-0 ${
@@ -89,6 +96,19 @@ export default function SurveyCollapsible({
             <div className="flex flex-wrap items-center gap-2">
               <KindBadge kind={survey.kind} />
               <StatusBadge status={survey.status} />
+              {survey.status === "active" && (
+                <a
+                  href={`/${tenantSlug}/survey/${survey.slug || survey.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="View public page"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  View public page
+                </a>
+              )}
             </div>
           </div>
 
@@ -103,22 +123,11 @@ export default function SurveyCollapsible({
             {survey.slug && <span>{survey.slug}</span>}
           </div>
         </div>
-      </button>
+      </div>
 
       {expanded && (
         <div className="border-t border-zinc-200 px-4 py-4 sm:px-6 dark:border-zinc-800">
           <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
-            {survey.status === "active" && (
-              <a
-                href={`/${tenantSlug}/survey/${survey.slug || survey.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-              >
-                <ExternalLink className="h-4 w-4" />
-                View public page
-              </a>
-            )}
             <ActionButton
               type="button"
               onClick={() => onEdit()}

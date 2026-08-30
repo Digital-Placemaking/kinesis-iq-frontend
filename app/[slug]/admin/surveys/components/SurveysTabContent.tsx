@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { setSurveyItemsOrder } from "@/app/actions";
@@ -63,9 +63,9 @@ export default function SurveysTabContent({
     setEntries(surveyEntries);
   }, [surveyEntries]);
 
-  const defaultExpandedId = useMemo(
-    () => getDefaultExpandedSurveyId(entries),
-    [entries]
+  // Accordion: only one survey can be expanded at a time
+  const [expandedSurveyId, setExpandedSurveyId] = useState<string | null>(() =>
+    getDefaultExpandedSurveyId(surveyEntries)
   );
 
   const [isAddSurveyOpen, setIsAddSurveyOpen] = useState(false);
@@ -197,7 +197,12 @@ export default function SurveysTabContent({
                 key={entry.survey.id}
                 entry={entry}
                 tenantSlug={tenantSlug}
-                defaultExpanded={entry.survey.id === defaultExpandedId}
+                expanded={entry.survey.id === expandedSurveyId}
+                onToggle={() =>
+                  setExpandedSurveyId((current) =>
+                    current === entry.survey.id ? null : entry.survey.id
+                  )
+                }
                 questionTypeNames={QUESTION_TYPE_NAMES}
                 onEdit={() => setEditSurvey(entry.survey)}
                 onAddQuestion={() => setAddQuestionEntry(entry)}
