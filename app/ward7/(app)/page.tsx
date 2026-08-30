@@ -1,5 +1,6 @@
-import { AlertTriangle, Megaphone, Upload } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { listPublicSurveys } from "@/app/actions";
 import { getTopSignals, getWeeklyOverview } from "@/lib/councillor/api";
 import {
   INDICATORS,
@@ -21,6 +22,7 @@ import {
 import type { IndicatorRow, TopSignals } from "@/lib/councillor/types";
 import { IndicatorCard } from "./components/IndicatorCard";
 import { TrendChart, type TrendTab } from "./components/TrendChart";
+import { ActivePollsPanel } from "./components/ActivePollsPanel";
 import { PctBadge } from "../components/PctBadge";
 import { ApiErrorBanner } from "../components/StateBanner";
 
@@ -169,9 +171,10 @@ function newestFirst(rows: IndicatorRow[]): IndicatorRow[] {
 }
 
 export default async function Ward7Dashboard() {
-  const [wkRes, tsRes] = await Promise.allSettled([
+  const [wkRes, tsRes, pollsRes] = await Promise.allSettled([
     getWeeklyOverview(),
     getTopSignals(),
+    listPublicSurveys("ward7"),
   ]);
 
   const rows: IndicatorRow[] = newestFirst(
@@ -203,6 +206,11 @@ export default async function Ward7Dashboard() {
   const alerts = signals?.early_warning.slice(0, 3) ?? [];
   const topRepeat = signals?.repeated_complaints[0];
   const thisWeekCount = rows[0]?.request_count_raw ?? null;
+
+  const polls =
+    pollsRes.status === "fulfilled"
+      ? pollsRes.value
+      : { surveys: [], error: "Could not load Ward 7 polls." };
 
   const narrative = signals
     ? buildNarrative(signals)
@@ -354,34 +362,7 @@ export default async function Ward7Dashboard() {
         </Card>
       </div>
 
-      {/* Active polls — not yet served by the API (polling-system pending) */}
-      <Card className="border-dashed">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between text-base">
-            <span>Active Polls &amp; Surveys</span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
-              Coming soon
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-center gap-3">
-          <button
-            disabled
-            className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-400"
-          >
-            <Megaphone className="size-4" /> Create Poll
-          </button>
-          <button
-            disabled
-            className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-400"
-          >
-            <Upload className="size-4" /> Import Past Survey (CSV)
-          </button>
-          <p className="text-xs text-slate-400">
-            Live polling &amp; CSV import land with the polling-system backend.
-          </p>
-        </CardContent>
-      </Card>
+      <ActivePollsPanel surveys={polls.surveys} error={polls.error} />
     </div>
   );
 }
