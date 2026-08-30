@@ -33,17 +33,17 @@ export default function NoSurveyMessage({ tenant }: NoSurveyMessageProps) {
           </div>
 
           <h1 className="mb-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
-            Survey Coming Soon
+            Nothing open yet
           </h1>
 
           <p className="mb-4 text-xs text-muted-foreground sm:mb-6 sm:text-sm">
-            We're currently setting up our feedback survey. Please check back
+            There are no live surveys or polls right now. Please check back
             soon!
           </p>
 
           <div className="rounded-lg border-2 border-border bg-card p-3 sm:p-4">
             <p className="text-xs text-foreground sm:text-sm">
-              Thank you for your interest. We'll have a survey available
+              Thank you for your interest. We&apos;ll have a survey available
               shortly.
             </p>
           </div>

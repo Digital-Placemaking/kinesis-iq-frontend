@@ -5,7 +5,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Pencil, Plus } from "lucide-react";
+import { ChevronDown, ExternalLink, Pencil, Plus } from "lucide-react";
 import type { SurveyListEntry } from "@/lib/types";
 import ActionButton from "@/app/components/ui/ActionButton";
 import SurveyItemSortableList from "./SurveyItemSortableList";
@@ -108,6 +108,17 @@ export default function SurveyCollapsible({
       {expanded && (
         <div className="border-t border-zinc-200 px-4 py-4 sm:px-6 dark:border-zinc-800">
           <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+            {survey.status === "active" && (
+              <a
+                href={`/${tenantSlug}/survey/${survey.slug || survey.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+              >
+                <ExternalLink className="h-4 w-4" />
+                View public page
+              </a>
+            )}
             <ActionButton
               type="button"
               onClick={() => onEdit()}
