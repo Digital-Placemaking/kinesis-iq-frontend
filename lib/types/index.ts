@@ -30,6 +30,10 @@ export type {
   SurveySubmission,
   SurveyResponse as SurveyLoadResponse,
   SurveySubmissionResponse,
+  PublicSurveyListItem,
+  PublicSurveysListResponse,
+  PublicSurveyUnavailableReason,
+  PublicSurveyLoadResponse,
 } from "./survey";
 
 // Survey collector model (surveys + survey_items tables)

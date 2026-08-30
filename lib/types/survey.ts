@@ -49,7 +49,7 @@ export interface SurveyQuestion {
  * Visitor- or staff-facing survey with ordered questions.
  * Loaded via surveys → survey_items → survey_questions (collector model).
  *
- * `id` and `title` are optional until legacy flat-question load paths are migrated.
+ * `id` and `title` are optional on the legacy flat survey_questions load path.
  */
 export interface Survey {
   /** surveys.id — absent on legacy flat survey_questions load */
@@ -65,6 +65,36 @@ export interface Survey {
   starts_at?: string | null;
   ends_at?: string | null;
   questions: SurveyQuestion[];
+}
+
+/** Card shown on the public surveys/polls hub */
+export interface PublicSurveyListItem {
+  id: string;
+  title: string;
+  slug: string | null;
+  description: string | null;
+  kind: SurveyKind;
+  questionCount: number;
+  allowAnonymous: boolean;
+}
+
+export interface PublicSurveysListResponse {
+  surveys: PublicSurveyListItem[];
+  error: string | null;
+}
+
+export type PublicSurveyUnavailableReason =
+  | "not_found"
+  | "inactive"
+  | "not_started"
+  | "ended"
+  | "no_questions"
+  | "email_required";
+
+export interface PublicSurveyLoadResponse {
+  survey: Survey | null;
+  reason: PublicSurveyUnavailableReason | null;
+  error: string | null;
 }
 
 /**
