@@ -59,12 +59,16 @@ export function ActivePollsPanel({
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/ward7/admin/surveys"
+            target="_blank"
+            rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             <Megaphone className="size-4" /> Create Poll
           </Link>
           <Link
             href="/ward7/admin/surveys"
+            target="_blank"
+            rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             <ClipboardList className="size-4" /> Manage Surveys
