@@ -331,3 +331,31 @@ body.dark .mobile-theme *,
   border-color: var(--primary) !important;
   background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 011.414-1.414L5 10.586l6.293-6.293a1 1 0 011.414 0z'/%3e%3c/svg%3e") !important;
 }
+
+@media print {
+  .print\:hidden {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: white !important;
+  }
+
+  .print-area,
+  .print-area * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+
+  .print-area {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .print-area .print-avoid-break {
+    break-inside: avoid;
+  }
+}
