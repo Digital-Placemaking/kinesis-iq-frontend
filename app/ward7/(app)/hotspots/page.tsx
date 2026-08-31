@@ -1,4 +1,5 @@
-import { TrendingUp, Minus } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, TrendingUp, Minus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { getHotspots, getTopSignals } from "@/lib/councillor/api";
 import { categoryLabel, formatCount } from "@/lib/councillor/format";
@@ -22,6 +23,14 @@ export default async function HotspotsPage() {
       <div className="space-y-4">
         <Header />
         <ApiErrorBanner />
+        <div className="flex justify-end">
+          <Link
+            href="/ward7/dashboard"
+            className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          >
+            <ArrowLeft className="size-4" /> Back to Dashboard
+          </Link>
+        </div>
       </div>
     );
   }
@@ -107,6 +116,15 @@ export default async function HotspotsPage() {
         Micro-area chips show the top request categories (fixed buckets) for each
         FSA over the window.
       </p>
+
+      <div className="flex justify-end">
+        <Link
+          href="/ward7/dashboard"
+          className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+        >
+          <ArrowLeft className="size-4" /> Back to Dashboard
+        </Link>
+      </div>
     </div>
   );
 }
