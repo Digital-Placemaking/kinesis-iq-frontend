@@ -34,7 +34,10 @@ export function IndicatorCard({
     directionTone ??
     (direction === "up" ? "good" : direction === "down" ? "bad" : "neutral");
   return (
-    <Card className="gap-0 border-l-4 border-l-transparent p-4 py-4 data-[tone=critical]:border-l-red-400 data-[tone=elevated]:border-l-amber-400 data-[tone=good]:border-l-emerald-400">
+    <Card
+      data-tone={statusTone}
+      className="gap-0 border-l-4 border-l-transparent p-4 py-4 data-[tone=critical]:border-l-red-400 data-[tone=elevated]:border-l-amber-400 data-[tone=good]:border-l-emerald-400"
+    >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-slate-500">{label}</span>
         {sample ? <SampleBadge /> : null}

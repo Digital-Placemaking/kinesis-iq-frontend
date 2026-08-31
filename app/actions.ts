@@ -8,6 +8,8 @@
  * - emails.ts: Email opt-in and management
  * - surveys.ts: Survey fetching and submission
  * - questions.ts: Survey question management
+ * - survey-collector.ts: Surveys and survey_items (collector model)
+ * - survey-results.ts: Survey-level stats and scoped question results
  * - issued-coupons.ts: Issued coupon operations
  * - wallet.ts: Google Wallet integration
  * - feedback.ts: Feedback submission
@@ -47,6 +49,8 @@ export {
 export {
   getSurveyForTenant,
   getSurveyForCoupon,
+  listPublicSurveys,
+  getPublicSurvey,
   submitSurveyAnswers,
 } from "./actions/surveys";
 
@@ -61,6 +65,25 @@ export {
   getQuestionResults,
 } from "./actions/questions";
 export type { QuestionResult } from "@/lib/types/question";
+
+// Survey collector actions (surveys + survey_items)
+export {
+  listSurveys,
+  getSurveysForAdminTab,
+  getSurveyWithItems,
+  createSurvey,
+  updateSurvey,
+  deleteSurvey,
+  addSurveyItem,
+  removeSurveyItem,
+  updateSurveyItem,
+  setSurveyItemsOrder,
+  reorderSurveyItem,
+  searchQuestionBank,
+} from "./actions/survey-collector";
+
+// Survey results / reporting
+export { getSurveySummary } from "./actions/survey-results";
 
 // Issued coupon actions
 export {

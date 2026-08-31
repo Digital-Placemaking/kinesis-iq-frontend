@@ -243,10 +243,19 @@ export async function getAnalyticsTimeSeries(
     // Create tenant-scoped client
     const tenantSupabase = await createTenantClient(resolvedTenantId);
 
-    // Calculate date range
+    // Last `days` calendar days in UTC, including today.
+    // (Previously: start = now - days and loop i < days → today was never a bucket,
+    // so fresh events were fetched then discarded.)
     const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const todayUtc = new Date(
+      Date.UTC(
+        endDate.getUTCFullYear(),
+        endDate.getUTCMonth(),
+        endDate.getUTCDate()
+      )
+    );
+    const startDate = new Date(todayUtc);
+    startDate.setUTCDate(todayUtc.getUTCDate() - (days - 1));
 
     // Fetch all events in the date range
     const { data: events, error: eventsError } = await tenantSupabase
@@ -276,11 +285,11 @@ export async function getAnalyticsTimeSeries(
       }
     >();
 
-    // Initialize all dates with zero values
+    // Initialize all dates with zero values (inclusive of today)
     for (let i = 0; i < days; i++) {
       const date = new Date(startDate);
-      date.setDate(date.getDate() + i);
-      const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD format
+      date.setUTCDate(startDate.getUTCDate() + i);
+      const dateStr = date.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
       dateMap.set(dateStr, {
         date: dateStr,
         pageVisits: 0,
@@ -291,10 +300,9 @@ export async function getAnalyticsTimeSeries(
       });
     }
 
-    // Aggregate events by date
+    // Aggregate events by UTC date
     events?.forEach((event) => {
-      const eventDate = new Date(event.created_at);
-      const dateStr = eventDate.toISOString().split("T")[0];
+      const dateStr = new Date(event.created_at).toISOString().slice(0, 10);
       const dayData = dateMap.get(dateStr);
 
       if (dayData) {

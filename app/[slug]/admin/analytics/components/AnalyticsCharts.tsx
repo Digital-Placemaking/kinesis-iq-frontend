@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Calendar } from "lucide-react";
-import { getAnalyticsTimeSeries } from "@/app/actions";
 import {
   ChartContainer,
   ChartTooltip,
@@ -12,19 +10,13 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-
-interface TimeSeriesData {
-  date: string;
-  pageVisits: number;
-  surveyCompletions: number;
-  codeCopies: number;
-  couponDownloads: number;
-  walletAdds: number;
-}
+import type { AnalyticsTimeSeriesPoint } from "@/lib/hooks/polling";
 
 interface AnalyticsChartsProps {
-  tenantSlug: string;
-  initialTimeSeriesData: TimeSeriesData[];
+  timeSeriesData: AnalyticsTimeSeriesPoint[];
+  dateRange: number;
+  onDateRangeChange: (days: number) => void;
+  isFetching?: boolean;
 }
 
 /**
@@ -77,28 +69,11 @@ const chartConfig: ChartConfig = {
  * Includes date range selectors for each chart
  */
 export default function AnalyticsCharts({
-  tenantSlug,
-  initialTimeSeriesData,
+  timeSeriesData,
+  dateRange,
+  onDateRangeChange,
+  isFetching = false,
 }: AnalyticsChartsProps) {
-  const [timeSeriesData, setTimeSeriesData] = useState(initialTimeSeriesData);
-  const [loading, setLoading] = useState(false);
-  const [dateRange, setDateRange] = useState(30);
-
-  const handleDateRangeChange = async (days: number) => {
-    setLoading(true);
-    setDateRange(days);
-    try {
-      const result = await getAnalyticsTimeSeries(tenantSlug, days);
-      if (result.data) {
-        setTimeSeriesData(result.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch analytics data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const dateRangeOptions = [
     { label: "7 days", value: 7 },
     { label: "14 days", value: 14 },
@@ -127,13 +102,13 @@ export default function AnalyticsCharts({
           {dateRangeOptions.map((option) => (
             <button
               key={option.value}
-              onClick={() => handleDateRangeChange(option.value)}
-              disabled={loading}
+              onClick={() => onDateRangeChange(option.value)}
+              disabled={isFetching}
               className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 ${
                 dateRange === option.value
                   ? "bg-blue-500 text-white"
                   : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-              } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+              } ${isFetching ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {option.label}
             </button>
@@ -148,7 +123,7 @@ export default function AnalyticsCharts({
             Overall Engagement Trends
           </h3>
         </div>
-        {loading ? (
+        {isFetching && timeSeriesData.length === 0 ? (
           <div className="flex h-[250px] sm:h-[300px] items-center justify-center">
             <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
               Loading...
@@ -232,7 +207,7 @@ export default function AnalyticsCharts({
         <h3 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50">
           Visitor Activity
         </h3>
-        {loading ? (
+        {isFetching && timeSeriesData.length === 0 ? (
           <div className="flex h-[250px] sm:h-[300px] items-center justify-center">
             <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
               Loading...
@@ -295,7 +270,7 @@ export default function AnalyticsCharts({
         <h3 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50">
           Conversion Actions
         </h3>
-        {loading ? (
+        {isFetching && timeSeriesData.length === 0 ? (
           <div className="flex h-[250px] sm:h-[300px] items-center justify-center">
             <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
               Loading...

@@ -138,7 +138,7 @@ export async function getDashboardMetrics(
       surveyResponsesData,
       analyticsData,
       issuedCouponsData,
-      sentimentQuestionsData,
+      pulseQuestionsData,
     ] = await Promise.all([
       // Survey responses: Get all responses to count total and unique sessions
       tenantSupabase
@@ -163,12 +163,25 @@ export async function getDashboardMetrics(
         .select("coupon_id, id")
         .eq("status", "issued"),
 
-      // Sentiment questions: Get all sentiment-type questions
+      // Pulse / sentiment-like question types for the donut chart
       tenantSupabase
         .from("survey_questions")
         .select("id, type")
-        .eq("type", "sentiment"),
+        .in("type", [
+          "sentiment",
+          "nps",
+          "likert_5",
+          "likert_7",
+          "rating_5",
+        ]),
     ]);
+
+    if (pulseQuestionsData.error) {
+      console.error(
+        "Failed to load survey_questions for sentiment:",
+        pulseQuestionsData.error.message
+      );
+    }
 
     // Calculate total responses and unique sessions
     const totalResponses = surveyResponsesData.data?.length || 0;
@@ -176,64 +189,63 @@ export async function getDashboardMetrics(
       surveyResponsesData.data?.map((r) => r.session_id).filter(Boolean) || []
     ).size;
 
-    // Calculate sentiment distribution from sentiment questions
-    const sentimentQuestionIds = new Set(
-      sentimentQuestionsData.data?.map((q) => q.id) || []
+    const questionTypeById = new Map<string, string>(
+      (pulseQuestionsData.data ?? []).map((q) => [q.id as string, q.type as string])
     );
 
     let happyCount = 0;
     let neutralCount = 0;
     let concernedCount = 0;
 
-    // Process sentiment responses
-    surveyResponsesData.data?.forEach((response) => {
-      if (
-        response.question_id &&
-        sentimentQuestionIds.has(response.question_id) &&
-        response.answer &&
-        typeof response.answer === "object" &&
-        "number" in response.answer
-      ) {
-        const sentimentValue = Number(response.answer.number);
-        // Sentiment scale: 1-5 (1-2 = concerned, 3 = neutral, 4-5 = happy)
-        if (sentimentValue >= 4) {
-          happyCount++;
-        } else if (sentimentValue === 3) {
-          neutralCount++;
-        } else {
-          concernedCount++;
+    const extractAnswerNumber = (answer: unknown): number | null => {
+      if (answer == null) return null;
+      if (typeof answer === "number" && Number.isFinite(answer)) return answer;
+      if (typeof answer === "string") {
+        const n = Number(answer);
+        return Number.isFinite(n) ? n : null;
+      }
+      if (typeof answer === "object") {
+        const record = answer as Record<string, unknown>;
+        if (record.number !== undefined && record.number !== null) {
+          const n = Number(record.number);
+          return Number.isFinite(n) ? n : null;
         }
       }
+      return null;
+    };
+
+    const bucketSentiment = (type: string, value: number) => {
+      if (type === "nps") {
+        // 0–10: promoters / passives / detractors
+        if (value >= 7) happyCount++;
+        else if (value >= 4) neutralCount++;
+        else concernedCount++;
+        return;
+      }
+      if (type === "likert_7") {
+        // 1–7
+        if (value >= 5) happyCount++;
+        else if (value === 4) neutralCount++;
+        else concernedCount++;
+        return;
+      }
+      // sentiment | likert_5 | rating_5 — 1–5
+      if (value >= 4) happyCount++;
+      else if (value === 3) neutralCount++;
+      else concernedCount++;
+    };
+
+    // Count every pulse-scale answer (sentiment, NPS, Likert, rating).
+    // Stopping after sentiment-only misses NPS/Likert rows that share the same
+    // response table (e.g. seed data: ~10 sentiment + ~10 NPS of 30 total).
+    surveyResponsesData.data?.forEach((response) => {
+      if (!response.question_id) return;
+      const type = questionTypeById.get(response.question_id);
+      if (!type) return;
+      const value = extractAnswerNumber(response.answer);
+      if (value === null) return;
+      bucketSentiment(type, value);
     });
-
-    // If no sentiment questions, try to calculate from NPS questions (7+ = happy, 4-6 = neutral, 0-3 = concerned)
-    if (happyCount === 0 && neutralCount === 0 && concernedCount === 0) {
-      const npsQuestions = await tenantSupabase
-        .from("survey_questions")
-        .select("id, type")
-        .eq("type", "nps");
-
-      const npsQuestionIds = new Set(npsQuestions.data?.map((q) => q.id) || []);
-
-      surveyResponsesData.data?.forEach((response) => {
-        if (
-          response.question_id &&
-          npsQuestionIds.has(response.question_id) &&
-          response.answer &&
-          typeof response.answer === "object" &&
-          "number" in response.answer
-        ) {
-          const npsValue = Number(response.answer.number);
-          if (npsValue >= 7) {
-            happyCount++;
-          } else if (npsValue >= 4) {
-            neutralCount++;
-          } else {
-            concernedCount++;
-          }
-        }
-      });
-    }
 
     const totalSentimentResponses = happyCount + neutralCount + concernedCount;
     const happinessScore =

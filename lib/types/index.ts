@@ -21,18 +21,45 @@ export type {
   TrackEventResponse,
 } from "./analytics";
 
-// Survey types
+// Survey types (visitor load + submission payloads)
 export type {
   QuestionType,
   SurveyQuestion,
   Survey,
   QuestionAnswer,
   SurveySubmission,
-  SurveyResponse as SurveyResponseType,
+  SurveyResponse as SurveyLoadResponse,
   SurveySubmissionResponse,
+  PublicSurveyListItem,
+  PublicSurveysListResponse,
+  PublicSurveyUnavailableReason,
+  PublicSurveyLoadResponse,
 } from "./survey";
 
-// Survey response types
+// Survey collector model (surveys + survey_items tables)
+export type {
+  SurveyKind,
+  SurveyStatus,
+  Survey as SurveyRecord,
+  SurveyItem,
+  HydratedSurveyQuestion,
+  HydratedSurveyItem,
+  CreateSurveyInput,
+  UpdateSurveyInput,
+  CreateSurveyItemInput,
+  UpdateSurveyItemInput,
+  SurveysListResponse,
+  SurveyWithItemsResponse,
+  SurveyMutationResponse,
+  SurveyItemMutationResponse,
+  SurveyQuestionTotal,
+  SurveySummary,
+  SurveySummaryResponse,
+  SurveyListEntry,
+  SurveysAdminListResponse,
+} from "./survey-collector";
+
+// Survey response types (survey_responses table rows)
 export type { SurveyResponse, SurveyResponseResponse } from "./survey-response";
 
 // Coupon types

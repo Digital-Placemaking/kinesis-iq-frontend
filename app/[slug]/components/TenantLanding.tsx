@@ -275,7 +275,7 @@ export default function TenantLanding({
               disabled={loading}
               className="w-full rounded-lg bg-primary text-primary-foreground px-4 py-3 text-sm font-semibold shadow-lg transition-all duration-250 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Take Poll
+              Surveys & Polls
             </button>
             <p className="text-center text-xs text-muted-foreground">
               Your data stays anonymous.
