@@ -11,9 +11,7 @@ export function Ward7Nav() {
     <nav className="flex items-center gap-1">
       {WARD7_SCREENS.map((s) => {
         const active =
-          s.href === "/ward7"
-            ? pathname === "/ward7"
-            : pathname.startsWith(s.href);
+          pathname === s.href || pathname.startsWith(`${s.href}/`);
         return (
           <Link
             key={s.href}

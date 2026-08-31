@@ -74,9 +74,9 @@ export const INDICATORS: IndicatorDef[] = [
   },
 ];
 
-/** Ordered nav across the four demo screens (Figma "Next →" flow). */
+/** Ordered nav across the tabbed demo screens (after the /ward7 snapshot). */
 export const WARD7_SCREENS = [
-  { href: "/ward7", label: "Dashboard" },
+  { href: "/ward7/dashboard", label: "Dashboard" },
   { href: "/ward7/signals", label: "Signal Overview" },
   { href: "/ward7/story", label: "Ward Story" },
   { href: "/ward7/hotspots", label: "Hotspots" },
