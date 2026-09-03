@@ -74,10 +74,11 @@ export const INDICATORS: IndicatorDef[] = [
   },
 ];
 
-/** Ordered nav across the four demo screens (Figma "Next →" flow). */
+/** Ordered nav across the councillor demo screens (Figma "Next →" flow). */
 export const WARD7_SCREENS = [
   { href: "/ward7", label: "Dashboard" },
   { href: "/ward7/signals", label: "Signal Overview" },
   { href: "/ward7/story", label: "Ward Story" },
   { href: "/ward7/hotspots", label: "Hotspots" },
+  { href: "/ward7/query", label: "Signal Explorer" },
 ] as const;

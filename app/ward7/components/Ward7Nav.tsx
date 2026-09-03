@@ -8,7 +8,7 @@ import { WARD7_SCREENS } from "@/lib/councillor/config";
 export function Ward7Nav() {
   const pathname = usePathname();
   return (
-    <nav className="flex items-center gap-1">
+    <nav className="scrollbar-hide flex max-w-full items-center gap-1 overflow-x-auto">
       {WARD7_SCREENS.map((s) => {
         const active =
           s.href === "/ward7"
@@ -19,7 +19,7 @@ export function Ward7Nav() {
             key={s.href}
             href={s.href}
             className={cn(
-              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              "shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               active
                 ? "bg-white/15 text-white"
                 : "text-slate-300 hover:bg-white/10 hover:text-white"
