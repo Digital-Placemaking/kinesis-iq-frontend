@@ -79,3 +79,15 @@ export const STATUS_TONE_CLASS: Record<StatusTone, string> = {
   elevated: "bg-amber-50 text-amber-700 border-amber-200",
   critical: "bg-red-50 text-red-700 border-red-200",
 };
+
+/**
+ * The 4px leading signal bar from the Visual Skin Reference (section 4, Cards).
+ * Every ward7 card that carries a tone uses this so the dashboard and the
+ * drill-downs read as one system.
+ */
+export const SIGNAL_BAR_CLASS: Record<StatusTone, string> = {
+  good: "border-l-4 border-l-emerald-500",
+  watch: "border-l-4 border-l-slate-300",
+  elevated: "border-l-4 border-l-amber-500",
+  critical: "border-l-4 border-l-red-500",
+};

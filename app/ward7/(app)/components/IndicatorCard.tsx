@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { SampleBadge } from "../../components/SampleBadge";
 import {
+  SIGNAL_BAR_CLASS,
   STATUS_TONE_CLASS,
   type IndicatorView,
 } from "@/lib/councillor/sample-indicators";
@@ -34,7 +35,7 @@ export function IndicatorCard({
     directionTone ??
     (direction === "up" ? "good" : direction === "down" ? "bad" : "neutral");
   return (
-    <Card className="gap-0 border-l-4 border-l-transparent p-4 py-4 data-[tone=critical]:border-l-red-400 data-[tone=elevated]:border-l-amber-400 data-[tone=good]:border-l-emerald-400">
+    <Card className={cn("gap-0 p-4 py-4", SIGNAL_BAR_CLASS[statusTone])}>
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-slate-500">{label}</span>
         {sample ? <SampleBadge /> : null}

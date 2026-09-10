@@ -1,8 +1,10 @@
-import { TrendingUp, Minus } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, Minus, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { getHotspots, getTopSignals } from "@/lib/councillor/api";
 import { categoryLabel, formatCount } from "@/lib/councillor/format";
 import { WARD } from "@/lib/councillor/config";
+import { categorySlug } from "@/lib/councillor/drilldown";
 import { Sparkline } from "../components/Sparkline";
 import { PctBadge } from "../../components/PctBadge";
 import { ApiErrorBanner } from "../../components/StateBanner";
@@ -45,21 +47,25 @@ export default async function HotspotsPage() {
                 h.sparkline[h.sparkline.length - 2]
               : null;
           return (
-            <Card key={h.fsa} className="p-4">
+            <Card key={h.fsa} className="p-4 transition-colors hover:border-slate-300">
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-3">
                   <span className="flex size-8 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
                     {i + 1}
                   </span>
-                  <div>
-                    <p className="text-lg font-semibold text-slate-900">
+                  <Link
+                    href={`/ward7/signals/area/${h.fsa}`}
+                    className="group"
+                  >
+                    <p className="flex items-center gap-1 text-lg font-semibold text-slate-900 group-hover:underline">
                       {h.fsa}
+                      <ChevronRight className="size-4 text-slate-300 transition-colors group-hover:text-slate-600" />
                     </p>
                     <p className="text-xs text-slate-500">
                       {formatCount(h.total)} requests · last {hs.recent_months}{" "}
                       mo
                     </p>
-                  </div>
+                  </Link>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -87,12 +93,13 @@ export default async function HotspotsPage() {
                 <div className="ml-auto flex items-center gap-4">
                   <div className="hidden flex-wrap gap-1.5 sm:flex">
                     {h.categories.slice(0, 3).map((c) => (
-                      <span
+                      <Link
                         key={c.category}
-                        className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
+                        href={`/ward7/signals/category/${categorySlug(c.category)}`}
+                        className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900"
                       >
                         {categoryLabel(c.category)} · {formatCount(c.count)}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                   <Sparkline values={h.sparkline} />
@@ -105,7 +112,8 @@ export default async function HotspotsPage() {
 
       <p className="text-xs text-slate-400">
         Micro-area chips show the top request categories (fixed buckets) for each
-        FSA over the window.
+        FSA over the window. Select an FSA for its full breakdown, or a chip for
+        that category across the ward.
       </p>
     </div>
   );

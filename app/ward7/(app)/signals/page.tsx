@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getHotspots, getTopSignals } from "@/lib/councillor/api";
 import { categoryLabel, formatCount } from "@/lib/councillor/format";
+import { categorySlug } from "@/lib/councillor/drilldown";
 import { WARD } from "@/lib/councillor/config";
 import { OverviewCard, type OverviewRow } from "../components/OverviewCard";
 import { PctBadge } from "../../components/PctBadge";
@@ -34,6 +35,7 @@ export default async function SignalOverviewPage() {
         Math.round(c.baseline_avg)
       )} baseline`,
       trailing: <PctBadge value={c.pct_change} />,
+      href: `/ward7/signals/category/${categorySlug(c.category)}`,
     })) ?? [];
 
   const drifting: OverviewRow[] =
@@ -46,6 +48,7 @@ export default async function SignalOverviewPage() {
           +{d.slope.toFixed(1)}/mo
         </span>
       ),
+      href: `/ward7/signals/area/${d.fsa}`,
     })) ?? [];
 
   const hotspots: OverviewRow[] =
@@ -61,6 +64,7 @@ export default async function SignalOverviewPage() {
           {formatCount(h.total)}
         </span>
       ),
+      href: `/ward7/signals/area/${h.fsa}`,
     })) ?? [];
 
   const repeated: OverviewRow[] =
@@ -73,6 +77,7 @@ export default async function SignalOverviewPage() {
           {formatCount(r.count)}
         </span>
       ),
+      href: `/ward7/signals/area/${r.fsa}`,
     })) ?? [];
 
   const earlyWarning: OverviewRow[] =
@@ -81,6 +86,7 @@ export default async function SignalOverviewPage() {
       label: `${categoryLabel(e.category)}`,
       sub: `z-score ${e.z_score.toFixed(2)}`,
       trailing: <PctBadge value={e.pct_change} />,
+      href: `/ward7/signals/category/${categorySlug(e.category)}`,
     })) ?? [];
 
   return (

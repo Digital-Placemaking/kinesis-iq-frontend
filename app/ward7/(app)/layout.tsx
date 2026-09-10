@@ -14,7 +14,7 @@ export default async function Ward7AppLayout({
   if (!session) redirect("/ward7/login");
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="light-scope flex min-h-screen flex-col bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-30 border-b border-white/10 bg-kinesisiq-gradient">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-4 px-4">
           <div className="flex items-center gap-2">

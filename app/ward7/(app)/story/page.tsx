@@ -8,6 +8,7 @@ import {
   ratioLabel,
   sharePct,
 } from "@/lib/councillor/format";
+import { categorySlug } from "@/lib/councillor/drilldown";
 import { WARD } from "@/lib/councillor/config";
 import { OverviewCard, type OverviewRow } from "../components/OverviewCard";
 import { PctBadge } from "../../components/PctBadge";
@@ -30,6 +31,7 @@ export default async function WardStoryPage() {
 
   const rising: OverviewRow[] = wv.RISING.slice(0, 6).map((r) => ({
     id: r.category,
+    href: `/ward7/signals/category/${categorySlug(r.category)}`,
     label: categoryLabel(r.category),
     sub: `${formatCount(r.recent)} vs ${formatCount(Math.round(r.baseline_avg))} baseline`,
     trailing: <PctBadge value={r.pct_change} />,
@@ -37,6 +39,7 @@ export default async function WardStoryPage() {
 
   const falling: OverviewRow[] = wv.FALLING.slice(0, 6).map((r) => ({
     id: r.category,
+    href: `/ward7/signals/category/${categorySlug(r.category)}`,
     label: categoryLabel(r.category),
     sub: `${formatCount(r.recent)} vs ${formatCount(Math.round(r.baseline_avg))} baseline`,
     trailing: <PctBadge value={r.pct_change} />,
@@ -46,6 +49,7 @@ export default async function WardStoryPage() {
     .slice(0, 8)
     .map((w) => ({
       id: w.category,
+      href: `/ward7/signals/category/${categorySlug(w.category)}`,
       label: categoryLabel(w.category),
       sub: `ward ${sharePct(w.ward7_share)} · city ${sharePct(w.city_share)}`,
       trailing: (
@@ -57,6 +61,7 @@ export default async function WardStoryPage() {
 
   const earlyWarning: OverviewRow[] = wv["EARLY WARNING"].map((e) => ({
     id: e.category,
+    href: `/ward7/signals/category/${categorySlug(e.category)}`,
     label: categoryLabel(e.category),
     sub: `z-score ${e.z_score.toFixed(2)} · ${formatCount(e.recent)} vs ${formatCount(e.prior)} prior`,
     trailing: <PctBadge value={e.pct_change} />,
@@ -66,6 +71,7 @@ export default async function WardStoryPage() {
     .slice(0, 6)
     .map((r, i) => ({
       id: `${r.fsa}-${i}`,
+      href: `/ward7/signals/area/${r.fsa}`,
       label: r.type,
       sub: r.fsa,
       trailing: (
@@ -77,6 +83,7 @@ export default async function WardStoryPage() {
 
   const drifting: OverviewRow[] = wv.DRIFTING.slice(0, 6).map((d) => ({
     id: d.category,
+    href: `/ward7/signals/category/${categorySlug(d.category)}`,
     label: categoryLabel(d.category),
     sub: "positive monthly slope",
     trailing: (

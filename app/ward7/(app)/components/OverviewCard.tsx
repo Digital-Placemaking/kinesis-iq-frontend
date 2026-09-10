@@ -1,4 +1,6 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { ChevronRight } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,6 +14,8 @@ export interface OverviewRow {
   label: string;
   sub?: string;
   trailing?: ReactNode;
+  /** When set, the row becomes a link into its drill-down view. */
+  href?: string;
 }
 
 export function OverviewCard({
@@ -35,24 +39,43 @@ export function OverviewCard({
       </CardHeader>
       <CardContent className="space-y-2.5">
         {rows.length ? (
-          rows.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 last:border-0 last:pb-0"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-slate-800">
-                  {r.label}
-                </p>
-                {r.sub ? (
-                  <p className="truncate text-xs text-slate-500">{r.sub}</p>
-                ) : null}
+          rows.map((r) => {
+            const body = (
+              <>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-800">
+                    {r.label}
+                  </p>
+                  {r.sub ? (
+                    <p className="truncate text-xs text-slate-500">{r.sub}</p>
+                  ) : null}
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {r.trailing}
+                  {r.href ? (
+                    <ChevronRight className="size-4 text-slate-300 transition-colors group-hover:text-slate-600" />
+                  ) : null}
+                </div>
+              </>
+            );
+
+            const rowClass =
+              "flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 last:border-0 last:pb-0";
+
+            return r.href ? (
+              <Link
+                key={r.id}
+                href={r.href}
+                className={`${rowClass} group -mx-2 rounded-md px-2 pt-1.5 transition-colors hover:bg-slate-50`}
+              >
+                {body}
+              </Link>
+            ) : (
+              <div key={r.id} className={rowClass}>
+                {body}
               </div>
-              {r.trailing ? (
-                <div className="shrink-0">{r.trailing}</div>
-              ) : null}
-            </div>
-          ))
+            );
+          })
         ) : (
           <p className="text-sm text-slate-400">{emptyText}</p>
         )}
