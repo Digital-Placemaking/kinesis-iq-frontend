@@ -9,6 +9,14 @@ import {
   TOKEN_COOKIE,
 } from "@/lib/councillor/config";
 import type { CouncillorSession } from "@/lib/councillor/types";
+import { canViewWard, lockedWardFor } from "@/lib/councillor/ward-context";
+import { DEFAULT_WARD, isWardEnabled, parseWard, wardPath } from "@/lib/councillor/wards";
+
+/** The ward the submitting page belonged to (hidden `ward` field). */
+function wardFromForm(formData: FormData) {
+  const ward = parseWard(String(formData.get("ward") ?? ""));
+  return ward && isWardEnabled(ward) ? ward : DEFAULT_WARD;
+}
 
 export interface LoginState {
   error?: string;
@@ -45,6 +53,7 @@ export async function loginAction(
   _prev: LoginState,
   formData: FormData
 ): Promise<LoginState> {
+  const requested = wardFromForm(formData);
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   if (!email || !password) {
@@ -74,15 +83,18 @@ export async function loginAction(
   jar.set(TOKEN_COOKIE, result.access_token, { ...base, maxAge, expires });
   jar.set(SESSION_COOKIE, JSON.stringify(session), { ...base, maxAge, expires });
 
-  redirect("/ward7");
+  // Land on the ward they signed in from, unless their role pins them elsewhere.
+  redirect(
+    wardPath(canViewWard(session, requested) ? requested : lockedWardFor(session)!)
+  );
 }
 
-export async function logoutAction() {
+export async function logoutAction(formData: FormData) {
   const jar = await cookies();
   const secure = process.env.NODE_ENV === "production";
   const base = cookieBase(secure);
   // Next requires matching path (and ideally same attributes) to clear cookies.
   jar.set(TOKEN_COOKIE, "", { ...base, maxAge: 0 });
   jar.set(SESSION_COOKIE, "", { ...base, maxAge: 0 });
-  redirect("/ward7/login");
+  redirect(wardPath(wardFromForm(formData), "/login"));
 }

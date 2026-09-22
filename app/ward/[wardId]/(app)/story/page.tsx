@@ -8,22 +8,28 @@ import {
   ratioLabel,
   sharePct,
 } from "@/lib/councillor/format";
-import { categorySlug } from "@/lib/councillor/drilldown";
-import { WARD } from "@/lib/councillor/config";
+import { areaHref, categoryHref } from "@/lib/councillor/drilldown";
+import { resolveWard, wardMetadata, type WardParams } from "@/lib/councillor/ward-context";
 import { OverviewCard, type OverviewRow } from "../components/OverviewCard";
+import { wardPath } from "@/lib/councillor/wards";
+import { WardPageHeader } from "../components/WardPageHeader";
 import { PctBadge } from "../../components/PctBadge";
 import { ApiErrorBanner } from "../../components/StateBanner";
 
-export const metadata = { title: "Ward Story · Ward 7" };
+export const generateMetadata = wardMetadata((ward) => `Ward Story · ${ward.label}`);
 
-export default async function WardStoryPage() {
-  const res = await Promise.allSettled([getWardView()]);
-  const wv = res[0].status === "fulfilled" ? res[0].value : null;
+export default async function WardStoryPage({
+  params,
+}: {
+  params: WardParams;
+}) {
+  const ward = await resolveWard(params);
+  const wv = await getWardView(ward.id).catch(() => null);
 
   if (!wv) {
     return (
       <div className="space-y-4">
-        <Header />
+        <WardPageHeader ward={ward} title="Ward Story" />
         <ApiErrorBanner />
       </div>
     );
@@ -31,7 +37,7 @@ export default async function WardStoryPage() {
 
   const rising: OverviewRow[] = wv.RISING.slice(0, 6).map((r) => ({
     id: r.category,
-    href: `/ward7/signals/category/${categorySlug(r.category)}`,
+    href: categoryHref(ward, r.category),
     label: categoryLabel(r.category),
     sub: `${formatCount(r.recent)} vs ${formatCount(Math.round(r.baseline_avg))} baseline`,
     trailing: <PctBadge value={r.pct_change} />,
@@ -39,7 +45,7 @@ export default async function WardStoryPage() {
 
   const falling: OverviewRow[] = wv.FALLING.slice(0, 6).map((r) => ({
     id: r.category,
-    href: `/ward7/signals/category/${categorySlug(r.category)}`,
+    href: categoryHref(ward, r.category),
     label: categoryLabel(r.category),
     sub: `${formatCount(r.recent)} vs ${formatCount(Math.round(r.baseline_avg))} baseline`,
     trailing: <PctBadge value={r.pct_change} />,
@@ -49,7 +55,7 @@ export default async function WardStoryPage() {
     .slice(0, 8)
     .map((w) => ({
       id: w.category,
-      href: `/ward7/signals/category/${categorySlug(w.category)}`,
+      href: categoryHref(ward, w.category),
       label: categoryLabel(w.category),
       sub: `ward ${sharePct(w.ward7_share)} · city ${sharePct(w.city_share)}`,
       trailing: (
@@ -61,7 +67,7 @@ export default async function WardStoryPage() {
 
   const earlyWarning: OverviewRow[] = wv["EARLY WARNING"].map((e) => ({
     id: e.category,
-    href: `/ward7/signals/category/${categorySlug(e.category)}`,
+    href: categoryHref(ward, e.category),
     label: categoryLabel(e.category),
     sub: `z-score ${e.z_score.toFixed(2)} · ${formatCount(e.recent)} vs ${formatCount(e.prior)} prior`,
     trailing: <PctBadge value={e.pct_change} />,
@@ -71,7 +77,7 @@ export default async function WardStoryPage() {
     .slice(0, 6)
     .map((r, i) => ({
       id: `${r.fsa}-${i}`,
-      href: `/ward7/signals/area/${r.fsa}`,
+      href: areaHref(ward, r.fsa),
       label: r.type,
       sub: r.fsa,
       trailing: (
@@ -83,7 +89,7 @@ export default async function WardStoryPage() {
 
   const drifting: OverviewRow[] = wv.DRIFTING.slice(0, 6).map((d) => ({
     id: d.category,
-    href: `/ward7/signals/category/${categorySlug(d.category)}`,
+    href: categoryHref(ward, d.category),
     label: categoryLabel(d.category),
     sub: "positive monthly slope",
     trailing: (
@@ -95,7 +101,7 @@ export default async function WardStoryPage() {
 
   return (
     <div className="space-y-6">
-      <Header recentYear={wv.meta.recent_year} />
+      <WardPageHeader ward={ward} title="Ward Story" recentYear={wv.meta.recent_year} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <OverviewCard
@@ -110,7 +116,7 @@ export default async function WardStoryPage() {
           emptyText="No categories falling this period."
         />
         <OverviewCard
-          title="Ward 7 vs City"
+          title={`${ward.label} vs City`}
           hint="Share of requests vs the citywide mix"
           rows={wardVsCity}
         />
@@ -135,26 +141,12 @@ export default async function WardStoryPage() {
 
       <div className="flex justify-end">
         <Link
-          href="/ward7/hotspots"
+          href={wardPath(ward, "/hotspots")}
           className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
         >
           Hotspots Explorer <ArrowRight className="size-4" />
         </Link>
       </div>
-    </div>
-  );
-}
-
-function Header({ recentYear }: { recentYear?: number }) {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold text-slate-900">
-        Ward {WARD.id} Story View
-      </h1>
-      <p className="text-sm text-slate-500">
-        {WARD.name}
-        {recentYear ? ` · ${recentYear}` : ""}
-      </p>
     </div>
   );
 }

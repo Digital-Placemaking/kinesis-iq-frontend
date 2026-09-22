@@ -1,17 +1,32 @@
 import { redirect } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { getSession } from "@/lib/councillor/api";
-import { WARD } from "@/lib/councillor/config";
+import {
+  canViewWard,
+  lockedWardFor,
+  resolveWard,
+  type WardParams,
+} from "@/lib/councillor/ward-context";
+import { wardPath } from "@/lib/councillor/wards";
 import { logoutAction } from "../actions";
-import { Ward7Nav } from "../components/Ward7Nav";
+import { WardNav } from "../components/WardNav";
 
-export default async function Ward7AppLayout({
+export default async function WardAppLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: WardParams;
 }) {
+  const ward = await resolveWard(params);
   const session = await getSession();
-  if (!session) redirect("/ward7/login");
+  if (!session) redirect(wardPath(ward, "/login"));
+
+  // Councillors/staff only see their own ward — send them home instead of
+  // rendering another ward's chrome over their own data.
+  if (!canViewWard(session, ward)) {
+    redirect(wardPath(lockedWardFor(session)!));
+  }
 
   return (
     <div className="light-scope flex min-h-screen flex-col bg-slate-50 text-slate-900">
@@ -22,12 +37,12 @@ export default async function Ward7AppLayout({
               Kinesis<span className="text-amber-400">IQ</span>
             </span>
             <span className="hidden text-xs text-slate-400 sm:inline">
-              Ward {WARD.id} · {WARD.name}
+              {ward.label} · {ward.name}
             </span>
           </div>
 
           <div className="ml-2 hidden md:block">
-            <Ward7Nav />
+            <WardNav basePath={ward.basePath} />
           </div>
 
           <div className="ml-auto flex items-center gap-3">
@@ -40,6 +55,7 @@ export default async function Ward7AppLayout({
               </span>
             ) : null}
             <form action={logoutAction}>
+              <input type="hidden" name="ward" value={ward.number} />
               <button
                 type="submit"
                 className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
@@ -51,7 +67,7 @@ export default async function Ward7AppLayout({
           </div>
         </div>
         <div className="mx-auto block w-full max-w-7xl px-4 pb-2 md:hidden">
-          <Ward7Nav />
+          <WardNav basePath={ward.basePath} />
         </div>
       </header>
 
@@ -59,7 +75,7 @@ export default async function Ward7AppLayout({
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto w-full max-w-7xl px-4 py-3 text-center text-xs text-slate-400">
-          Digital Placemaking Inc. · KinesisIQ Platform · Ward {WARD.id} Dashboard
+          Digital Placemaking Inc. · KinesisIQ Platform · {ward.label} Dashboard
         </div>
       </footer>
     </div>

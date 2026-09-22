@@ -69,6 +69,12 @@ function extractSubdomain(hostname: string): string | null {
   return subdomain;
 }
 
+/** Carry any refreshed Supabase auth cookies over onto a redirect. */
+function withSessionCookies(target: NextResponse, source: NextResponse) {
+  source.cookies.getAll().forEach((cookie) => target.cookies.set(cookie));
+  return target;
+}
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -114,6 +120,21 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/auth/oauth-callback")
   ) {
     return response;
+  }
+
+  // ============================================================================
+  // WARD ROUTING
+  // ============================================================================
+  // Ward views live at /ward/{N}/… (app/ward/[wardId]) — the URL is the route,
+  // no rewrite. Only normalise old/padded spellings so each ward has one URL:
+  //   /ward7/signals → /ward/7/signals      /ward/07 → /ward/7
+  const wardAlias =
+    pathname.match(/^\/ward0*(\d{1,2})(\/.*)?$/) ??
+    pathname.match(/^\/ward\/0+(\d{1,2})(\/.*)?$/);
+  if (wardAlias) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/ward/${Number(wardAlias[1])}${wardAlias[2] ?? ""}`;
+    return withSessionCookies(NextResponse.redirect(url, 308), response);
   }
 
   // Only protect /admin routes, not /{slug}/admin routes

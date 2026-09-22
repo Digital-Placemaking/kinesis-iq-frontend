@@ -1,27 +1,34 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getHotspots, getTopSignals } from "@/lib/councillor/api";
+import { getHotspots, getTopSignals, settledValue } from "@/lib/councillor/api";
 import { categoryLabel, formatCount } from "@/lib/councillor/format";
-import { categorySlug } from "@/lib/councillor/drilldown";
-import { WARD } from "@/lib/councillor/config";
+import { areaHref, categoryHref } from "@/lib/councillor/drilldown";
+import { resolveWard, wardMetadata, type WardParams } from "@/lib/councillor/ward-context";
 import { OverviewCard, type OverviewRow } from "../components/OverviewCard";
+import { wardPath } from "@/lib/councillor/wards";
+import { WardPageHeader } from "../components/WardPageHeader";
 import { PctBadge } from "../../components/PctBadge";
 import { ApiErrorBanner } from "../../components/StateBanner";
 
-export const metadata = { title: "Signal Overview · Ward 7" };
+export const generateMetadata = wardMetadata((ward) => `Signal Overview · ${ward.label}`);
 
-export default async function SignalOverviewPage() {
+export default async function SignalOverviewPage({
+  params,
+}: {
+  params: WardParams;
+}) {
+  const ward = await resolveWard(params);
   const [tsRes, hsRes] = await Promise.allSettled([
-    getTopSignals(),
-    getHotspots(),
+    getTopSignals(ward.id),
+    getHotspots(ward.id),
   ]);
-  const ts = tsRes.status === "fulfilled" ? tsRes.value : null;
-  const hs = hsRes.status === "fulfilled" ? hsRes.value : null;
+  const ts = settledValue(tsRes);
+  const hs = settledValue(hsRes);
 
   if (!ts && !hs) {
     return (
       <div className="space-y-4">
-        <Header />
+        <WardPageHeader ward={ward} title="Signal Overview" />
         <ApiErrorBanner />
       </div>
     );
@@ -35,7 +42,7 @@ export default async function SignalOverviewPage() {
         Math.round(c.baseline_avg)
       )} baseline`,
       trailing: <PctBadge value={c.pct_change} />,
-      href: `/ward7/signals/category/${categorySlug(c.category)}`,
+      href: categoryHref(ward, c.category),
     })) ?? [];
 
   const drifting: OverviewRow[] =
@@ -48,7 +55,7 @@ export default async function SignalOverviewPage() {
           +{d.slope.toFixed(1)}/mo
         </span>
       ),
-      href: `/ward7/signals/area/${d.fsa}`,
+      href: areaHref(ward, d.fsa),
     })) ?? [];
 
   const hotspots: OverviewRow[] =
@@ -64,7 +71,7 @@ export default async function SignalOverviewPage() {
           {formatCount(h.total)}
         </span>
       ),
-      href: `/ward7/signals/area/${h.fsa}`,
+      href: areaHref(ward, h.fsa),
     })) ?? [];
 
   const repeated: OverviewRow[] =
@@ -77,7 +84,7 @@ export default async function SignalOverviewPage() {
           {formatCount(r.count)}
         </span>
       ),
-      href: `/ward7/signals/area/${r.fsa}`,
+      href: areaHref(ward, r.fsa),
     })) ?? [];
 
   const earlyWarning: OverviewRow[] =
@@ -86,12 +93,12 @@ export default async function SignalOverviewPage() {
       label: `${categoryLabel(e.category)}`,
       sub: `z-score ${e.z_score.toFixed(2)}`,
       trailing: <PctBadge value={e.pct_change} />,
-      href: `/ward7/signals/category/${categorySlug(e.category)}`,
+      href: categoryHref(ward, e.category),
     })) ?? [];
 
   return (
     <div className="space-y-6">
-      <Header recentYear={ts?.meta.recent_year} />
+      <WardPageHeader ward={ward} title="Signal Overview" recentYear={ts?.meta.recent_year} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <OverviewCard
@@ -124,24 +131,12 @@ export default async function SignalOverviewPage() {
 
       <div className="flex justify-end">
         <Link
-          href="/ward7/story"
+          href={wardPath(ward, "/story")}
           className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
         >
           Ward Story <ArrowRight className="size-4" />
         </Link>
       </div>
-    </div>
-  );
-}
-
-function Header({ recentYear }: { recentYear?: number }) {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold text-slate-900">Signal Overview</h1>
-      <p className="text-sm text-slate-500">
-        Ward {WARD.id} · {WARD.name}
-        {recentYear ? ` · ${recentYear}` : ""}
-      </p>
     </div>
   );
 }

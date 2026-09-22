@@ -3,21 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { WARD7_SCREENS } from "@/lib/councillor/config";
+import { WARD_SCREENS } from "@/lib/councillor/config";
 
-export function Ward7Nav() {
+/** Screen nav for one ward. `basePath` is the ward root ("/ward/10"). */
+export function WardNav({ basePath }: { basePath: string }) {
   const pathname = usePathname();
+  const suffix = pathname.slice(basePath.length);
+
   return (
     <nav className="flex items-center gap-1">
-      {WARD7_SCREENS.map((s) => {
+      {WARD_SCREENS.map((s) => {
         const active =
-          s.href === "/ward7"
-            ? pathname === "/ward7"
-            : pathname.startsWith(s.href);
+          s.path === "" ? suffix === "" || suffix === "/" : suffix.startsWith(s.path);
         return (
           <Link
-            key={s.href}
-            href={s.href}
+            key={s.path}
+            href={`${basePath}${s.path}`}
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               active

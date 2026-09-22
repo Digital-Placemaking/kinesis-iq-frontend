@@ -1,28 +1,34 @@
 import Link from "next/link";
 import { ChevronRight, Minus, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { getHotspots, getTopSignals } from "@/lib/councillor/api";
+import { getHotspots, getTopSignals, settledValue } from "@/lib/councillor/api";
 import { categoryLabel, formatCount } from "@/lib/councillor/format";
-import { WARD } from "@/lib/councillor/config";
-import { categorySlug } from "@/lib/councillor/drilldown";
+import { resolveWard, wardMetadata, type WardParams } from "@/lib/councillor/ward-context";
+import { areaHref, categoryHref } from "@/lib/councillor/drilldown";
 import { Sparkline } from "../components/Sparkline";
+import { WardPageHeader } from "../components/WardPageHeader";
 import { PctBadge } from "../../components/PctBadge";
 import { ApiErrorBanner } from "../../components/StateBanner";
 
-export const metadata = { title: "Hotspots Explorer · Ward 7" };
+export const generateMetadata = wardMetadata((ward) => `Hotspots Explorer · ${ward.label}`);
 
-export default async function HotspotsPage() {
+export default async function HotspotsPage({
+  params,
+}: {
+  params: WardParams;
+}) {
+  const ward = await resolveWard(params);
   const [hsRes, tsRes] = await Promise.allSettled([
-    getHotspots(),
-    getTopSignals(),
+    getHotspots(ward.id),
+    getTopSignals(ward.id),
   ]);
-  const hs = hsRes.status === "fulfilled" ? hsRes.value : null;
-  const ts = tsRes.status === "fulfilled" ? tsRes.value : null;
+  const hs = settledValue(hsRes);
+  const ts = settledValue(tsRes);
 
   if (!hs) {
     return (
       <div className="space-y-4">
-        <Header />
+        <WardPageHeader ward={ward} title="Hotspots & Micro-Areas" />
         <ApiErrorBanner />
       </div>
     );
@@ -36,7 +42,7 @@ export default async function HotspotsPage() {
 
   return (
     <div className="space-y-6">
-      <Header recentMonths={hs.recent_months} recentYear={hs.recent_year} />
+      <WardPageHeader ward={ward} title="Hotspots & Micro-Areas" recentMonths={hs.recent_months} recentYear={hs.recent_year} />
 
       <div className="space-y-3">
         {hs.hotspots.map((h, i) => {
@@ -54,7 +60,7 @@ export default async function HotspotsPage() {
                     {i + 1}
                   </span>
                   <Link
-                    href={`/ward7/signals/area/${h.fsa}`}
+                    href={areaHref(ward, h.fsa)}
                     className="group"
                   >
                     <p className="flex items-center gap-1 text-lg font-semibold text-slate-900 group-hover:underline">
@@ -95,7 +101,7 @@ export default async function HotspotsPage() {
                     {h.categories.slice(0, 3).map((c) => (
                       <Link
                         key={c.category}
-                        href={`/ward7/signals/category/${categorySlug(c.category)}`}
+                        href={categoryHref(ward, c.category)}
                         className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900"
                       >
                         {categoryLabel(c.category)} · {formatCount(c.count)}
@@ -114,27 +120,6 @@ export default async function HotspotsPage() {
         Micro-area chips show the top request categories (fixed buckets) for each
         FSA over the window. Select an FSA for its full breakdown, or a chip for
         that category across the ward.
-      </p>
-    </div>
-  );
-}
-
-function Header({
-  recentMonths,
-  recentYear,
-}: {
-  recentMonths?: number;
-  recentYear?: number;
-}) {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold text-slate-900">
-        Hotspots &amp; Micro-Areas
-      </h1>
-      <p className="text-sm text-slate-500">
-        Ward {WARD.id} · {WARD.name}
-        {recentMonths ? ` · last ${recentMonths} months` : ""}
-        {recentYear ? ` · ${recentYear}` : ""}
       </p>
     </div>
   );

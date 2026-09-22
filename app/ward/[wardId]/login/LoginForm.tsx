@@ -7,11 +7,12 @@ import { loginAction, type LoginState } from "../actions";
 
 const initial: LoginState = {};
 
-export function LoginForm() {
+export function LoginForm({ ward }: { ward: number }) {
   const [state, formAction, pending] = useActionState(loginAction, initial);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      <input type="hidden" name="ward" value={ward} />
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm font-medium text-slate-200">
           Email
@@ -22,7 +23,7 @@ export function LoginForm() {
           type="email"
           autoComplete="username"
           required
-          defaultValue="councillor.ward7@kinesisiq.demo"
+          placeholder="you@kinesisiq.demo"
           className="h-10 rounded-md border border-white/15 bg-white/5 px-3 text-sm text-white placeholder:text-slate-400 outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
         />
       </div>

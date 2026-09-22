@@ -30,6 +30,7 @@ import type {
 } from "./types";
 import { FIXED_CATEGORIES } from "./types";
 import { categoryLabel } from "./format";
+import { wardPath, type Ward } from "./wards";
 
 // ---------------------------------------------------------------------------
 // Keys + slugs
@@ -52,6 +53,16 @@ export function categorySlug(raw: string): string {
 export function categoryFromSlug(slug: string): string | null {
   const want = slug.toLowerCase().replace(/[^a-z]/g, "");
   return FIXED_CATEGORIES.find((c) => catKey(c) === want) ?? null;
+}
+
+/** Link to a category drill-down inside a ward. */
+export function categoryHref(ward: Ward, rawCategory: string): string {
+  return wardPath(ward, `/signals/category/${categorySlug(rawCategory)}`);
+}
+
+/** Link to a micro-area drill-down inside a ward. */
+export function areaHref(ward: Ward, fsa: string): string {
+  return wardPath(ward, `/signals/area/${fsaSlug(fsa)}`);
 }
 
 /** Normalise an FSA path segment ("m3n" → "M3N"). */

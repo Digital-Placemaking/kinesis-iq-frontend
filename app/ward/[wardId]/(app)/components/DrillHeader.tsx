@@ -1,17 +1,21 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
+import { wardPath, type Ward } from "@/lib/councillor/wards";
 
 /** Back-link + title block shared by the category and micro-area drill-downs. */
 export function DrillHeader({
-  backHref = "/ward7/signals",
+  ward,
+  backPath = "/signals",
   backLabel = "Signal Overview",
   eyebrow,
   title,
   subtitle,
   actions,
 }: {
-  backHref?: string;
+  ward: Ward;
+  /** Screen to go back to, relative to the ward root. */
+  backPath?: string;
   backLabel?: string;
   eyebrow: string;
   title: string;
@@ -21,7 +25,7 @@ export function DrillHeader({
   return (
     <div className="space-y-3">
       <Link
-        href={backHref}
+        href={wardPath(ward, backPath)}
         className="inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-800"
       >
         <ArrowLeft className="size-4" />

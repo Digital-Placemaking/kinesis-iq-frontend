@@ -16,10 +16,7 @@ export const SESSION_COOKIE = "kiq_session";
 /** Must match path used in jar.set / jar.delete. */
 export const COOKIE_PATH = "/";
 
-export const WARD = {
-  id: "07",
-  name: "Humber River-Black Creek",
-} as const;
+// Ward identity (id / name / URL) now comes from the route — see ./wards.ts.
 
 /**
  * The four headline "system health" indicators shown on the dashboard.
@@ -74,10 +71,13 @@ export const INDICATORS: IndicatorDef[] = [
   },
 ];
 
-/** Ordered nav across the four demo screens (Figma "Next →" flow). */
-export const WARD7_SCREENS = [
-  { href: "/ward7", label: "Dashboard" },
-  { href: "/ward7/signals", label: "Signal Overview" },
-  { href: "/ward7/story", label: "Ward Story" },
-  { href: "/ward7/hotspots", label: "Hotspots" },
+/**
+ * Ordered nav across the four ward screens (Figma "Next →" flow). Paths are
+ * relative to the ward root, e.g. "/signals" → /ward10/signals.
+ */
+export const WARD_SCREENS = [
+  { path: "", label: "Dashboard" },
+  { path: "/signals", label: "Signal Overview" },
+  { path: "/story", label: "Ward Story" },
+  { path: "/hotspots", label: "Hotspots" },
 ] as const;

@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTopSignals, getWeeklyOverview } from "@/lib/councillor/api";
 import {
   INDICATORS,
-  WARD,
   type IndicatorDef,
   type IndicatorKey,
 } from "@/lib/councillor/config";
@@ -19,12 +18,13 @@ import {
   sentimentTone,
 } from "@/lib/councillor/format";
 import type { IndicatorRow, TopSignals } from "@/lib/councillor/types";
+import { resolveWard, wardMetadata, type WardParams } from "@/lib/councillor/ward-context";
 import { IndicatorCard } from "./components/IndicatorCard";
 import { TrendChart, type TrendTab } from "./components/TrendChart";
 import { PctBadge } from "../components/PctBadge";
 import { ApiErrorBanner } from "../components/StateBanner";
 
-export const metadata = { title: "Ward 7 Dashboard · KinesisIQ" };
+export const generateMetadata = wardMetadata((ward) => `${ward.label} Dashboard · KinesisIQ`);
 
 function weekLabel(iso: string | undefined): string {
   if (!iso) return "";
@@ -168,10 +168,15 @@ function newestFirst(rows: IndicatorRow[]): IndicatorRow[] {
   });
 }
 
-export default async function Ward7Dashboard() {
+export default async function WardDashboard({
+  params,
+}: {
+  params: WardParams;
+}) {
+  const ward = await resolveWard(params);
   const [wkRes, tsRes] = await Promise.allSettled([
-    getWeeklyOverview(),
-    getTopSignals(),
+    getWeeklyOverview(ward.id),
+    getTopSignals(ward.id),
   ]);
 
   const rows: IndicatorRow[] = newestFirst(
@@ -214,16 +219,16 @@ export default async function Ward7Dashboard() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">
-            Ward {WARD.id} Dashboard
+            {ward.label} Dashboard
           </h1>
           <p className="text-sm text-slate-500">
-            {WARD.name}
+            {ward.name}
             {signals ? ` · Data year ${signals.meta.recent_year}` : ""}
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <span className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-slate-600">
-            Ward {WARD.id}
+            {ward.label}
           </span>
           {thisWeekCount !== null ? (
             <span className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
@@ -252,7 +257,7 @@ export default async function Ward7Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              Key Issues Impacting Ward {WARD.id}
+              Key Issues Impacting {ward.label}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -328,7 +333,7 @@ export default async function Ward7Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">This Week in Ward {WARD.id}</CardTitle>
+            <CardTitle className="text-base">This Week in {ward.label}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {narrative ? (

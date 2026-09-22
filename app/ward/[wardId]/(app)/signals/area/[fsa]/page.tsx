@@ -1,16 +1,18 @@
 import { notFound } from "next/navigation";
 import { AlertTriangle, Minus, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { getHotspots, getTopSignals, getWardView } from "@/lib/councillor/api";
+import { loadStoryBundles } from "@/lib/councillor/api";
 import {
   buildAreaDetail,
-  categorySlug,
+  areaHref,
+  categoryHref,
   fsaSlug,
   inferCategory,
   type AreaDetail,
 } from "@/lib/councillor/drilldown";
 import { categoryLabel, formatCount, sharePct } from "@/lib/councillor/format";
-import { WARD } from "@/lib/councillor/config";
+import { resolveWard, wardMetadata } from "@/lib/councillor/ward-context";
+import { wardSubtitle, type Ward } from "@/lib/councillor/wards";
 import { PctBadge } from "../../../../components/PctBadge";
 import { ApiErrorBanner } from "../../../../components/StateBanner";
 import { DrillHeader } from "../../../components/DrillHeader";
@@ -19,37 +21,25 @@ import { Sparkline } from "../../../components/Sparkline";
 import { StatTile } from "../../../components/StatTile";
 import { OverviewCard, type OverviewRow } from "../../../components/OverviewCard";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ fsa: string }>;
-}) {
-  const { fsa } = await params;
-  return { title: `${fsaSlug(fsa)} · Ward 7 Micro-Area` };
-}
+export const generateMetadata = wardMetadata<{ wardId: string; fsa: string }>(
+  (ward, { fsa }) => `${fsaSlug(fsa)} · ${ward.label} Micro-Area`
+);
 
 export default async function AreaDrilldownPage({
   params,
 }: {
-  params: Promise<{ fsa: string }>;
+  params: Promise<{ wardId: string; fsa: string }>;
 }) {
   const { fsa } = await params;
+  const ward = await resolveWard(params);
 
-  const [tsRes, wvRes, hsRes] = await Promise.allSettled([
-    getTopSignals(),
-    getWardView(),
-    getHotspots(),
-  ]);
-  const bundles = {
-    ts: tsRes.status === "fulfilled" ? tsRes.value : null,
-    wv: wvRes.status === "fulfilled" ? wvRes.value : null,
-    hs: hsRes.status === "fulfilled" ? hsRes.value : null,
-  };
+  const bundles = await loadStoryBundles(ward.id);
 
   if (!bundles.ts && !bundles.wv && !bundles.hs) {
     return (
       <div className="space-y-4">
-        <DrillHeader eyebrow="Micro-area" title={fsaSlug(fsa)} />
+        <DrillHeader
+        ward={ward} eyebrow="Micro-area" title={fsaSlug(fsa)} />
         <ApiErrorBanner />
       </div>
     );
@@ -61,19 +51,18 @@ export default async function AreaDrilldownPage({
   return (
     <div className="space-y-6">
       <DrillHeader
+        ward={ward}
         eyebrow="Micro-area drill-down"
         title={d.fsa}
-        subtitle={
-          <>
-            Ward {WARD.id} · {WARD.name}
-            {d.recentMonths ? ` · last ${d.recentMonths} months` : ""}
-            {d.recentYear ? ` · ${d.recentYear}` : ""}
-          </>
-        }
+        subtitle={wardSubtitle(
+          ward,
+          d.recentMonths && `last ${d.recentMonths} months`,
+          d.recentYear
+        )}
         actions={<DriftChip detail={d} />}
       />
 
-      <StatStrip detail={d} />
+      <StatStrip detail={d} ward={ward} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <ShareBars
@@ -85,7 +74,7 @@ export default async function AreaDrilldownPage({
             sub: `${sharePct(c.share)} of this area's requests`,
             value: c.count,
             share: c.share,
-            href: `/ward7/signals/category/${categorySlug(c.category)}`,
+            href: categoryHref(ward, c.category),
             trailing: (
               <span className="inline-flex items-center gap-1.5">
                 {c.flagged ? (
@@ -98,9 +87,9 @@ export default async function AreaDrilldownPage({
           emptyText="No category breakdown for this micro-area."
         />
         <MonthlyTrendTile detail={d} />
-        <RepeatedTile detail={d} />
-        <WardContextTile detail={d} />
-        <PeersTile detail={d} />
+        <RepeatedTile detail={d} ward={ward} />
+        <WardContextTile detail={d} ward={ward} />
+        <PeersTile detail={d} ward={ward} />
       </div>
 
       <p className="text-xs text-slate-400">
@@ -129,7 +118,7 @@ function DriftChip({ detail: d }: { detail: AreaDetail }) {
   );
 }
 
-function StatStrip({ detail: d }: { detail: AreaDetail }) {
+function StatStrip({ detail: d, ward }: { detail: AreaDetail; ward: Ward }) {
   const series = d.drift?.series ?? d.hotspot?.sparkline ?? [];
   const lastDelta =
     series.length >= 2 ? series[series.length - 1] - series[series.length - 2] : null;
@@ -142,7 +131,7 @@ function StatStrip({ detail: d }: { detail: AreaDetail }) {
         badge={d.hotspot ? <PctBadge value={d.hotspot.growth_pct} /> : null}
         foot={
           d.rank
-            ? `#${d.rank} micro-area by volume in Ward ${WARD.id}`
+            ? `#${d.rank} micro-area by volume in ${ward.label}`
             : "Not in the ranked hotspot list"
         }
         tone={d.drift ? "elevated" : "watch"}
@@ -237,7 +226,7 @@ function MonthlyTrendTile({ detail: d }: { detail: AreaDetail }) {
   );
 }
 
-function RepeatedTile({ detail: d }: { detail: AreaDetail }) {
+function RepeatedTile({ detail: d, ward }: { detail: AreaDetail; ward: Ward }) {
   const rows: OverviewRow[] = d.repeated.map((r, i) => {
     const cat = inferCategory(r.type);
     return {
@@ -249,7 +238,7 @@ function RepeatedTile({ detail: d }: { detail: AreaDetail }) {
           {formatCount(r.count)}
         </span>
       ),
-      href: cat ? `/ward7/signals/category/${categorySlug(cat)}` : undefined,
+      href: cat ? categoryHref(ward, cat) : undefined,
     };
   });
   return (
@@ -262,7 +251,7 @@ function RepeatedTile({ detail: d }: { detail: AreaDetail }) {
   );
 }
 
-function WardContextTile({ detail: d }: { detail: AreaDetail }) {
+function WardContextTile({ detail: d, ward }: { detail: AreaDetail; ward: Ward }) {
   const rows: OverviewRow[] = d.categories
     .filter((c) => c.wardPct !== null || c.flagged)
     .slice(0, 6)
@@ -273,7 +262,7 @@ function WardContextTile({ detail: d }: { detail: AreaDetail }) {
         ? "flagged ward-wide as an early warning"
         : "ward-wide year-over-year change",
       trailing: <PctBadge value={c.wardPct} />,
-      href: `/ward7/signals/category/${categorySlug(c.category)}`,
+      href: categoryHref(ward, c.category),
     }));
   return (
     <OverviewCard
@@ -285,13 +274,13 @@ function WardContextTile({ detail: d }: { detail: AreaDetail }) {
   );
 }
 
-function PeersTile({ detail: d }: { detail: AreaDetail }) {
+function PeersTile({ detail: d, ward }: { detail: AreaDetail; ward: Ward }) {
   const rows: OverviewRow[] = d.peers.map((p, i) => ({
     id: p.fsa,
     label: p.fsa === d.fsa ? `${p.fsa} · this area` : p.fsa,
     sub: `#${i + 1} by volume · ${formatCount(p.total)} requests`,
     trailing: <PctBadge value={p.growth_pct} />,
-    href: p.fsa === d.fsa ? undefined : `/ward7/signals/area/${p.fsa}`,
+    href: p.fsa === d.fsa ? undefined : areaHref(ward, p.fsa),
   }));
   return (
     <OverviewCard
