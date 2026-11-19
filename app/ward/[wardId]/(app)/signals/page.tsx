@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getHotspots, getTopSignals, settledValue } from "@/lib/councillor/api";
+import { loadWardSnapshot } from "@/lib/councillor/ward-snapshot";
 import { categoryLabel, formatCount } from "@/lib/councillor/format";
 import { areaHref, categoryHref } from "@/lib/councillor/drilldown";
 import { resolveWard, wardMetadata, type WardParams } from "@/lib/councillor/ward-context";
@@ -18,12 +18,7 @@ export default async function SignalOverviewPage({
   params: WardParams;
 }) {
   const ward = await resolveWard(params);
-  const [tsRes, hsRes] = await Promise.allSettled([
-    getTopSignals(ward.id),
-    getHotspots(ward.id),
-  ]);
-  const ts = settledValue(tsRes);
-  const hs = settledValue(hsRes);
+  const { ts, hs } = await loadWardSnapshot(ward.id);
 
   if (!ts && !hs) {
     return (
@@ -38,7 +33,7 @@ export default async function SignalOverviewPage({
     ts?.rising_categories.map((c) => ({
       id: c.category,
       label: categoryLabel(c.category),
-      sub: `${formatCount(c.recent)} this year vs ${formatCount(
+      sub: `${formatCount(c.recent)} in the analysis period vs ${formatCount(
         Math.round(c.baseline_avg)
       )} baseline`,
       trailing: <PctBadge value={c.pct_change} />,
@@ -103,12 +98,12 @@ export default async function SignalOverviewPage({
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <OverviewCard
           title="Rising Categories"
-          hint="Largest year-over-year rise vs the ward's own baseline"
+          hint="Largest rise vs the ward's own baseline"
           rows={rising}
         />
         <OverviewCard
           title="Drifting Locations"
-          hint="Micro-areas trending up over the last 6 months"
+          hint="Micro-areas trending up in the analysis window"
           rows={drifting}
         />
         <OverviewCard
@@ -123,7 +118,7 @@ export default async function SignalOverviewPage({
         />
         <OverviewCard
           title="Early Warning Flags"
-          hint="Unusual jumps vs prior years (z-score ≥ 2)"
+          hint="Unusual jumps versus prior data (z-score ≥ 2)"
           rows={earlyWarning}
           emptyText="No categories flagged this period."
         />

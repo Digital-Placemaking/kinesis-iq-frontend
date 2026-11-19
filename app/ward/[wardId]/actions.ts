@@ -1,5 +1,7 @@
 "use server";
 
+import { updateTag } from "next/cache";
+import { wardSnapshotTag } from "@/lib/councillor/ward-snapshot";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { loginRequest, ApiError } from "@/lib/councillor/api";
@@ -97,4 +99,10 @@ export async function logoutAction(formData: FormData) {
   jar.set(TOKEN_COOKIE, "", { ...base, maxAge: 0 });
   jar.set(SESSION_COOKIE, "", { ...base, maxAge: 0 });
   redirect(wardPath(wardFromForm(formData), "/login"));
+}
+
+
+export async function retryWardSnapshot(formData: FormData) {
+  const ward = wardFromForm(formData);
+  updateTag(await wardSnapshotTag(ward.id));
 }

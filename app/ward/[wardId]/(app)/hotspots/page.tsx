@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, Minus, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { getHotspots, getTopSignals, settledValue } from "@/lib/councillor/api";
+import { loadWardSnapshot } from "@/lib/councillor/ward-snapshot";
 import { categoryLabel, formatCount } from "@/lib/councillor/format";
 import { resolveWard, wardMetadata, type WardParams } from "@/lib/councillor/ward-context";
 import { areaHref, categoryHref } from "@/lib/councillor/drilldown";
@@ -18,12 +18,7 @@ export default async function HotspotsPage({
   params: WardParams;
 }) {
   const ward = await resolveWard(params);
-  const [hsRes, tsRes] = await Promise.allSettled([
-    getHotspots(ward.id),
-    getTopSignals(ward.id),
-  ]);
-  const hs = settledValue(hsRes);
-  const ts = settledValue(tsRes);
+  const { ts, hs } = await loadWardSnapshot(ward.id);
 
   if (!hs) {
     return (

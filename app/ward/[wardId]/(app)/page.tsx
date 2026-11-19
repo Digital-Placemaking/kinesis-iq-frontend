@@ -1,6 +1,6 @@
 import { AlertTriangle, Megaphone, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getTopSignals, getWeeklyOverview } from "@/lib/councillor/api";
+import { loadWardSnapshot } from "@/lib/councillor/ward-snapshot";
 import {
   INDICATORS,
   type IndicatorDef,
@@ -26,11 +26,21 @@ import { ApiErrorBanner } from "../components/StateBanner";
 
 export const generateMetadata = wardMetadata((ward) => `${ward.label} Dashboard · KinesisIQ`);
 
-function weekLabel(iso: string | undefined): string {
+function bucketLabel(iso: string | undefined, periodType: string): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-CA", { month: "short", day: "numeric" });
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth();
+  if (periodType === "year") return String(year);
+  if (periodType === "quarter") return `Q${Math.floor(month / 3) + 1} ${year}`;
+  if (periodType === "six_month") return `H${Math.floor(month / 6) + 1} ${year}`;
+  return d.toLocaleDateString("en-CA", {
+    month: "short",
+    day: periodType === "week" ? "numeric" : undefined,
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 const TONE_BY_SENTIMENT = {
@@ -116,7 +126,7 @@ function buildIndicator(def: IndicatorDef, rows: IndicatorRow[]): BuiltIndicator
   // oldest → newest; rows whose column is null drop out with their label.
   const points = [...rows].reverse().flatMap((row) => {
     const value = numericColumn(row, def.column);
-    return value === null ? [] : [{ week: weekLabel(row.time_bucket), value }];
+    return value === null ? [] : [{ week: bucketLabel(row.time_bucket, row.period_type), value }];
   });
 
   return {
@@ -126,10 +136,10 @@ function buildIndicator(def: IndicatorDef, rows: IndicatorRow[]): BuiltIndicator
       value: newest,
       delta:
         change === null
-          ? "No prior week"
+          ? "No prior period"
           : direction === "flat"
             ? "Stable"
-            : `${change > 0 ? "+" : ""}${change.toFixed(2)} vs last week`,
+            : `${change > 0 ? "+" : ""}${change.toFixed(2)} vs prior period`,
       direction,
       status: band.status,
       statusTone: band.statusTone,
@@ -154,8 +164,7 @@ function sentimentBand(value: number): { status: string; statusTone: StatusTone 
 }
 
 /**
- * Every card reads rows[0] as "this week". /weekly-overview already sorts
- * newest-first before slicing to 4 weeks, but the underlying view query has no
+ * Cards read the newest bucket first. The underlying view query has no
  * ORDER BY of its own — re-sorting here keeps the page correct on its own terms
  * rather than on the endpoint's current slicing behaviour.
  */
@@ -174,25 +183,15 @@ export default async function WardDashboard({
   params: WardParams;
 }) {
   const ward = await resolveWard(params);
-  const [wkRes, tsRes] = await Promise.allSettled([
-    getWeeklyOverview(ward.id),
-    getTopSignals(ward.id),
-  ]);
-
-  const rows: IndicatorRow[] = newestFirst(
-    wkRes.status === "fulfilled" ? wkRes.value.data ?? [] : []
-  );
-  const signals: TopSignals | null =
-    tsRes.status === "fulfilled" ? tsRes.value : null;
-  // Banner on any feed failure — weekly-only outage otherwise looks like SAMPLE
-  // indicator data rather than an API error.
-  const weeklyDown = wkRes.status === "rejected";
-  const signalsDown = tsRes.status === "rejected";
+  const { overview, ts: signals } = await loadWardSnapshot(ward.id);
+  const rows = newestFirst(overview?.data ?? []);
+  const weeklyDown = !overview;
+  const signalsDown = !signals;
   const apiDown = weeklyDown || signalsDown;
   const apiDownDetail = weeklyDown && signalsDown
     ? undefined
     : weeklyDown
-      ? "Weekly indicator feed failed — cards may show sample values."
+      ? "Indicator feed failed — cards may show sample values."
       : "Story Layer signals failed — issues and summary may be incomplete.";
 
   const indicators = INDICATORS.map((def) => buildIndicator(def, rows));
@@ -207,7 +206,7 @@ export default async function WardDashboard({
   const keyIssues = signals?.rising_categories.slice(0, 3) ?? [];
   const alerts = signals?.early_warning.slice(0, 3) ?? [];
   const topRepeat = signals?.repeated_complaints[0];
-  const thisWeekCount = rows[0]?.request_count_raw ?? null;
+  const latestCount = rows[0]?.request_count_raw ?? null;
 
   const narrative = signals
     ? buildNarrative(signals)
@@ -223,16 +222,15 @@ export default async function WardDashboard({
           </h1>
           <p className="text-sm text-slate-500">
             {ward.name}
-            {signals ? ` · Data year ${signals.meta.recent_year}` : ""}
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <span className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-slate-600">
             {ward.label}
           </span>
-          {thisWeekCount !== null ? (
+          {latestCount !== null ? (
             <span className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
-              {formatCount(thisWeekCount)} requests · latest week
+              {formatCount(latestCount)} requests · latest period
             </span>
           ) : null}
         </div>
@@ -272,7 +270,7 @@ export default async function WardDashboard({
                       {categoryLabel(c.category)}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {formatCount(c.recent)} this year vs{" "}
+                      {formatCount(c.recent)} in the analysis period vs{" "}
                       {formatCount(Math.round(c.baseline_avg))} baseline
                     </p>
                   </div>
@@ -305,7 +303,7 @@ export default async function WardDashboard({
                     </p>
                     <p className="text-xs text-slate-500">
                       z-score {a.z_score.toFixed(2)} · {formatCount(a.recent)} vs{" "}
-                      {formatCount(a.prior)} prior year
+                      {formatCount(a.prior)} prior period
                     </p>
                   </div>
                   <PctBadge value={a.pct_change} />
@@ -333,7 +331,7 @@ export default async function WardDashboard({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">This Week in {ward.label}</CardTitle>
+            <CardTitle className="text-base">Summary for {ward.label}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {narrative ? (
@@ -406,9 +404,9 @@ function buildNarrative(s: TopSignals): string {
     parts.push(
       `${categoryLabel(warn.category)} has been flagged as an early warning (${pctLabel(
         warn.pct_change
-      )} vs the prior year)`
+      )} vs the prior period)`
     );
   }
-  if (!parts.length) return "No notable movements in this week's signals.";
-  return `This week, ${parts.join(", and ")}.`;
+  if (!parts.length) return "No notable movements in the selected period.";
+  return `During the selected period, ${parts.join(", and ")}.`;
 }

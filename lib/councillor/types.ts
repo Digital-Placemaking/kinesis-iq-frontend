@@ -52,7 +52,14 @@ export interface IndicatorRow {
   trend_indicator: string | null;
 }
 
+export interface AnalysisPeriod {
+  start: string;
+  end: string;
+  snapped?: boolean;
+}
+
 export interface WeeklyOverviewResponse {
+  period?: AnalysisPeriod;
   ward_id: string;
   data: IndicatorRow[];
 }
@@ -118,6 +125,7 @@ export interface EarlyWarning {
 }
 
 export interface TopSignals {
+  period?: AnalysisPeriod;
   rising_categories: RisingCategory[];
   drifting_locations: DriftingLocation[];
   rising_faster_than_city: RisingFasterThanCity[];
@@ -144,6 +152,7 @@ export interface Hotspot {
 }
 
 export interface HotspotsBundle {
+  period?: AnalysisPeriod;
   hotspots: Hotspot[];
   recent_months: number;
   recent_year: number;
@@ -174,6 +183,7 @@ export interface WardVsCity {
 }
 
 export interface WardStoryView {
+  period?: AnalysisPeriod;
   RISING: WardViewRising[];
   FALLING: WardViewRising[];
   DRIFTING: WardViewDrifting[];

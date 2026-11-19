@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { AlertTriangle, Info, TrendingDown, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { loadStoryBundles } from "@/lib/councillor/api";
+import { loadWardSnapshot } from "@/lib/councillor/ward-snapshot";
 import {
   areaHref,
   buildCategoryDetail,
@@ -37,7 +37,7 @@ export default async function CategoryDrilldownPage({
   const { slug } = await params;
   const ward = await resolveWard(params);
 
-  const bundles = await loadStoryBundles(ward.id);
+  const bundles = await loadWardSnapshot(ward.id);
 
   if (!bundles.ts && !bundles.wv && !bundles.hs) {
     return (
@@ -61,14 +61,14 @@ export default async function CategoryDrilldownPage({
         ward={ward}
         eyebrow="Category drill-down"
         title={d.category}
-        subtitle={wardSubtitle(ward, d.recentYear)}
+        subtitle={wardSubtitle(ward)}
         actions={<DirectionChip detail={d} />}
       />
 
       <StatStrip detail={d} ward={ward} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <YearOverYearTile detail={d} />
+        <BaselineComparisonTile detail={d} />
         <VsCityTile detail={d} ward={ward} />
         <EarlyWarningTile detail={d} />
         <ShareBars
@@ -137,13 +137,13 @@ function StatStrip({ detail: d, ward }: { detail: CategoryDetail; ward: Ward }) 
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <StatTile
-        label={d.recentYear ? `Requests ${d.recentYear}` : "Requests this year"}
+        label="Requests in period"
         value={formatCount(d.yoy?.recent)}
         badge={d.yoy ? <PctBadge value={d.yoy.pct_change} /> : null}
         foot={
           d.yoy
             ? `vs ${formatCount(Math.round(d.yoy.baseline_avg))} baseline average`
-            : "No year-over-year row in the bundle"
+            : "No baseline comparison available"
         }
         tone={headline.tone}
         status={headline.status}
@@ -201,12 +201,12 @@ function StatStrip({ detail: d, ward }: { detail: CategoryDetail; ward: Ward }) 
 
 /* ------------------------------------------------------------------- tiles */
 
-function YearOverYearTile({ detail: d }: { detail: CategoryDetail }) {
+function BaselineComparisonTile({ detail: d }: { detail: CategoryDetail }) {
   if (!d.yoy) {
     return (
       <OverviewCard
-        title="Year over year"
-        hint="Recent year vs the ward's own baseline"
+        title="Baseline comparison"
+        hint="Analysis period vs the ward’s own baseline"
         rows={[]}
         emptyText="No baseline comparison for this category."
       />
@@ -217,8 +217,8 @@ function YearOverYearTile({ detail: d }: { detail: CategoryDetail }) {
   const rows: OverviewRow[] = [
     {
       id: "recent",
-      label: d.recentYear ? `${d.recentYear} requests` : "Recent year",
-      sub: "count in the most recent full year",
+      label: "Analysis period",
+      sub: "requests in the analysis period",
       trailing: (
         <span className="text-sm font-semibold tabular-nums text-slate-800">
           {formatCount(d.yoy.recent)}
@@ -228,7 +228,7 @@ function YearOverYearTile({ detail: d }: { detail: CategoryDetail }) {
     {
       id: "baseline",
       label: "Baseline average",
-      sub: "mean across the baseline years",
+      sub: "baseline average",
       trailing: (
         <span className="text-sm font-semibold tabular-nums text-slate-800">
           {formatCount(baseline)}
@@ -244,8 +244,8 @@ function YearOverYearTile({ detail: d }: { detail: CategoryDetail }) {
   ];
   return (
     <OverviewCard
-      title="Year over year"
-      hint="Recent year vs the ward's own baseline"
+      title="Baseline comparison"
+      hint="Analysis period vs the ward’s own baseline"
       rows={rows}
     />
   );
@@ -292,13 +292,13 @@ function VsCityTile({ detail: d, ward }: { detail: CategoryDetail; ward: Ward })
       {
         id: "ward-growth",
         label: `${ward.label} growth`,
-        sub: "year-over-year",
+        sub: "versus baseline",
         trailing: <PctBadge value={d.fasterThanCity.ward7_growth_pct} />,
       },
       {
         id: "city-growth",
         label: "City growth",
-        sub: "year-over-year",
+        sub: "versus baseline",
         trailing: <PctBadge value={d.fasterThanCity.city_growth_pct} />,
       },
       {
@@ -353,8 +353,8 @@ function EarlyWarningTile({ detail: d }: { detail: CategoryDetail }) {
         <PctBadge value={e.pct_change} className="ml-auto" />
       </div>
       <p className="text-sm text-slate-600">
-        {formatCount(e.recent)} this year against {formatCount(e.prior)} in the
-        prior period — {e.z_score >= 3 ? "well beyond" : "beyond"} the normal
+        {formatCount(e.recent)} in the latest year against {formatCount(e.prior)} in the
+        prior year — {e.z_score >= 3 ? "well beyond" : "beyond"} the normal
         year-to-year swing for this category.
       </p>
     </Card>

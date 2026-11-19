@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getWardView } from "@/lib/councillor/api";
+import { loadWardSnapshot } from "@/lib/councillor/ward-snapshot";
 import {
   byRatioDesc,
   categoryLabel,
@@ -24,7 +24,7 @@ export default async function WardStoryPage({
   params: WardParams;
 }) {
   const ward = await resolveWard(params);
-  const wv = await getWardView(ward.id).catch(() => null);
+  const { wv } = await loadWardSnapshot(ward.id);
 
   if (!wv) {
     return (
@@ -106,12 +106,12 @@ export default async function WardStoryPage({
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <OverviewCard
           title="Rising vs Baseline"
-          hint="Categories up year-over-year"
+          hint="Categories up versus baseline"
           rows={rising}
         />
         <OverviewCard
           title="Falling"
-          hint="Categories down year-over-year"
+          hint="Categories down versus baseline"
           rows={falling}
           emptyText="No categories falling this period."
         />
@@ -122,7 +122,7 @@ export default async function WardStoryPage({
         />
         <OverviewCard
           title="Early Warning"
-          hint="Unusual jumps vs prior years"
+          hint="Unusual jumps versus prior data"
           rows={earlyWarning}
           emptyText="No flags this period."
         />

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { AlertTriangle, Minus, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { loadStoryBundles } from "@/lib/councillor/api";
+import { loadWardSnapshot } from "@/lib/councillor/ward-snapshot";
 import {
   buildAreaDetail,
   areaHref,
@@ -33,7 +33,7 @@ export default async function AreaDrilldownPage({
   const { fsa } = await params;
   const ward = await resolveWard(params);
 
-  const bundles = await loadStoryBundles(ward.id);
+  const bundles = await loadWardSnapshot(ward.id);
 
   if (!bundles.ts && !bundles.wv && !bundles.hs) {
     return (
@@ -260,7 +260,7 @@ function WardContextTile({ detail: d, ward }: { detail: AreaDetail; ward: Ward }
       label: categoryLabel(c.category),
       sub: c.flagged
         ? "flagged ward-wide as an early warning"
-        : "ward-wide year-over-year change",
+        : "ward-wide change versus baseline",
       trailing: <PctBadge value={c.wardPct} />,
       href: categoryHref(ward, c.category),
     }));
